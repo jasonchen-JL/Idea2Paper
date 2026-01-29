@@ -1,17 +1,10 @@
-<table align="center" style="border: none; border-collapse: collapse;">
-  <tr style="border: none;">
-    <td style="border: none; padding: 0;">
-      <img src="assets/images/logo.png" alt="Idea2Paper Logo" width="180">
-    </td>
-    <td style="border: none; padding: 0 0 0 14px; vertical-align: middle;">
-      <h1 style="margin: 0;">
-        Idea2Paper: <br>
-         Automated Pipeline for Transforming Research Concepts into Complete Scientific Narratives
-      </h1>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="assets/images/logo.png" alt="Idea2Paper Logo" width="180">
+</p>
 
+<h1 align="center">
+  Idea2Paper: Automated Pipeline for Transforming Research Concepts into Complete Scientific Narratives
+</h1>
 
 <p align="center">
   <a href="https://www.python.org/">
@@ -37,9 +30,6 @@
 
 **Pipeline**: 💡 **KG Retrieval** → 🧩 **Pattern Selection** → ✍️ **Story Generation** → 👥 **Calibrated Review** → 🔁 **Refinement** → 🧪 **Novelty Verification**
 
-<p align="center">
-  <img src="assets/images/idea2storypipeline.png" width="800">
-</p>
 
 ### Core Features
 
