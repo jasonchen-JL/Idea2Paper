@@ -1,66 +1,66 @@
 {
-  "user_idea": "Propose NoWag, a unified framework for one-shot shape-preserving compression algorithms that unifies vector quantization and pruning paradigms",
+  "user_idea": "Propose the autoregressive image diffusion (AID) model for image sequence generation and apply it to sample the posterior for accelerated MRI reconstruction",
   "success": true,
   "iterations": 2,
   "selected_patterns": {
     "stability": [
-      "pattern_83",
       "pattern_100",
-      "pattern_112",
-      "pattern_19",
-      "pattern_77"
+      "pattern_115",
+      "pattern_57",
+      "pattern_102",
+      "pattern_114"
     ],
     "novelty": [
-      "pattern_88",
-      "pattern_116",
-      "pattern_112",
-      "pattern_75",
-      "pattern_83"
+      "pattern_49",
+      "pattern_114",
+      "pattern_7",
+      "pattern_94",
+      "pattern_68"
     ],
     "domain_distance": [
-      "pattern_77",
-      "pattern_75",
-      "pattern_90",
-      "pattern_19",
-      "pattern_88"
+      "pattern_100",
+      "pattern_49",
+      "pattern_114",
+      "pattern_99",
+      "pattern_94"
     ]
   },
   "final_story": {
-    "title": "NoWag: Unifying Vector Quantization and Pruning via Generative Trajectory Diffusion for One-Shot Shape-Preserving Compression",
-    "abstract": "We introduce NoWag, a unified framework designed to achieve one-shot shape-preserving compression that seamlessly integrates vector quantization and pruning paradigms. Unlike traditional methods that view compression as a lossy reduction of static values, NoWag reframes the process as a generative structural completion task. Our approach extracts a sparse 'skeletal geometry' using a unified optimization strategy and leverages a trajectory-informed estimation prior to guide a conditional diffusion model. This model 'hallucinates' the high-fidelity weight texture required to preserve the network's functional manifold, effectively replacing iterative retraining with a single-step generative reconstruction. By transforming the compressed model into a generative seed, NoWag maintains the intrinsic shape and performance of neural networks while significantly reducing computational overhead.",
-    "problem_framing": "We reframe the challenge of neural network compression from a lossy reduction of static parameters to a generative structural completion task. Instead of viewing compression merely as discarding information through isolated pruning and quantization, we position it as the extraction of a high-dimensional latent skeleton that implies a dense, high-precision distribution. The problem shifts from minimizing storage error to maximizing the recoverability of the network's functional geometry through generative priors, demanding a framework that treats the compressed structure as a seed for synthesis rather than a degraded artifact.",
-    "gap_pattern": "Existing methods fail to achieve efficient one-shot compression because they treat vector quantization and pruning as competing, destructive operations requiring separate, disjoint optimization pipelines. They rely heavily on post-hoc fine-tuning to recover accuracy, operating under the assumption that structure is static and information is permanently lost. This ignores the inherent generative manifold where a specific sparse structure implies a dense, high-precision distribution, leading to high computational costs and a fundamental inability to preserve the model's functional shape without expensive iterative corrections.",
-    "solution": "NoWag addresses these limitations by introducing a unified framework where structural optimization and functional synthesis co-evolve. We leverage a dual-step optimization mechanism to define a rigid 'skeletal geometry' via simultaneous pruning and quantization, while capturing a 'trajectory prior' from historical training data. This trajectory serves as a conditioning vector for a conditional diffusion model, which 'hallucinates' the high-fidelity weight texture required to preserve functional geometry. This method bridges the gap between aggressive compression and model integrity by replacing the standard weight-retraining phase with a one-step generative reconstruction, transforming the compressed model from a static artifact into a generative seed.",
-    "method_skeleton": "Step 1: Implement a stochastic extragradient-type algorithm using two stepsizes, where a fixed stepsize governs binary mask updates for pruning and a diminishing stepsize refines the quantization codebooks to establish the structural skeleton; Step 2: Develop a two-layer feed-forward nonparametric estimation module where the first layer learns univariate basis functions for weight importance and the second layer learns a single index function for quantization levels, providing the feature conditioning for the generative process; Step 3: Develop a trajectory-informed derivative estimation method that utilizes the history of function queries to construct a conditioning prior for a diffusion model, enabling dynamic virtual updates that synthesize the final high-fidelity weights in a single shot without standard backpropagation.",
+    "title": "Autoregressive Image Diffusion via Physics-Trajectory Synchronization for Zero-Shot MRI Reconstruction",
+    "abstract": "We propose Autoregressive Image Diffusion (AID), a novel framework for image sequence generation that achieves high-fidelity accelerated MRI reconstruction by sampling the posterior distribution through zero-shot physics-trajectory synchronization. Traditional approaches treat reconstruction as a static inverse problem or require task-specific training, failing to leverage the rich temporal dynamics of pre-trained video priors. We reframe the challenge as aligning the generative trajectory of a video diffusion model with the physical constraints of MRI acquisition in real-time. To achieve this, we introduce the Physics-Aware Exponential Integrator, a mechanism that integrates the MRI pseudo-inverse directly into the kernel of the Diffusion Exponential Integrator Sampler (DEIS). By leveraging the semilinear structure of the diffusion ODE, this structural integration transforms the sampling process from a stochastic walk guided by external gradients into a deterministic trajectory alignment. This allows the model to analytically correct its path to satisfy k-space measurements without fine-tuning, preserving temporal coherence while drastically reducing neural function evaluations.",
+    "problem_framing": "We reframe accelerated MRI reconstruction from a static image restoration task to a dynamic problem of temporal trajectory synchronization. The core challenge lies in bridging the gap between the generic temporal dynamics of pre-trained video diffusion models and the specific acquisition physics of MRI. Unlike traditional methods that learn static mappings, we assume that the temporal consistency learned by universal video models is sufficient to approximate physiological dynamics, but requires precise alignment with MRI physics. This shifts the objective from generating pixel-perfect frames to warping the generative ODE trajectory so that it naturally converges to solutions consistent with undersampled k-space data, effectively treating the reconstruction as a trajectory control problem.",
+    "gap_pattern": "Current diffusion-based methods fail in clinical applications due to a fundamental disconnect between generative priors and physical constraints. Existing approaches either treat frames independently, ignoring temporal correlations, or rely on task-specific training that limits generalizability. Furthermore, standard conditional guidance techniques merely nudge the output, requiring hundreds of expensive function evaluations and failing to guarantee adherence to physics. We identify a critical gap where there is no mechanism to structurally unify the generative time-steps of video models with the physical constraints of MRI, leading to inefficient sampling, poor convergence properties, and weak zero-shot generalization across diverse clinical scenarios.",
+    "solution": "Our solution introduces Autoregressive Image Diffusion (AID) with a Physics-Aware Exponential Integrator, fundamentally transforming how posterior sampling is performed. Instead of relying on task-specific training, we leverage the autoregressive structure of pre-trained video models and synchronize their trajectory with MRI physics. By integrating the pseudo-inverse of the MRI forward model directly into the exponential integrator's structure, we transform the sampling process into a deterministic trajectory alignment problem. This allows the model to analytically correct its path to satisfy k-space constraints on the fly, eliminating the need for extra neural network evaluations. We effectively warp the universal video prior into a task-specific MRI emulator, achieving rapid, high-fidelity reconstruction that respects both temporal coherence and physical laws.",
+    "method_skeleton": "Adopt a pre-trained video diffusion model to provide the autoregressive prior, factorizing the joint distribution of image sequences into conditional diffusion steps; Formulate the accelerated MRI reconstruction as a constrained posterior sampling problem where the probability flow ODE is modified to include the MRI physics gradient; Develop a Physics-Aware Exponential Integrator that leverages the semilinear structure of the diffusion process to analytically integrate the pseudo-inverse term into the exponential integration kernel, minimizing discretization error; Perform zero-shot reconstruction by solving the modified ODE using the deterministic sampler, dynamically synchronizing the generative trajectory with k-space measurements without fine-tuning the network weights.",
     "innovation_claims": [
-      "Transform the ontology of compressed models from degraded static artifacts into generative seeds by unifying NoWag's structural biases with trajectory-based diffusion priors, enabling recovery of functional geometry from sparse skeletons.",
-      "Reframe weight recovery from iterative error correction to a one-shot structural completion task by utilizing the compression trajectory history as the denoising schedule for generative restoration.",
-      "Unify vector quantization and pruning not as separate reduction steps but as co-dependent components of a latent code generation process, effectively decoupling the 'structural skeleton' from the 'functional texture' to eliminate the need for costly retraining."
+      "Transform accelerated MRI reconstruction from a static inverse problem to a dynamic trajectory synchronization task by aligning the generative time-steps of pre-trained video models with MRI physical constraints.",
+      "Reframe constraint satisfaction from an external guidance process to an internal structural component by integrating the pseudo-inverse directly into the exponential integrator, enabling zero-shot posterior sampling with drastic efficiency gains and theoretical convergence guarantees.",
+      "Shift the paradigm of medical imaging from task-specific model training to general-purpose trajectory warping, achieving high-fidelity dynamic MRI reconstruction by inheriting temporal reasoning from universal video priors."
     ],
-    "experiments_plan": "We evaluate NoWag on large-scale vision benchmarks (ImageNet-1K) and language tasks (WikiText-103) using diverse architectures including ResNet-50, ViT-B/16, and GPT-2. We compare against state-of-the-art compression methods such as AMC, DCQ, and ZeroQ, measuring accuracy retention, compression ratio, and FLOPs reduction. Ablation studies will verify the contribution of the trajectory-informed prior versus random initialization and analyze the computational complexity of the one-shot generative reconstruction compared to standard fine-tuning pipelines."
+    "experiments_plan": "We conduct a comprehensive evaluation on diverse clinical MRI datasets (cardiac and brain) to validate zero-shot generalizability. We compare AID against state-of-the-art diffusion-based MRI reconstruction methods and standard video generation models, measuring PSNR, SSIM, and temporal metrics. Crucially, we include a theoretical analysis section proving the convergence properties of the Physics-Aware Exponential Integrator and provide ablation studies comparing our modified kernel against standard DEIS and other numerical samplers to demonstrate the reduction in function evaluations and improved trajectory stability."
   },
   "review_history": [
     {
       "pass": false,
-      "avg_score": 6.413333333333241,
+      "avg_score": 6.5233333333332375,
       "reviews": [
         {
           "reviewer": "Reviewer A",
           "role": "Methodology",
-          "score": 7.029999999999894,
-          "feedback": "Main gaps: Limited theoretical justification for the dual-step optimization strategy, Lack of analysis on computational complexity of the proposed method, Potential limitations in scalability to very large models or different architectures. Anchored against 9 papers."
+          "score": 6.639999999999902,
+          "feedback": "Main gaps: Limited theoretical analysis of convergence properties, Unclear generalizability beyond MRI reconstruction, Missing detailed ablation studies for method components. Anchored against 9 papers."
         },
         {
           "reviewer": "Reviewer B",
           "role": "Novelty",
-          "score": 5.999999999999916,
-          "feedback": "Main gaps: Lack of theoretical foundation for unified approach, Limited evaluation on only two datasets, Insufficient comparison with state-of-the-art methods. Anchored against 9 papers."
+          "score": 6.459999999999906,
+          "feedback": "Main gaps: Limited theoretical analysis, Narrow application focus, Potential lack of comprehensive evaluation. Anchored against 9 papers."
         },
         {
           "reviewer": "Reviewer C",
           "role": "Storyteller",
-          "score": 6.209999999999911,
-          "feedback": "Main gaps: Theoretical foundation: The paper lacks strong theoretical analysis or guarantees for the proposed method., Experimental evaluation: The description of experiments is brief and doesn't provide specific results or comparisons., Technical details: The method description is high-level and lacks specific implementation details or mathematical formulations.. Anchored against 9 papers."
+          "score": 6.469999999999906,
+          "feedback": "Main gaps: Limited theoretical analysis of convergence properties, Lack of comparison with other exponential integrator methods, Missing evaluation on diverse clinical scenarios. Anchored against 9 papers."
         }
       ],
       "main_issue": "novelty",
@@ -69,388 +69,388 @@
         "注入长尾Pattern提升新颖性"
       ],
       "audit": {
-        "pattern_id": "pattern_83",
+        "pattern_id": "pattern_100",
         "anchors": [
           {
-            "paper_id": "0qnryNf6XwR",
-            "title": "When are smooth-ReLUs ReLU-like?",
-            "pattern_id": "pattern_83",
-            "score10": 5.567500000000001,
-            "review_count": 4,
-            "dispersion10": 2.205,
-            "weight": 0.50216471526805
-          },
-          {
-            "paper_id": "SWEqzy7IQB",
-            "title": "Accelerated Over-Relaxation Heavy-Ball Method: Achieving Global Accelerated Convergence with Broad Generalization",
-            "pattern_id": "pattern_83",
-            "score10": 6.004,
+            "paper_id": "HyjIEf90Tn",
+            "title": "Glauber Generative Model: Discrete Diffusion Models via Binary Classification",
+            "pattern_id": "pattern_100",
+            "score10": 5.9319999999999995,
             "review_count": 5,
-            "dispersion10": 0.7200000000000006,
-            "weight": 1.0417206216442176
+            "dispersion10": 1.08,
+            "weight": 0.8614228217442572
           },
           {
-            "paper_id": "ZXaocmXc6d",
-            "title": "From Lazy to Rich: Exact Learning Dynamics in Deep Linear Networks",
-            "pattern_id": "pattern_83",
-            "score10": 6.265,
+            "paper_id": "spDUv05cEq",
+            "title": "Flow-based Variational Mutual Information: Fast and Flexible Approximations",
+            "pattern_id": "pattern_100",
+            "score10": 6.040000000000001,
+            "review_count": 5,
+            "dispersion10": 1.2600000000000002,
+            "weight": 0.7928139244371923
+          },
+          {
+            "paper_id": "RZHdb7FnqlY",
+            "title": "Towards the Detection of Diffusion Model Deepfakes",
+            "pattern_id": "pattern_100",
+            "score10": 6.25,
+            "review_count": 6,
+            "dispersion10": 4.140000000000001,
+            "weight": 0.37858174106134496
+          },
+          {
+            "paper_id": "RaR3ETzyKp",
+            "title": "Easing Training Process of Rectified Flow Models Via Lengthening Inter-Path Distance",
+            "pattern_id": "pattern_100",
+            "score10": 6.49,
             "review_count": 4,
             "dispersion10": 0.9000000000000008,
             "weight": 0.8470725854916313
           },
           {
-            "paper_id": "GTUoTJXPBf",
-            "title": "Noisy Interpolation Learning with Shallow Univariate ReLU Networks",
-            "pattern_id": "pattern_83",
-            "score10": 6.715,
-            "review_count": 4,
+            "paper_id": "zWy7dqOcel",
+            "title": "Sampling with Mollified Interaction Energy Descent",
+            "pattern_id": "pattern_100",
+            "score10": 7.057,
+            "review_count": 5,
+            "dispersion10": 1.7099999999999995,
+            "weight": 0.6611658558037105
+          },
+          {
+            "paper_id": "r5njV3BsuD",
+            "title": "Nearly $d$-Linear Convergence Bounds for Diffusion Models via Stochastic Localization",
+            "pattern_id": "pattern_100",
+            "score10": 6.477142857142857,
+            "review_count": 7,
+            "dispersion10": 0.9000000000000008,
+            "weight": 1.0944429166735974
+          },
+          {
+            "paper_id": "PP1rudnxiW",
+            "title": "Transport meets Variational Inference: Controlled Monte Carlo Diffusions",
+            "pattern_id": "pattern_100",
+            "score10": 6.430000000000001,
+            "review_count": 6,
+            "dispersion10": 0.9000000000000008,
+            "weight": 1.0241632363449014
+          },
+          {
+            "paper_id": "eLgK35G3A5d",
+            "title": "Annealed Fisher Implicit Sampler",
+            "pattern_id": "pattern_100",
+            "score10": 5.761,
+            "review_count": 5,
+            "dispersion10": 2.43,
+            "weight": 0.5223788540023484
+          },
+          {
+            "paper_id": "OlzB6LnXcS",
+            "title": "One Step Diffusion via Shortcut Models",
+            "pattern_id": "pattern_100",
+            "score10": 6.724,
+            "review_count": 5,
             "dispersion10": 0.18000000000000016,
-            "weight": 1.3639304342661864
-          },
-          {
-            "paper_id": "QC10RmRbZy9",
-            "title": "Loss Landscapes are All You Need: Neural Network Generalization Can Be Explained Without the Implicit Bias of Gradient Descent",
-            "pattern_id": "pattern_83",
-            "score10": 7.35625,
-            "review_count": 4,
-            "dispersion10": 2.6100000000000003,
-            "weight": 0.445827676574543
-          },
-          {
-            "paper_id": "BDjGGZk9yz",
-            "title": "Supervised Random Feature Regression via Projection Pursuit",
-            "pattern_id": "pattern_83",
-            "score10": 4.735,
-            "review_count": 4,
-            "dispersion10": 0.9449999999999998,
-            "weight": 0.8274745051075066
-          },
-          {
-            "paper_id": "n1bLgxHW6jW",
-            "title": "Zeroth-Order Optimization with Trajectory-Informed Derivative Estimation",
-            "pattern_id": "pattern_83",
-            "score10": 6.9399999999999995,
-            "review_count": 4,
-            "dispersion10": 1.3499999999999992,
-            "weight": 0.6848671967804685
-          },
-          {
-            "paper_id": "3v2DIO9oVl",
-            "title": "Generalization error bounds for Neural Networks with ReLU activation",
-            "pattern_id": "pattern_83",
-            "score10": 6.436,
-            "review_count": 5,
-            "dispersion10": 2.8799999999999994,
-            "weight": 0.4617936776360967
-          },
-          {
-            "paper_id": "2mvALOAWaxY",
-            "title": "Lower Bounds on the Depth of Integral ReLU Neural Networks via Lattice Polytopes",
-            "pattern_id": "pattern_83",
-            "score10": 7.444,
-            "review_count": 5,
-            "dispersion10": 1.5300000000000002,
-            "weight": 0.7082053238055552
+            "weight": 1.5184402281593683
           }
         ],
         "role_details": {
           "Methodology": {
             "comparisons": [
               {
-                "paper_id": "0qnryNf6XwR",
+                "paper_id": "HyjIEf90Tn",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's unified compression framework offers more practical innovation than analyzing smooth-ReLU properties. score10: 5.6"
+                "rationale": "Story combines multiple techniques, more comprehensive than binary classification approach, score10: 5.9"
               },
               {
-                "paper_id": "SWEqzy7IQB",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's specialized compression methodology is more novel than general optimization acceleration. score10: 6.0"
-              },
-              {
-                "paper_id": "ZXaocmXc6d",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's practical compression approach is more impactful than theoretical learning dynamics. score10: 6.3"
-              },
-              {
-                "paper_id": "GTUoTJXPBf",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's comprehensive compression framework is more innovative than noisy interpolation learning. score10: 6.7"
-              },
-              {
-                "paper_id": "QC10RmRbZy9",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "NoWag lacks the theoretical depth of generalization analysis in loss landscapes. score10: 7.4"
-              },
-              {
-                "paper_id": "BDjGGZk9yz",
+                "paper_id": "spDUv05cEq",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's unified compression methodology is more comprehensive than random feature regression. score10: 4.7"
+                "rationale": "Story integrates advanced techniques for MRI reconstruction, more complex than flow-based mutual information, score10: 6.0"
               },
               {
-                "paper_id": "n1bLgxHW6jW",
+                "paper_id": "RZHdb7FnqlY",
+                "judgement": "better",
+                "confidence": 0.7,
+                "rationale": "Story's autoregressive diffusion with exponential integrators is more innovative than deepfake detection methodology, score10: 6.2"
+              },
+              {
+                "paper_id": "RaR3ETzyKp",
                 "judgement": "better",
                 "confidence": 0.6,
-                "rationale": "NoWag applies trajectory-informed estimation more innovatively to compression problems. score10: 6.9"
+                "rationale": "Story combines multiple techniques for MRI reconstruction, more comprehensive than rectified flow training improvements, score10: 6.5"
               },
               {
-                "paper_id": "3v2DIO9oVl",
+                "paper_id": "zWy7dqOcel",
                 "judgement": "worse",
                 "confidence": 0.6,
-                "rationale": "NoWag lacks the theoretical rigor of generalization error bounds analysis. score10: 6.4"
+                "rationale": "Anchor's novel sampling technique has stronger theoretical foundation than Story's applied approach, score10: 7.1"
               },
               {
-                "paper_id": "2mvALOAWaxY",
+                "paper_id": "r5njV3BsuD",
                 "judgement": "worse",
+                "confidence": 0.6,
+                "rationale": "Anchor's theoretical convergence analysis provides stronger methodology than Story's applied approach, score10: 6.5"
+              },
+              {
+                "paper_id": "PP1rudnxiW",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers combine multiple techniques with different applications and similar methodological complexity, score10: 6.4"
+              },
+              {
+                "paper_id": "eLgK35G3A5d",
+                "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's applied methodology lacks the theoretical depth of lower bounds analysis. score10: 7.4"
+                "rationale": "Story's comprehensive combination of techniques exceeds the annealed Fisher implicit sampler approach, score10: 5.8"
+              },
+              {
+                "paper_id": "OlzB6LnXcS",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers focus on efficient diffusion sampling with different approaches and similar methodological quality, score10: 6.7"
               }
             ],
             "main_gaps": [
-              "Limited theoretical justification for the dual-step optimization strategy",
-              "Lack of analysis on computational complexity of the proposed method",
-              "Potential limitations in scalability to very large models or different architectures"
+              "Limited theoretical analysis of convergence properties",
+              "Unclear generalizability beyond MRI reconstruction",
+              "Missing detailed ablation studies for method components",
+              "Potential lack of comprehensive comparison with latest state-of-the-art",
+              "Insufficient computational complexity analysis"
             ],
-            "score": 7.029999999999894,
-            "loss": 0.23680737943008545,
-            "avg_confidence": 0.6444444444444444,
+            "score": 6.639999999999902,
+            "loss": 0.2187875769075622,
+            "avg_confidence": 0.6222222222222222,
             "monotonic_violations": 1
           },
           "Novelty": {
             "comparisons": [
               {
-                "paper_id": "0qnryNf6XwR",
+                "paper_id": "HyjIEf90Tn",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's unified compression framework offers more practical novelty than analyzing smooth-ReLU behavior, score10: 5.6"
+                "rationale": "AID's novel integration of autoregressive modeling with diffusion for MRI reconstruction exceeds binary classification approach. score10: 5.9"
               },
               {
-                "paper_id": "SWEqzy7IQB",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Anchor's accelerated convergence method has more fundamental optimization novelty than NoWag's dual-step approach, score10: 6.0"
-              },
-              {
-                "paper_id": "ZXaocmXc6d",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers offer comparable novelty in their respective domains of compression and learning dynamics, score10: 6.3"
-              },
-              {
-                "paper_id": "GTUoTJXPBf",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Anchor's theoretical analysis of noisy interpolation provides more novel insights than NoWag's practical framework, score10: 6.7"
-              },
-              {
-                "paper_id": "QC10RmRbZy9",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "Anchor's new perspective on generalization has higher conceptual novelty than NoWag's unified compression, score10: 7.4"
-              },
-              {
-                "paper_id": "BDjGGZk9yz",
+                "paper_id": "spDUv05cEq",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's unified approach to compression is more novel than anchor's supervised regression method, score10: 4.7"
+                "rationale": "AID's novel application to MRI reconstruction surpasses flow-based mutual information estimation. score10: 6.0"
               },
               {
-                "paper_id": "n1bLgxHW6jW",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers use trajectory-informed estimation, with NoWag applying it to compression, score10: 6.9"
-              },
-              {
-                "paper_id": "3v2DIO9oVl",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers offer comparable novelty in their respective domains of compression and generalization, score10: 6.4"
-              },
-              {
-                "paper_id": "2mvALOAWaxY",
-                "judgement": "worse",
+                "paper_id": "RZHdb7FnqlY",
+                "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "Anchor's theoretical lower bounds on network depth have higher novelty than NoWag's framework, score10: 7.4"
+                "rationale": "AID's novel framework for MRI reconstruction exceeds deepfake detection application. score10: 6.2"
+              },
+              {
+                "paper_id": "RaR3ETzyKp",
+                "judgement": "better",
+                "confidence": 0.6,
+                "rationale": "AID's novel integration of autoregressive modeling with exponential integrators surpasses rectified flow training improvement. score10: 6.5"
+              },
+              {
+                "paper_id": "zWy7dqOcel",
+                "judgement": "worse",
+                "confidence": 0.6,
+                "rationale": "Mollified interaction energy descent offers more novel sampling approach than AID's application. score10: 7.1"
+              },
+              {
+                "paper_id": "r5njV3BsuD",
+                "judgement": "worse",
+                "confidence": 0.6,
+                "rationale": "Theoretical convergence bounds provide more novel contribution than AID's application. score10: 6.5"
+              },
+              {
+                "paper_id": "PP1rudnxiW",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers offer similar novelty in combining different techniques. score10: 6.4"
+              },
+              {
+                "paper_id": "eLgK35G3A5d",
+                "judgement": "better",
+                "confidence": 0.7,
+                "rationale": "AID's novel integration of autoregressive modeling with exponential integrators exceeds annealed Fisher implicit sampler. score10: 5.8"
+              },
+              {
+                "paper_id": "OlzB6LnXcS",
+                "judgement": "worse",
+                "confidence": 0.6,
+                "rationale": "One-step diffusion via shortcut models offers more novel approach than AID's application. score10: 6.7"
               }
             ],
             "main_gaps": [
-              "Lack of theoretical foundation for unified approach",
-              "Limited evaluation on only two datasets",
-              "Insufficient comparison with state-of-the-art methods",
-              "Missing complexity analysis",
-              "No hyperparameter sensitivity analysis"
+              "Limited theoretical analysis",
+              "Narrow application focus",
+              "Potential lack of comprehensive evaluation"
             ],
-            "score": 5.999999999999916,
-            "loss": 0.1578830207622396,
-            "avg_confidence": 0.6111111111111112,
-            "monotonic_violations": 2
+            "score": 6.459999999999906,
+            "loss": 0.28768353161613963,
+            "avg_confidence": 0.6333333333333333,
+            "monotonic_violations": 1
           },
           "Storyteller": {
             "comparisons": [
               {
-                "paper_id": "0qnryNf6XwR",
+                "paper_id": "HyjIEf90Tn",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's practical compression approach is more impactful than analyzing smooth-ReLUs. score10: 5.6"
+                "rationale": "Story combines autoregressive diffusion with exponential integrators for MRI, more innovative than binary classification approach (score10: 5.9)."
               },
               {
-                "paper_id": "SWEqzy7IQB",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Both papers introduce novel optimization techniques with different applications. score10: 6.0"
-              },
-              {
-                "paper_id": "ZXaocmXc6d",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Both papers offer novel insights into neural network optimization. score10: 6.3"
-              },
-              {
-                "paper_id": "GTUoTJXPBf",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Both papers address specific aspects of neural network learning. score10: 6.7"
-              },
-              {
-                "paper_id": "QC10RmRbZy9",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "NoWag lacks the theoretical depth of this generalization analysis. score10: 7.4"
-              },
-              {
-                "paper_id": "BDjGGZk9yz",
+                "paper_id": "spDUv05cEq",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "NoWag's unified compression framework is more innovative than this regression technique. score10: 4.7"
+                "confidence": 0.65,
+                "rationale": "Story applies novel combination of techniques to medical imaging, more practical than mutual information approximations (score10: 6.0)."
               },
               {
-                "paper_id": "n1bLgxHW6jW",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "NoWag applies trajectory-informed estimation rather than developing the technique itself. score10: 6.9"
+                "paper_id": "RZHdb7FnqlY",
+                "judgement": "better",
+                "confidence": 0.6,
+                "rationale": "Story introduces more technically innovative approach combining autoregressive modeling with exponential integrators (score10: 6.2)."
               },
               {
-                "paper_id": "3v2DIO9oVl",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "NoWag lacks the theoretical rigor of these generalization bounds. score10: 6.4"
+                "paper_id": "RaR3ETzyKp",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers improve diffusion models but in different contexts with similar technical depth (score10: 6.5)."
               },
               {
-                "paper_id": "2mvALOAWaxY",
+                "paper_id": "zWy7dqOcel",
                 "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "NoWag doesn't match the theoretical contribution of these depth bounds. score10: 7.4"
+                "confidence": 0.6,
+                "rationale": "Anchor paper introduces more fundamental sampling innovation with higher technical contribution (score10: 7.1)."
+              },
+              {
+                "paper_id": "r5njV3BsuD",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers contribute to diffusion models but with different focuses and similar technical depth (score10: 6.5)."
+              },
+              {
+                "paper_id": "PP1rudnxiW",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers combine multiple techniques in innovative ways with similar technical contribution (score10: 6.4)."
+              },
+              {
+                "paper_id": "eLgK35G3A5d",
+                "judgement": "better",
+                "confidence": 0.65,
+                "rationale": "Story applies novel combination of techniques to medical imaging, more practical than Fisher implicit sampling (score10: 5.8)."
+              },
+              {
+                "paper_id": "OlzB6LnXcS",
+                "judgement": "worse",
+                "confidence": 0.6,
+                "rationale": "Anchor paper introduces more fundamental innovation in one-step diffusion with higher technical contribution (score10: 6.7)."
               }
             ],
             "main_gaps": [
-              "Theoretical foundation: The paper lacks strong theoretical analysis or guarantees for the proposed method.",
-              "Experimental evaluation: The description of experiments is brief and doesn't provide specific results or comparisons.",
-              "Technical details: The method description is high-level and lacks specific implementation details or mathematical formulations."
+              "Limited theoretical analysis of convergence properties",
+              "Lack of comparison with other exponential integrator methods",
+              "Missing evaluation on diverse clinical scenarios"
             ],
-            "score": 6.209999999999911,
-            "loss": 0.080170118857987,
-            "avg_confidence": 0.6666666666666666,
-            "monotonic_violations": 1
+            "score": 6.469999999999906,
+            "loss": 0.12818863895482072,
+            "avg_confidence": 0.5888888888888889,
+            "monotonic_violations": 0
           }
         },
         "anchors_rounds": [
           [
             {
-              "paper_id": "0qnryNf6XwR",
-              "title": "When are smooth-ReLUs ReLU-like?",
-              "pattern_id": "pattern_83",
-              "score10": 5.567500000000001,
-              "review_count": 4,
-              "dispersion10": 2.205,
-              "weight": 0.50216471526805
-            },
-            {
-              "paper_id": "SWEqzy7IQB",
-              "title": "Accelerated Over-Relaxation Heavy-Ball Method: Achieving Global Accelerated Convergence with Broad Generalization",
-              "pattern_id": "pattern_83",
-              "score10": 6.004,
+              "paper_id": "HyjIEf90Tn",
+              "title": "Glauber Generative Model: Discrete Diffusion Models via Binary Classification",
+              "pattern_id": "pattern_100",
+              "score10": 5.9319999999999995,
               "review_count": 5,
-              "dispersion10": 0.7200000000000006,
-              "weight": 1.0417206216442176
+              "dispersion10": 1.08,
+              "weight": 0.8614228217442572
             },
             {
-              "paper_id": "ZXaocmXc6d",
-              "title": "From Lazy to Rich: Exact Learning Dynamics in Deep Linear Networks",
-              "pattern_id": "pattern_83",
-              "score10": 6.265,
+              "paper_id": "spDUv05cEq",
+              "title": "Flow-based Variational Mutual Information: Fast and Flexible Approximations",
+              "pattern_id": "pattern_100",
+              "score10": 6.040000000000001,
+              "review_count": 5,
+              "dispersion10": 1.2600000000000002,
+              "weight": 0.7928139244371923
+            },
+            {
+              "paper_id": "RZHdb7FnqlY",
+              "title": "Towards the Detection of Diffusion Model Deepfakes",
+              "pattern_id": "pattern_100",
+              "score10": 6.25,
+              "review_count": 6,
+              "dispersion10": 4.140000000000001,
+              "weight": 0.37858174106134496
+            },
+            {
+              "paper_id": "RaR3ETzyKp",
+              "title": "Easing Training Process of Rectified Flow Models Via Lengthening Inter-Path Distance",
+              "pattern_id": "pattern_100",
+              "score10": 6.49,
               "review_count": 4,
               "dispersion10": 0.9000000000000008,
               "weight": 0.8470725854916313
             },
             {
-              "paper_id": "GTUoTJXPBf",
-              "title": "Noisy Interpolation Learning with Shallow Univariate ReLU Networks",
-              "pattern_id": "pattern_83",
-              "score10": 6.715,
-              "review_count": 4,
-              "dispersion10": 0.18000000000000016,
-              "weight": 1.3639304342661864
+              "paper_id": "zWy7dqOcel",
+              "title": "Sampling with Mollified Interaction Energy Descent",
+              "pattern_id": "pattern_100",
+              "score10": 7.057,
+              "review_count": 5,
+              "dispersion10": 1.7099999999999995,
+              "weight": 0.6611658558037105
             },
             {
-              "paper_id": "QC10RmRbZy9",
-              "title": "Loss Landscapes are All You Need: Neural Network Generalization Can Be Explained Without the Implicit Bias of Gradient Descent",
-              "pattern_id": "pattern_83",
-              "score10": 7.35625,
-              "review_count": 4,
-              "dispersion10": 2.6100000000000003,
-              "weight": 0.445827676574543
+              "paper_id": "r5njV3BsuD",
+              "title": "Nearly $d$-Linear Convergence Bounds for Diffusion Models via Stochastic Localization",
+              "pattern_id": "pattern_100",
+              "score10": 6.477142857142857,
+              "review_count": 7,
+              "dispersion10": 0.9000000000000008,
+              "weight": 1.0944429166735974
             },
             {
-              "paper_id": "BDjGGZk9yz",
-              "title": "Supervised Random Feature Regression via Projection Pursuit",
-              "pattern_id": "pattern_83",
-              "score10": 4.735,
-              "review_count": 4,
-              "dispersion10": 0.9449999999999998,
-              "weight": 0.8274745051075066
-            },
-            {
-              "paper_id": "n1bLgxHW6jW",
-              "title": "Zeroth-Order Optimization with Trajectory-Informed Derivative Estimation",
-              "pattern_id": "pattern_83",
-              "score10": 6.9399999999999995,
-              "review_count": 4,
-              "dispersion10": 1.3499999999999992,
-              "weight": 0.6848671967804685
+              "paper_id": "PP1rudnxiW",
+              "title": "Transport meets Variational Inference: Controlled Monte Carlo Diffusions",
+              "pattern_id": "pattern_100",
+              "score10": 6.430000000000001,
+              "review_count": 6,
+              "dispersion10": 0.9000000000000008,
+              "weight": 1.0241632363449014
             }
           ],
           [
             {
-              "paper_id": "3v2DIO9oVl",
-              "title": "Generalization error bounds for Neural Networks with ReLU activation",
-              "pattern_id": "pattern_83",
-              "score10": 6.436,
+              "paper_id": "eLgK35G3A5d",
+              "title": "Annealed Fisher Implicit Sampler",
+              "pattern_id": "pattern_100",
+              "score10": 5.761,
               "review_count": 5,
-              "dispersion10": 2.8799999999999994,
-              "weight": 0.4617936776360967
+              "dispersion10": 2.43,
+              "weight": 0.5223788540023484
             },
             {
-              "paper_id": "2mvALOAWaxY",
-              "title": "Lower Bounds on the Depth of Integral ReLU Neural Networks via Lattice Polytopes",
-              "pattern_id": "pattern_83",
-              "score10": 7.444,
+              "paper_id": "OlzB6LnXcS",
+              "title": "One Step Diffusion via Shortcut Models",
+              "pattern_id": "pattern_100",
+              "score10": 6.724,
               "review_count": 5,
-              "dispersion10": 1.5300000000000002,
-              "weight": 0.7082053238055552
+              "dispersion10": 0.18000000000000016,
+              "weight": 1.5184402281593683
             }
           ]
         ],
         "pass": {
           "mode": "two_of_three_q75_and_avg_ge_q50",
           "used_distribution": "pattern",
-          "pattern_paper_count": 237,
-          "q50": 6.265,
-          "q75": 6.715,
+          "pattern_paper_count": 148,
+          "q50": 6.25,
+          "q75": 6.49,
           "count_roles_ge_q75": 1,
           "roles_ge_q75": {
             "Methodology": true,
@@ -458,421 +458,421 @@
             "Storyteller": false
           },
           "avg_ge_q50": true,
-          "avg_score": 6.413333333333241
+          "avg_score": 6.5233333333332375
         }
       }
     },
     {
       "pass": true,
-      "avg_score": 7.20999999999989,
+      "avg_score": 7.713333333333213,
       "reviews": [
         {
           "reviewer": "Reviewer A",
           "role": "Methodology",
-          "score": 7.369999999999886,
-          "feedback": "Main gaps: Complex unified approach may be difficult to reproduce and implement, One-shot generative reconstruction may not match iterative fine-tuning performance, Scalability to extremely large models is not adequately addressed. Anchored against 9 papers."
+          "score": 7.559999999999882,
+          "feedback": "Main gaps: Limited evaluation on only cardiac and brain MRI datasets, Potential computational complexity of physics-aware exponential integrator, Lack of analysis on handling highly undersampled k-space data. Anchored against 9 papers."
         },
         {
           "reviewer": "Reviewer B",
           "role": "Novelty",
-          "score": 7.67999999999988,
-          "feedback": "Main gaps: Unclear effectiveness of one-shot compression compared to iterative methods, Lack of detailed analysis of computational overhead for diffusion-based weight reconstruction, No discussion of scalability to very large models where diffusion might be prohibitively expensive. Anchored against 9 papers."
+          "score": 7.9299999999998745,
+          "feedback": "Main gaps: Limited evaluation on diverse MRI datasets, Lack of comparison with state-of-the-art non-diffusion methods, Missing computational complexity analysis. Anchored against 9 papers."
         },
         {
           "reviewer": "Reviewer C",
           "role": "Storyteller",
-          "score": 6.579999999999903,
-          "feedback": "Main gaps: Lack of detailed explanation of trajectory-informed derivative estimation method, Limited discussion on computational complexity compared to traditional approaches, Missing theoretical justification for viewing compressed models as generative seeds. Anchored against 9 papers."
+          "score": 7.6499999999998805,
+          "feedback": "Main gaps: Limited discussion of computational complexity compared to baselines, Potential scalability issues for high-resolution MRI sequences, Lack of comparison with non-diffusion based state-of-the-art methods. Anchored against 9 papers."
         }
       ],
-      "main_issue": "domain_distance",
+      "main_issue": "stability",
       "suggestions": [
-        "从domain_distance维度选择跨域Pattern",
-        "引入不同视角优化叙事"
+        "从stability维度选择稳健Pattern",
+        "注入成熟方法增强鲁棒性"
       ],
       "audit": {
-        "pattern_id": "pattern_88",
+        "pattern_id": "pattern_49",
         "anchors": [
           {
-            "paper_id": "raUnLe0Z04",
-            "title": "Lossy Compression with Pretrained Diffusion Models",
-            "pattern_id": "pattern_88",
-            "score10": 5.86,
+            "paper_id": "66arKkGiFy",
+            "title": "Plug-and-Play Posterior Sampling under Mismatched Measurement and Prior Models",
+            "pattern_id": "pattern_49",
+            "score10": 5.9319999999999995,
             "review_count": 5,
             "dispersion10": 1.08,
             "weight": 0.8614228217442572
           },
           {
-            "paper_id": "bsnRUkVn63",
-            "title": "Test-time Adaptation for Image Compression with Distribution Regularization",
-            "pattern_id": "pattern_88",
-            "score10": 5.98,
-            "review_count": 6,
-            "dispersion10": 0.7200000000000006,
-            "weight": 1.1313431099158793
-          },
-          {
-            "paper_id": "8ishA3LxN8",
-            "title": "Finite Scalar Quantization: VQ-VAE Made Simple",
-            "pattern_id": "pattern_88",
-            "score10": 6.183999999999999,
+            "paper_id": "d7pr2doXn3",
+            "title": "Hybrid Regularization Improves Diffusion-based Inverse Problem Solving",
+            "pattern_id": "pattern_49",
+            "score10": 6.004,
             "review_count": 5,
-            "dispersion10": 0.9000000000000008,
-            "weight": 0.9430312995937128
+            "dispersion10": 0.7200000000000006,
+            "weight": 1.0417206216442176
           },
           {
-            "paper_id": "Cy5v64DqEF",
-            "title": "Idempotence and Perceptual Image Compression",
-            "pattern_id": "pattern_88",
+            "paper_id": "t9l63huPRt",
+            "title": "Lightning-Fast Image Inversion and Editing for Text-to-Image Diffusion Models",
+            "pattern_id": "pattern_49",
+            "score10": 6.292,
+            "review_count": 5,
+            "dispersion10": 1.2600000000000002,
+            "weight": 0.7928139244371923
+          },
+          {
+            "paper_id": "TtUh0TOlGX",
+            "title": "Regularization by Texts for Latent Diffusion Inverse Solvers",
+            "pattern_id": "pattern_49",
+            "score10": 6.49,
+            "review_count": 4,
+            "dispersion10": 0.9000000000000008,
+            "weight": 0.8470725854916313
+          },
+          {
+            "paper_id": "9_gsMA8MRKQ",
+            "title": "Pseudoinverse-Guided Diffusion Models for Inverse Problems",
+            "pattern_id": "pattern_49",
+            "score10": 6.724,
+            "review_count": 5,
+            "dispersion10": 1.35,
+            "weight": 0.7624508379693851
+          },
+          {
+            "paper_id": "1YO4EE3SPB",
+            "title": "A Variational Perspective on Solving Inverse Problems with Diffusion Models",
+            "pattern_id": "pattern_49",
+            "score10": 5.859999999999999,
+            "review_count": 5,
+            "dispersion10": 1.08,
+            "weight": 0.8614228217442572
+          },
+          {
+            "paper_id": "OnD9zGAGT0k",
+            "title": "Diffusion Posterior Sampling for General Noisy Inverse Problems",
+            "pattern_id": "pattern_49",
+            "score10": 7.174000000000001,
+            "review_count": 5,
+            "dispersion10": 2.250000000000001,
+            "weight": 0.5513106059163244
+          },
+          {
+            "paper_id": "U3PBITXNG6",
+            "title": "InverseBench: Benchmarking Plug-and-Play Diffusion Priors for Inverse Problems in Physical Sciences",
+            "pattern_id": "pattern_49",
             "score10": 6.544,
             "review_count": 5,
             "dispersion10": 0.9000000000000008,
             "weight": 0.9430312995937128
           },
           {
-            "paper_id": "OOWLRfAI_V_",
-            "title": "Quantized Compressed Sensing with Score-Based Generative Models",
-            "pattern_id": "pattern_88",
-            "score10": 7.165000000000001,
-            "review_count": 4,
-            "dispersion10": 1.8000000000000007,
-            "weight": 0.57479925444075
-          },
-          {
-            "paper_id": "X8-VWbONvr",
-            "title": "Lossy Image Compression with Conditional Diffusion Models",
-            "pattern_id": "pattern_88",
-            "score10": 5.927500000000001,
-            "review_count": 6,
-            "dispersion10": 2.34,
-            "weight": 0.5826078290584771
-          },
-          {
-            "paper_id": "jBPvRLKP_n_",
-            "title": "Lossy Compression with Gaussian Diffusion",
-            "pattern_id": "pattern_88",
-            "score10": 5.78125,
-            "review_count": 4,
-            "dispersion10": 2.43,
-            "weight": 0.4692238811761225
-          },
-          {
-            "paper_id": "CxXGvKRDnL",
-            "title": "Progressive Compression with Universally Quantized Diffusion Models",
-            "pattern_id": "pattern_88",
+            "paper_id": "6EUtjXAvmj",
+            "title": "Variational Diffusion Posterior Sampling with Midpoint Guidance",
+            "pattern_id": "pattern_49",
             "score10": 6.724,
             "review_count": 5,
             "dispersion10": 0.18000000000000016,
             "weight": 1.5184402281593683
-          },
-          {
-            "paper_id": "rLwC0_MG-4w",
-            "title": "Denoising Diffusion Error Correction Codes",
-            "pattern_id": "pattern_88",
-            "score10": 7.2775,
-            "review_count": 4,
-            "dispersion10": 2.250000000000001,
-            "weight": 0.4952116653643384
           }
         ],
         "role_details": {
           "Methodology": {
             "comparisons": [
               {
-                "paper_id": "raUnLe0Z04",
+                "paper_id": "66arKkGiFy",
+                "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "Physics-aware exponential integrator more innovative than standard posterior sampling. score10: 5.9"
+              },
+              {
+                "paper_id": "d7pr2doXn3",
+                "judgement": "better",
+                "confidence": 0.75,
+                "rationale": "Trajectory synchronization approach more novel than hybrid regularization. score10: 6.0"
+              },
+              {
+                "paper_id": "t9l63huPRt",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's unified framework for neural network compression is more innovative than standard diffusion compression, score10: 5.9"
+                "rationale": "Physics integration more methodologically sophisticated than image inversion. score10: 6.3"
               },
               {
-                "paper_id": "bsnRUkVn63",
+                "paper_id": "TtUh0TOlGX",
+                "judgement": "better",
+                "confidence": 0.75,
+                "rationale": "Structural integration more innovative than text-based regularization. score10: 6.5"
+              },
+              {
+                "paper_id": "9_gsMA8MRKQ",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's integration of pruning and quantization with diffusion models is more methodologically advanced, score10: 6.0"
+                "rationale": "Kernel integration more advanced than pseudoinverse guidance. score10: 6.7"
               },
               {
-                "paper_id": "8ishA3LxN8",
+                "paper_id": "1YO4EE3SPB",
                 "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "Trajectory synchronization more novel than variational perspective. score10: 5.9"
+              },
+              {
+                "paper_id": "OnD9zGAGT0k",
+                "judgement": "worse",
                 "confidence": 0.6,
-                "rationale": "NoWag's multi-component approach is more complex than simplified VQ-VAE quantization, score10: 6.2"
+                "rationale": "Less generalizable than posterior sampling for noisy inverse problems. score10: 7.2"
               },
               {
-                "paper_id": "Cy5v64DqEF",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's generative approach to neural network compression is more innovative than idempotence-based methods, score10: 6.5"
-              },
-              {
-                "paper_id": "OOWLRfAI_V_",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers use generative models innovatively but for different compression domains, score10: 7.2"
-              },
-              {
-                "paper_id": "X8-VWbONvr",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's unified approach to pruning and quantization is more comprehensive than conditional diffusion alone, score10: 5.9"
-              },
-              {
-                "paper_id": "jBPvRLKP_n_",
+                "paper_id": "U3PBITXNG6",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's multi-component methodology is more advanced than simple Gaussian diffusion compression, score10: 5.8"
+                "rationale": "Physics-aware integration more innovative than benchmarking approach. score10: 6.5"
               },
               {
-                "paper_id": "CxXGvKRDnL",
+                "paper_id": "6EUtjXAvmj",
                 "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's approach to neural network compression is more specialized than universal quantized diffusion, score10: 6.7"
-              },
-              {
-                "paper_id": "rLwC0_MG-4w",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers innovatively apply diffusion models to different compression problems, score10: 7.3"
+                "confidence": 0.75,
+                "rationale": "Structural integration more novel than midpoint guidance approach. score10: 6.7"
               }
             ],
             "main_gaps": [
-              "Complex unified approach may be difficult to reproduce and implement",
-              "One-shot generative reconstruction may not match iterative fine-tuning performance",
-              "Scalability to extremely large models is not adequately addressed"
+              "Limited evaluation on only cardiac and brain MRI datasets",
+              "Potential computational complexity of physics-aware exponential integrator",
+              "Lack of analysis on handling highly undersampled k-space data"
             ],
-            "score": 7.369999999999886,
-            "loss": 0.024001682784228717,
-            "avg_confidence": 0.6111111111111112,
+            "score": 7.559999999999882,
+            "loss": 0.10937726235055849,
+            "avg_confidence": 0.7277777777777777,
             "monotonic_violations": 0
           },
           "Novelty": {
             "comparisons": [
               {
-                "paper_id": "raUnLe0Z04",
+                "paper_id": "66arKkGiFy",
+                "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "The Story's physics-aware exponential integration for MRI reconstruction is more novel than addressing mismatched models (score10: 5.9)."
+              },
+              {
+                "paper_id": "d7pr2doXn3",
+                "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "The Story's trajectory synchronization approach for MRI reconstruction is more innovative than hybrid regularization (score10: 6.0)."
+              },
+              {
+                "paper_id": "t9l63huPRt",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's novel neural network compression with unified VQ and pruning is more innovative than standard diffusion compression. score10: 5.9"
+                "rationale": "The Story's physics-aware exponential integration for MRI reconstruction is more novel than fast image inversion (score10: 6.3)."
               },
               {
-                "paper_id": "bsnRUkVn63",
+                "paper_id": "TtUh0TOlGX",
                 "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's generative approach to neural network compression is more novel than test-time adaptation for image compression. score10: 6.0"
+                "confidence": 0.8,
+                "rationale": "The Story's video diffusion approach for MRI reconstruction is more innovative than text-based regularization (score10: 6.5)."
               },
               {
-                "paper_id": "8ishA3LxN8",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "NoWag's unified framework combining VQ, pruning, and diffusion is more innovative than simplifying VQ-VAE. score10: 6.2"
-              },
-              {
-                "paper_id": "Cy5v64DqEF",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's generative structural completion for neural networks is more novel than idempotence in image compression. score10: 6.5"
-              },
-              {
-                "paper_id": "OOWLRfAI_V_",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's neural network compression with unified VQ and pruning is more innovative than score-based compressed sensing. score10: 7.2"
-              },
-              {
-                "paper_id": "X8-VWbONvr",
+                "paper_id": "9_gsMA8MRKQ",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's neural network compression with unified VQ and pruning is more innovative than conditional diffusion for images. score10: 5.9"
+                "rationale": "The Story's direct integration of pseudoinverse into exponential integrator is more novel than pseudoinverse guidance (score10: 6.7)."
               },
               {
-                "paper_id": "jBPvRLKP_n_",
+                "paper_id": "1YO4EE3SPB",
+                "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "The Story's physics-aware exponential integration for MRI reconstruction is more novel than variational perspective (score10: 5.9)."
+              },
+              {
+                "paper_id": "OnD9zGAGT0k",
+                "judgement": "better",
+                "confidence": 0.6,
+                "rationale": "The Story's video diffusion approach for MRI reconstruction is more innovative than general posterior sampling (score10: 7.2)."
+              },
+              {
+                "paper_id": "U3PBITXNG6",
+                "judgement": "better",
+                "confidence": 0.9,
+                "rationale": "The Story's physics-aware exponential integration for MRI reconstruction is more novel than a benchmark paper (score10: 6.5)."
+              },
+              {
+                "paper_id": "6EUtjXAvmj",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "NoWag's neural network compression with unified VQ and pruning is more innovative than Gaussian diffusion compression. score10: 5.8"
-              },
-              {
-                "paper_id": "CxXGvKRDnL",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's generative approach to neural network compression is more novel than progressive compression with quantized diffusion. score10: 6.7"
-              },
-              {
-                "paper_id": "rLwC0_MG-4w",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "NoWag's neural network compression with unified VQ and pruning is more innovative than diffusion for error correction. score10: 7.3"
+                "rationale": "The Story's video diffusion approach for MRI reconstruction is more innovative than midpoint guidance (score10: 6.7)."
               }
             ],
             "main_gaps": [
-              "Unclear effectiveness of one-shot compression compared to iterative methods",
-              "Lack of detailed analysis of computational overhead for diffusion-based weight reconstruction",
-              "No discussion of scalability to very large models where diffusion might be prohibitively expensive"
+              "Limited evaluation on diverse MRI datasets",
+              "Lack of comparison with state-of-the-art non-diffusion methods",
+              "Missing computational complexity analysis",
+              "Limited theoretical justification for using video diffusion models",
+              "Potential overfitting to specific MRI sequences"
             ],
-            "score": 7.67999999999988,
-            "loss": 0.050581363766469274,
-            "avg_confidence": 0.6444444444444444,
+            "score": 7.9299999999998745,
+            "loss": 0.01772622849512604,
+            "avg_confidence": 0.7555555555555555,
             "monotonic_violations": 0
           },
           "Storyteller": {
             "comparisons": [
               {
-                "paper_id": "raUnLe0Z04",
+                "paper_id": "66arKkGiFy",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "NoWag's generative approach to neural network compression is more innovative than standard diffusion-based image compression, score10: 5.9"
+                "confidence": 0.8,
+                "rationale": "Physics integration more novel than mismatched models, score10: 5.9"
               },
               {
-                "paper_id": "bsnRUkVn63",
+                "paper_id": "d7pr2doXn3",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "NoWag's unified framework for neural network compression is more comprehensive than test-time adaptation for image compression, score10: 6.0"
+                "confidence": 0.8,
+                "rationale": "Trajectory synchronization more innovative than hybrid regularization, score10: 6.0"
               },
               {
-                "paper_id": "8ishA3LxN8",
+                "paper_id": "t9l63huPRt",
+                "judgement": "better",
+                "confidence": 0.7,
+                "rationale": "MRI physics integration more specialized than image inversion, score10: 6.3"
+              },
+              {
+                "paper_id": "TtUh0TOlGX",
+                "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "Direct physics integration more sophisticated than text regularization, score10: 6.5"
+              },
+              {
+                "paper_id": "9_gsMA8MRKQ",
                 "judgement": "better",
                 "confidence": 0.6,
-                "rationale": "NoWag's generative approach to compression is more innovative than simplifying VQ-VAE for quantization, score10: 6.2"
+                "rationale": "Kernel integration more innovative than pseudoinverse guidance, score10: 6.7"
               },
               {
-                "paper_id": "Cy5v64DqEF",
+                "paper_id": "1YO4EE3SPB",
+                "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "Trajectory synchronization more novel than variational perspective, score10: 5.9"
+              },
+              {
+                "paper_id": "OnD9zGAGT0k",
                 "judgement": "tie",
                 "confidence": 0.5,
-                "rationale": "Different domains make direct comparison difficult despite similar scores, score10: 6.5"
+                "rationale": "Both innovative approaches to inverse problems, score10: 7.2"
               },
               {
-                "paper_id": "OOWLRfAI_V_",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Anchor's higher score suggests more impactful use of generative models for compressed sensing, score10: 7.2"
-              },
-              {
-                "paper_id": "X8-VWbONvr",
+                "paper_id": "U3PBITXNG6",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "NoWag's application to neural network compression is more novel than conditional diffusion for image compression, score10: 5.9"
+                "confidence": 0.8,
+                "rationale": "Technical contribution more substantial than benchmark paper, score10: 6.5"
               },
               {
-                "paper_id": "jBPvRLKP_n_",
+                "paper_id": "6EUtjXAvmj",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "NoWag's specific application to neural network compression is more innovative than general Gaussian diffusion for compression, score10: 5.8"
-              },
-              {
-                "paper_id": "CxXGvKRDnL",
-                "judgement": "worse",
                 "confidence": 0.6,
-                "rationale": "Anchor's higher score suggests more impactful approach to progressive compression with diffusion models, score10: 6.7"
-              },
-              {
-                "paper_id": "rLwC0_MG-4w",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "Anchor's significantly higher score indicates more impactful application of diffusion models, score10: 7.3"
+                "rationale": "Physics integration more innovative than midpoint guidance, score10: 6.7"
               }
             ],
             "main_gaps": [
-              "Lack of detailed explanation of trajectory-informed derivative estimation method",
-              "Limited discussion on computational complexity compared to traditional approaches",
-              "Missing theoretical justification for viewing compressed models as generative seeds",
-              "Lack of details on handling different neural network architectures",
-              "Missing comparison with other diffusion-based compression methods"
+              "Limited discussion of computational complexity compared to baselines",
+              "Potential scalability issues for high-resolution MRI sequences",
+              "Lack of comparison with non-diffusion based state-of-the-art methods"
             ],
-            "score": 6.579999999999903,
-            "loss": 0.1604636916878284,
-            "avg_confidence": 0.6444444444444444,
+            "score": 7.6499999999998805,
+            "loss": 0.02131220167402602,
+            "avg_confidence": 0.7111111111111111,
             "monotonic_violations": 0
           }
         },
         "anchors_rounds": [
           [
             {
-              "paper_id": "raUnLe0Z04",
-              "title": "Lossy Compression with Pretrained Diffusion Models",
-              "pattern_id": "pattern_88",
-              "score10": 5.86,
+              "paper_id": "66arKkGiFy",
+              "title": "Plug-and-Play Posterior Sampling under Mismatched Measurement and Prior Models",
+              "pattern_id": "pattern_49",
+              "score10": 5.9319999999999995,
               "review_count": 5,
               "dispersion10": 1.08,
               "weight": 0.8614228217442572
             },
             {
-              "paper_id": "bsnRUkVn63",
-              "title": "Test-time Adaptation for Image Compression with Distribution Regularization",
-              "pattern_id": "pattern_88",
-              "score10": 5.98,
-              "review_count": 6,
-              "dispersion10": 0.7200000000000006,
-              "weight": 1.1313431099158793
-            },
-            {
-              "paper_id": "8ishA3LxN8",
-              "title": "Finite Scalar Quantization: VQ-VAE Made Simple",
-              "pattern_id": "pattern_88",
-              "score10": 6.183999999999999,
+              "paper_id": "d7pr2doXn3",
+              "title": "Hybrid Regularization Improves Diffusion-based Inverse Problem Solving",
+              "pattern_id": "pattern_49",
+              "score10": 6.004,
               "review_count": 5,
-              "dispersion10": 0.9000000000000008,
-              "weight": 0.9430312995937128
+              "dispersion10": 0.7200000000000006,
+              "weight": 1.0417206216442176
             },
             {
-              "paper_id": "Cy5v64DqEF",
-              "title": "Idempotence and Perceptual Image Compression",
-              "pattern_id": "pattern_88",
+              "paper_id": "t9l63huPRt",
+              "title": "Lightning-Fast Image Inversion and Editing for Text-to-Image Diffusion Models",
+              "pattern_id": "pattern_49",
+              "score10": 6.292,
+              "review_count": 5,
+              "dispersion10": 1.2600000000000002,
+              "weight": 0.7928139244371923
+            },
+            {
+              "paper_id": "TtUh0TOlGX",
+              "title": "Regularization by Texts for Latent Diffusion Inverse Solvers",
+              "pattern_id": "pattern_49",
+              "score10": 6.49,
+              "review_count": 4,
+              "dispersion10": 0.9000000000000008,
+              "weight": 0.8470725854916313
+            },
+            {
+              "paper_id": "9_gsMA8MRKQ",
+              "title": "Pseudoinverse-Guided Diffusion Models for Inverse Problems",
+              "pattern_id": "pattern_49",
+              "score10": 6.724,
+              "review_count": 5,
+              "dispersion10": 1.35,
+              "weight": 0.7624508379693851
+            },
+            {
+              "paper_id": "1YO4EE3SPB",
+              "title": "A Variational Perspective on Solving Inverse Problems with Diffusion Models",
+              "pattern_id": "pattern_49",
+              "score10": 5.859999999999999,
+              "review_count": 5,
+              "dispersion10": 1.08,
+              "weight": 0.8614228217442572
+            },
+            {
+              "paper_id": "OnD9zGAGT0k",
+              "title": "Diffusion Posterior Sampling for General Noisy Inverse Problems",
+              "pattern_id": "pattern_49",
+              "score10": 7.174000000000001,
+              "review_count": 5,
+              "dispersion10": 2.250000000000001,
+              "weight": 0.5513106059163244
+            }
+          ],
+          [
+            {
+              "paper_id": "U3PBITXNG6",
+              "title": "InverseBench: Benchmarking Plug-and-Play Diffusion Priors for Inverse Problems in Physical Sciences",
+              "pattern_id": "pattern_49",
               "score10": 6.544,
               "review_count": 5,
               "dispersion10": 0.9000000000000008,
               "weight": 0.9430312995937128
             },
             {
-              "paper_id": "OOWLRfAI_V_",
-              "title": "Quantized Compressed Sensing with Score-Based Generative Models",
-              "pattern_id": "pattern_88",
-              "score10": 7.165000000000001,
-              "review_count": 4,
-              "dispersion10": 1.8000000000000007,
-              "weight": 0.57479925444075
-            },
-            {
-              "paper_id": "X8-VWbONvr",
-              "title": "Lossy Image Compression with Conditional Diffusion Models",
-              "pattern_id": "pattern_88",
-              "score10": 5.927500000000001,
-              "review_count": 6,
-              "dispersion10": 2.34,
-              "weight": 0.5826078290584771
-            },
-            {
-              "paper_id": "jBPvRLKP_n_",
-              "title": "Lossy Compression with Gaussian Diffusion",
-              "pattern_id": "pattern_88",
-              "score10": 5.78125,
-              "review_count": 4,
-              "dispersion10": 2.43,
-              "weight": 0.4692238811761225
-            }
-          ],
-          [
-            {
-              "paper_id": "CxXGvKRDnL",
-              "title": "Progressive Compression with Universally Quantized Diffusion Models",
-              "pattern_id": "pattern_88",
+              "paper_id": "6EUtjXAvmj",
+              "title": "Variational Diffusion Posterior Sampling with Midpoint Guidance",
+              "pattern_id": "pattern_49",
               "score10": 6.724,
               "review_count": 5,
               "dispersion10": 0.18000000000000016,
               "weight": 1.5184402281593683
-            },
-            {
-              "paper_id": "rLwC0_MG-4w",
-              "title": "Denoising Diffusion Error Correction Codes",
-              "pattern_id": "pattern_88",
-              "score10": 7.2775,
-              "review_count": 4,
-              "dispersion10": 2.250000000000001,
-              "weight": 0.4952116653643384
             }
           ]
         ],
         "pass": {
           "mode": "two_of_three_q75_and_avg_ge_q50",
-          "used_distribution": "pattern",
-          "pattern_paper_count": 24,
+          "used_distribution": "global",
+          "pattern_paper_count": 15,
           "q50": 6.183999999999999,
-          "q75": 6.544,
+          "q75": 6.49,
           "count_roles_ge_q75": 3,
           "roles_ge_q75": {
             "Methodology": true,
@@ -880,14 +880,15 @@
             "Storyteller": true
           },
           "avg_ge_q50": true,
-          "avg_score": 7.20999999999989
+          "avg_score": 7.713333333333213
         }
       }
     }
   ],
+  "results_dir": "/home/x_markq/Idea2Paper-add-review/results/run_20260129_105111_11134_466119",
   "review_summary": {
     "total_reviews": 2,
-    "final_score": 7.20999999999989
+    "final_score": 7.713333333333213
   },
   "refinement_summary": {
     "total_refinements": 1,

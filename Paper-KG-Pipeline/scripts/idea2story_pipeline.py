@@ -17,11 +17,37 @@ import sys
 import time
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
+
+# 提前加载 .env（确保 PipelineConfig 读取前生效）
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+REPO_ROOT = PROJECT_ROOT.parent
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+try:
+    from idea2paper.infra.dotenv import load_dotenv
+    _DOTENV_STATUS = load_dotenv(REPO_ROOT / ".env", override=False)
+except Exception as _e:
+    _DOTENV_STATUS = {"loaded": 0, "path": str(REPO_ROOT / ".env"), "ok": False, "error": str(_e)}
 
 # 导入 Pipeline 模块
 try:
     from pipeline import Idea2StoryPipeline, OUTPUT_DIR
-    from pipeline.config import LOG_ROOT, ENABLE_RUN_LOGGING, LOG_MAX_TEXT_CHARS
+    from pipeline.config import (
+        LOG_ROOT,
+        ENABLE_RUN_LOGGING,
+        LOG_MAX_TEXT_CHARS,
+        REPO_ROOT,
+        RESULTS_ROOT,
+        RESULTS_ENABLE,
+        RESULTS_MODE,
+        RESULTS_KEEP_LOG,
+    )
+    from pipeline.config import PipelineConfig
+    from idea2paper.infra.result_bundler import ResultBundler
     from pipeline.run_logger import RunLogger
     from pipeline.run_context import set_logger, reset_logger
 except ImportError:
@@ -29,7 +55,18 @@ except ImportError:
     import os
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     from pipeline import Idea2StoryPipeline, OUTPUT_DIR
-    from pipeline.config import LOG_ROOT, ENABLE_RUN_LOGGING, LOG_MAX_TEXT_CHARS
+    from pipeline.config import (
+        LOG_ROOT,
+        ENABLE_RUN_LOGGING,
+        LOG_MAX_TEXT_CHARS,
+        REPO_ROOT,
+        RESULTS_ROOT,
+        RESULTS_ENABLE,
+        RESULTS_MODE,
+        RESULTS_KEEP_LOG,
+    )
+    from pipeline.config import PipelineConfig
+    from idea2paper.infra.result_bundler import ResultBundler
     from pipeline.run_logger import RunLogger
     from pipeline.run_context import set_logger, reset_logger
 
@@ -48,11 +85,12 @@ def main():
     logger = None
     token = None
     start_time = time.time()
+    start_dt = datetime.now(timezone.utc)
+    run_id = f"run_{start_dt.strftime('%Y%m%d_%H%M%S')}_{os.getpid()}_{uuid.uuid4().hex[:6]}"
     success = False
 
     try:
         if ENABLE_RUN_LOGGING:
-            run_id = f"run_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{os.getpid()}_{uuid.uuid4().hex[:6]}"
             logger = RunLogger(
                 base_dir=LOG_ROOT,
                 run_id=run_id,
@@ -65,6 +103,8 @@ def main():
             )
             token = set_logger(logger)
             logger.log_event("run_start", {"user_idea": user_idea})
+            if _DOTENV_STATUS:
+                logger.log_event("dotenv_loaded", _DOTENV_STATUS)
         # 加载节点数据
         with open(OUTPUT_DIR / "nodes_pattern.json", 'r', encoding='utf-8') as f:
             patterns = json.load(f)
@@ -146,6 +186,7 @@ def main():
 
         # 保存完整结果
         full_result_file = OUTPUT_DIR / "pipeline_result.json"
+        results_dir = str(RESULTS_ROOT / run_id) if RESULTS_ENABLE else None
         with open(full_result_file, 'w', encoding='utf-8') as f:
             json.dump({
                 'user_idea': user_idea,
@@ -154,6 +195,7 @@ def main():
                 'selected_patterns': result['selected_patterns'],
                 'final_story': result['final_story'],
                 'review_history': result['review_history'],
+                'results_dir': results_dir,
                 'review_summary': {
                     'total_reviews': len(result['review_history']),
                     'final_score': result['review_history'][-1]['avg_score'] if result['review_history'] else 0
@@ -169,6 +211,67 @@ def main():
             }, f, ensure_ascii=False, indent=2)
 
         print(f"💾 完整结果已保存到: {full_result_file}")
+
+        # 聚合产物到 repo 根 results/
+        if RESULTS_ENABLE:
+            try:
+                bundler = ResultBundler(
+                    repo_root=REPO_ROOT,
+                    results_root=RESULTS_ROOT,
+                    mode=RESULTS_MODE,
+                    keep_log=RESULTS_KEEP_LOG,
+                )
+                run_log_dir = (LOG_ROOT / run_id) if ENABLE_RUN_LOGGING else None
+                bundle_status = bundler.bundle(
+                    run_id=run_id,
+                    user_idea=user_idea,
+                    success=success,
+                    output_dir=OUTPUT_DIR,
+                    run_log_dir=run_log_dir,
+                    extra={
+                        "config_snapshot": {
+                            "results": {
+                                "enable": RESULTS_ENABLE,
+                                "dir": str(RESULTS_ROOT),
+                                "mode": RESULTS_MODE,
+                                "keep_log": RESULTS_KEEP_LOG,
+                            },
+                            "logging": {
+                                "enable": ENABLE_RUN_LOGGING,
+                                "dir": str(LOG_ROOT),
+                                "max_text_chars": LOG_MAX_TEXT_CHARS,
+                            },
+                            "critic": {
+                                "strict_json": PipelineConfig.CRITIC_STRICT_JSON,
+                                "json_retries": PipelineConfig.CRITIC_JSON_RETRIES,
+                            },
+                            "pass": {
+                                "mode": PipelineConfig.PASS_MODE,
+                                "min_pattern_papers": PipelineConfig.PASS_MIN_PATTERN_PAPERS,
+                                "fallback": PipelineConfig.PASS_FALLBACK,
+                                "fixed_score": PipelineConfig.PASS_SCORE,
+                            },
+                        }
+                    },
+                )
+                if bundle_status.get("ok"):
+                    print(f"✅ Results bundled to: {bundle_status.get('results_dir')}")
+                    if logger:
+                        logger.log_event("results_bundled", {
+                            "results_dir": bundle_status.get("results_dir"),
+                            "mode": RESULTS_MODE,
+                            "partial": bundle_status.get("partial", False)
+                        })
+                else:
+                    if logger:
+                        logger.log_event("results_bundle_failed", {
+                            "errors": bundle_status.get("errors", []),
+                            "mode": RESULTS_MODE
+                        })
+            except Exception as e:
+                print(f"[results] warning: bundling failed: {e}")
+                if logger:
+                    logger.log_event("results_bundle_failed", {"error": str(e)})
 
     except Exception as e:
         print(f"\n❌ 错误: {e}")

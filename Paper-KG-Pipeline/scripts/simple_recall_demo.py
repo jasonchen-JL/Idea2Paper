@@ -21,13 +21,25 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
+# 提前加载 .env（确保配置读取前生效）
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+REPO_ROOT = PROJECT_ROOT.parent
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+try:
+    from idea2paper.infra.dotenv import load_dotenv
+    _DOTENV_STATUS = load_dotenv(REPO_ROOT / ".env", override=False)
+except Exception:
+    _DOTENV_STATUS = None
+
 import numpy as np
 import requests
 
 from pipeline.run_context import get_logger
 # ===================== 路径配置 =====================
-SCRIPT_DIR = Path(__file__).parent
-PROJECT_ROOT = SCRIPT_DIR.parent
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
 NODES_IDEA = OUTPUT_DIR / "nodes_idea.json"
