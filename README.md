@@ -13,26 +13,24 @@
 
 ---
 
-## 📄 Papers
+## 📄 Idea2Paper
+
+Idea2Paper is an end-to-end research agent framework that aims to systematically define and analyze the major stages of the contemporary research process, along with the core challenges inherent to each stage. Rather than treating paper writing as a monolithic generation problem, Idea2Paper explicitly decomposes scientific research into structured phases and identifies critical bottlenecks that hinder the transformation of raw ideas into coherent, submission-ready academic narratives. Through this analysis, Idea2Paper highlights that one of the most fundamental yet underexplored challenges lies in research paradigm generation—the process of converting an underspecified research idea into a logically consistent, academically grounded research story. Existing systems often struggle to produce stable and reusable research paradigms, especially when reasoning is performed entirely at runtime and under limited contextual grounding.
+
+To address these challenges in a principled and engineering-oriented manner, Idea2Paper adopts a modular system design. Instead of immediately building a fully end-to-end writing system, the project prioritizes the construction of targeted engineering submodules that tackle specific bottlenecks in the research pipeline. As the first and core engineering submodule, Idea2Story is introduced to directly address the problem of research paradigm generation. Idea2Story focuses on transforming underspecified research ideas into complete, coherent, and submission-ready scientific narrative skeletons. By providing a structured research story as an intermediate representation, Idea2Story establishes a stable foundation for downstream stages such as method development, experiment design, and paper writing.
+
+ 
+> **Idea2Paper** : [papers/Idea2Story.pdf](papers/Idea2Paper.pdf)
+> **Idea2Story** : https://arxiv.org/abs/2601.20833
+
+
+
 
 ### Idea2Story (Core Submodule of Idea2Paper)
-
-- 🌐 **arXiv**: https://arxiv.org/abs/2601.20833
-- 📘 **PDF**: [papers/Idea2Story.pdf](papers/Idea2Story.pdf)
 
 *Idea2Story introduces a pre-computation–driven framework that shifts literature understanding
 from runtime reasoning to offline knowledge graph construction, enabling more efficient and
 reliable autonomous scientific discovery.*
-
-
-
-## 🔎 Why Idea2Paper?
-
-**Idea2Paper** is an end-to-end pipeline that turns a research idea into a submission-ready "story" (paper narrative skeleton). It addresses the challenge of transforming raw ideas into structured academic narratives by leveraging knowledge graphs, pattern selection, and multi-agent review systems.
-
-> **Idea2Paper** is an overarching end-to-end research agent project.  
-> **Idea2Story** is a core submodule within Idea2Paper, focusing on transforming underspecified research ideas
-> into complete, submission-ready scientific narratives.
 
 
 ### 🧠 Core Philosophy
