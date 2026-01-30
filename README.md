@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/images/logo2.png" alt="logo" width="400">
+  <img src="assets/images/logo2.png" alt="logo" width="700">
 </p>
 
 <div align="center"> 
@@ -102,18 +102,37 @@ pip install -r Paper-KG-Pipeline/requirements.txt
 python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your research idea"
 ```
 
+### Output
+
+```text
+output/
+├── final_story.json # Final generated paper story
+├── pipeline_result.json # Full pipeline results
+└── log.json # Detailed logs
+```
+Check `final_story.json` for the result and `pipeline_result.json` for the full process.
+
+### 📘 Need More Help? 
+See the [User Guide](./Paper-KG-Pipeline/README.md) e for advanced configuration, troubleshooting, and detailed usage examples.
+
 ## 🤖 Anchored Multi‑Agent Review
 
 Instead of arbitrary scores, this project uses **anchored comparisons**. We select anchor papers with known scores, ask LLMs to compare your target against these anchors (better/tie/worse), and then deterministically fit a final numeric score. This ensures the review process is auditable and grounded in real-world data.
 
 ## 📚 Files & Docs
 
+
+
 - **Core Code**: `Paper-KG-Pipeline/src/idea2paper/`
 - **Documentation**:
-  - [Project Overview](Paper-KG-Pipeline/docs/00_PROJECT_OVERVIEW.md)
-  - [KG Construction](Paper-KG-Pipeline/docs/01_KG_CONSTRUCTION.md)
-  - [Recall System](Paper-KG-Pipeline/docs/02_RECALL_SYSTEM.md)
-  - [Pipeline Details](Paper-KG-Pipeline/docs/03_IDEA2STORY_PIPELINE.md)
+
+| No. | Document | Content | Target Audience |
+| ----- |--------------------------| ---------------- | ------- |
+| **0** | [Project Overview](Paper-KG-Pipeline/docs/00_PROJECT_OVERVIEW.md) | Overall architecture, core modules, parameter configuration, execution workflow | Everyone |
+| **1** | [Knowledge Graph Construction](docs/01_KG_CONSTRUCTION.md) | Data sources, node/edge definitions, LLM enhancement, how to run | Developers |
+| **2** | [Retrieval System](docs/02_RECALL_SYSTEM.md) | Three-way retrieval strategies, similarity computation, performance optimization | Developers |
+| **3** | [Idea2Story Pipeline](docs/03_IDEA2STORY_PIPELINE.md) | Pattern selection, Idea fusion, story reflection, critic review | Developers |
+
 - **Review Details**: [MULTIAGENT_REVIEW.md](MULTIAGENT_REVIEW.md)
 
 ## 🤝 Contributing & License
