@@ -134,6 +134,7 @@ def main():
 
         print("\n  执行三路召回（优化版，支持两阶段加速）...")
         recall_results = recall_system.recall(user_idea, verbose=True)
+        recall_audit = getattr(recall_system, "last_audit", None)
 
         # 【关键修复】加载完整的 patterns_structured.json 以合并数据
         patterns_structured_file = OUTPUT_DIR / "patterns_structured.json"
@@ -175,6 +176,10 @@ def main():
         # 运行 Pipeline（传递 user_idea 用于 Pattern 智能分类）
         pipeline = Idea2StoryPipeline(user_idea, recalled_patterns, papers, run_id=run_id)
         result = pipeline.run()
+        if recall_audit is not None:
+            result["recall_audit"] = recall_audit
+            if logger and PipelineConfig.RECALL_AUDIT_IN_EVENTS:
+                logger.log_event("recall_audit", recall_audit)
         success = True
 
         # 保存结果
@@ -197,6 +202,7 @@ def main():
                 'review_history': result['review_history'],
                 'results_dir': results_dir,
                 'novelty_report': result.get('novelty_report'),
+                'recall_audit': result.get('recall_audit'),
                 'review_summary': {
                     'total_reviews': len(result['review_history']),
                     'final_score': result['review_history'][-1]['avg_score'] if result['review_history'] else 0

@@ -234,8 +234,47 @@ class PipelineConfig:
     NOVELTY_MODE_MAX_PATTERNS = 3  # 新颖性模式最多尝试的 Pattern 数
     NOVELTY_SCORE_THRESHOLD = 6.0  # 新颖性得分阈值
 
+    # 召回审计配置（召回候选与分数落盘）
+    RECALL_AUDIT_ENABLE = _get(
+        "I2P_RECALL_AUDIT_ENABLE",
+        True,
+        cast=bool,
+        cfg_path=["recall", "audit_enable"],
+    )
+    RECALL_AUDIT_TOPN = _get(
+        "I2P_RECALL_AUDIT_TOPN",
+        50,
+        cast=int,
+        cfg_path=["recall", "audit_topn"],
+    )
+    RECALL_AUDIT_SNIPPET_CHARS = _get(
+        "I2P_RECALL_AUDIT_SNIPPET_CHARS",
+        240,
+        cast=int,
+        cfg_path=["recall", "audit_snippet_chars"],
+    )
+    RECALL_AUDIT_IN_EVENTS = _get(
+        "I2P_RECALL_AUDIT_IN_EVENTS",
+        True,
+        cast=bool,
+        cfg_path=["recall", "audit_in_events"],
+    )
+
+    # Phase 4 查重开关
+    VERIFICATION_ENABLE = _get(
+        "I2P_VERIFICATION_ENABLE",
+        True,
+        cast=bool,
+        cfg_path=["verification", "enable"],
+    )
+
     # RAG 查重阈值
-    COLLISION_THRESHOLD = 0.75  # 相似度 > 0.75 认为撞车
+    COLLISION_THRESHOLD = _get(
+        "I2P_COLLISION_THRESHOLD",
+        0.75,
+        cast=float,
+        cfg_path=["verification", "collision_threshold"],
+    )  # 相似度 > 阈值 认为撞车
 
     # Refinement 策略
     TAIL_INJECTION_RANK_RANGE = (4, 9)  # 长尾注入: Rank 5-10

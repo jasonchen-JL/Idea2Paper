@@ -24,7 +24,7 @@ import numpy as np
 import requests
 
 from pipeline.run_context import get_logger
-from idea2paper.config import OUTPUT_DIR
+from idea2paper.config import OUTPUT_DIR, PipelineConfig
 
 # 输入文件
 NODES_IDEA = OUTPUT_DIR / "nodes_idea.json"
@@ -392,6 +392,8 @@ class RecallSystem:
         # Step 2: 排序并选择Top-K Domain
         domain_scores.sort(key=lambda x: x[1], reverse=True)
         top_domains = domain_scores[:RecallConfig.PATH2_TOP_K_DOMAINS]
+        # 缓存用于审计
+        self._last_path2_top_domains = top_domains
 
         print(f"  找到 {len(domain_scores)} 个相关Domain，选择Top-{RecallConfig.PATH2_TOP_K_DOMAINS}")
 
@@ -507,6 +509,9 @@ class RecallSystem:
 
             print(f"  找到 {len(similarities)} 个相似Paper，选择Top-{RecallConfig.PATH3_TOP_K_PAPERS}")
 
+        # 缓存用于审计
+        self._last_path3_top_papers = top_papers
+
         # Step 3: 收集Pattern
         pattern_scores = defaultdict(float)
 
@@ -543,6 +548,19 @@ class RecallSystem:
 
         print(f"  ✓ 召回 {len(pattern_scores)} 个Pattern，保留Top-{RecallConfig.PATH3_FINAL_TOP_K}")
         return top_patterns
+
+    # ===================== 审计工具 =====================
+
+    def _truncate(self, text: str, n: int) -> str:
+        if not text:
+            return ""
+        if len(text) <= n:
+            return text
+        return text[:n] + "…"
+
+    def _topn_dict(self, d: Dict[str, float], n: int, key_name: str = "pattern_id") -> List[Dict]:
+        ranked = sorted(d.items(), key=lambda x: x[1], reverse=True)[:n]
+        return [{key_name: k, "score": v} for k, v in ranked]
 
     # ===================== 多路融合 =====================
 
@@ -597,6 +615,86 @@ class RecallSystem:
         # 打印结果
         if verbose:
             self._print_results(results, path1_scores, path2_scores, path3_scores)
+
+        # 召回审计（可选）
+        if PipelineConfig.RECALL_AUDIT_ENABLE:
+            topn = max(0, int(PipelineConfig.RECALL_AUDIT_TOPN))
+            snippet_len = max(0, int(PipelineConfig.RECALL_AUDIT_SNIPPET_CHARS))
+
+            # 路径1 top ideas
+            top_ideas_audit = []
+            for idea_id, sim in top_ideas[:RecallConfig.PATH1_TOP_K_IDEAS]:
+                idea = self.idea_id_to_idea.get(idea_id, {})
+                desc = idea.get("description", "")
+                pattern_ids = idea.get("pattern_ids", []) or []
+                top_ideas_audit.append({
+                    "idea_id": idea_id,
+                    "similarity": float(sim),
+                    "snippet": self._truncate(desc, snippet_len),
+                    "pattern_count": len(pattern_ids),
+                })
+
+            # 路径2 top domains
+            top_domains_raw = getattr(self, "_last_path2_top_domains", []) or []
+            top_domains_audit = []
+            for domain_id, weight in top_domains_raw[:RecallConfig.PATH2_TOP_K_DOMAINS]:
+                domain = self.domain_id_to_domain.get(domain_id, {})
+                top_domains_audit.append({
+                    "domain_id": domain_id,
+                    "name": domain.get("name", ""),
+                    "weight": float(weight),
+                    "paper_count": int(domain.get("paper_count", 0) or 0),
+                })
+
+            # 路径3 top papers
+            top_papers_raw = getattr(self, "_last_path3_top_papers", []) or []
+            top_papers_audit = []
+            for paper_id, sim, quality, _combined in top_papers_raw[:RecallConfig.PATH3_TOP_K_PAPERS]:
+                paper = self.paper_id_to_paper.get(paper_id, {})
+                review_stats = paper.get("review_stats") or {}
+                top_papers_audit.append({
+                    "paper_id": paper_id,
+                    "similarity": float(sim),
+                    "title": paper.get("title", ""),
+                    "quality": float(quality),
+                    "review_count": int(review_stats.get("review_count", 0) or 0),
+                })
+
+            # 记录各路 score 的 Top-N（加权后的分数）
+            path1_weighted = {k: v * RecallConfig.PATH1_WEIGHT for k, v in path1_scores.items()}
+            path2_weighted = {k: v * RecallConfig.PATH2_WEIGHT for k, v in path2_scores.items()}
+            path3_weighted = {k: v * RecallConfig.PATH3_WEIGHT for k, v in path3_scores.items()}
+
+            final_top_k_audit = []
+            for pattern_id, final_score in top_k:
+                pattern_info = self.pattern_id_to_pattern.get(pattern_id, {})
+                final_top_k_audit.append({
+                    "pattern_id": pattern_id,
+                    "name": pattern_info.get("name", "N/A"),
+                    "final_score": float(final_score),
+                    "path1_score": float(path1_weighted.get(pattern_id, 0.0)),
+                    "path2_score": float(path2_weighted.get(pattern_id, 0.0)),
+                    "path3_score": float(path3_weighted.get(pattern_id, 0.0)),
+                    "cluster_size": int(pattern_info.get("size", 0) or 0),
+                })
+
+            self.last_audit = {
+                "final_top_k": final_top_k_audit,
+                "path1": {
+                    "top_ideas": top_ideas_audit,
+                    "pattern_scores_topn": self._topn_dict(path1_weighted, topn),
+                },
+                "path2": {
+                    "top_domains": top_domains_audit,
+                    "pattern_scores_topn": self._topn_dict(path2_weighted, topn),
+                },
+                "path3": {
+                    "top_papers": top_papers_audit,
+                    "pattern_scores_topn": self._topn_dict(path3_weighted, topn),
+                },
+            }
+        else:
+            self.last_audit = None
 
         if self.logger:
             self.logger.log_event("recall_end", {"top_k": len(results)})

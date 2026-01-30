@@ -42,6 +42,18 @@
     "mode": "link",
     "keep_log": true
   },
+  "verification": {
+    "__comment__": "Phase 4 final collision check. enable=false will skip verification and disable pivot triggered by collision. Recommendation: set collision_threshold between novelty.medium_th and novelty.high_th (e.g. 0.82~0.88). Higher = fewer false positives but may miss near-duplicates; lower = more pivots.",
+    "enable": true,
+    "collision_threshold": 0.88
+  },
+  "recall": {
+    "__comment__": "Persist recall candidates (Top ideas/domains/papers + final Top patterns) into pipeline_result.json and optionally events.jsonl for audit/debug.",
+    "audit_enable": true,
+    "audit_topn": 50,
+    "audit_snippet_chars": 240,
+    "audit_in_events": true
+  },
   "novelty": {
     "__comment__": "Local novelty check against nodes_paper.json (ICLR 2025) + pivot on high similarity.",
     "enable": true,

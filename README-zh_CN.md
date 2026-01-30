@@ -88,6 +88,10 @@ python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your idea"
 - **Entry scripts**:
   - `Paper-KG-Pipeline/scripts/idea2story_pipeline.py`
   - `Paper-KG-Pipeline/scripts/simple_recall_demo.py`
+- **Scripts layout**:
+  - `Paper-KG-Pipeline/scripts/tools/` (build/ETL tools)
+  - `Paper-KG-Pipeline/scripts/demos/` (examples)
+  - Legacy paths still work (root scripts are thin wrappers)
 - **Docs**:
   - `Paper-KG-Pipeline/docs/00_PROJECT_OVERVIEW.md`
   - `Paper-KG-Pipeline/docs/01_KG_CONSTRUCTION.md`
@@ -139,4 +143,3 @@ python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your idea"
      src="https://api.star-history.com/svg?repos=AgentAlphaAGI/Idea2Paper&type=Date&v=20260130" />
  </picture>
 </a>
-

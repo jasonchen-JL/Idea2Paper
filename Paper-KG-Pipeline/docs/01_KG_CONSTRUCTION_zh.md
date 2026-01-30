@@ -1,5 +1,7 @@
 # 知识图谱构建文档
 
+> **说明**：脚本已分类整理到 `scripts/tools/` 与 `scripts/demos/`。旧路径（如 `scripts/build_entity_v3.py`）仍可通过兼容薄壳运行。
+
 ## 📋 概述
 
 本文档详细说明了 Idea2Paper 项目中知识图谱的构建过程,包括数据源、节点、边的定义、构建流程、参数配置和运行方式。
@@ -793,4 +795,3 @@ with ThreadPoolExecutor(max_workers=5) as executor:
 **生成时间**: 2026-01-25
 **版本**: V3.1
 **作者**: Idea2Paper Team
-

@@ -347,11 +347,20 @@ Paper-KG-Pipeline/
 ├── data/ICLR_25/               # Data sources
 ├── output/                     # Output files
 ├── scripts/
-│   ├── build_entity_v3.py      # Build nodes
-│   ├── build_edges.py          # Build edges
-│   ├── recall_system.py        # Recall system
-│   ├── idea2story_pipeline.py  # Pipeline main entry
-│   └── pipeline/               # Pipeline modules
+│   ├── idea2story_pipeline.py  # Pipeline main entry (path unchanged)
+│   ├── simple_recall_demo.py   # Compatibility wrapper (preferred: demos/)
+│   ├── recall_system.py        # Recall system (shim)
+│   ├── tools/                  # Build/ETL tools
+│   │   ├── build_entity_v3.py  # Build nodes
+│   │   ├── build_edges.py      # Build edges
+│   │   └── ...
+│   ├── demos/                  # Demo/experiment scripts
+│   │   ├── simple_recall_demo.py
+│   │   ├── run_pipeline.py
+│   │   └── demo_pipeline.py
+│   ├── legacy/                 # Archived legacy scripts
+│   │   └── generate_patterns_old.py
+│   └── pipeline/               # Pipeline modules (shim)
 │       ├── config.py
 │       ├── manager.py
 │       ├── pattern_selector.py

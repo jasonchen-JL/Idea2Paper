@@ -1,6 +1,8 @@
 # Idea2Paper Project Summary Document
 [English](00_PROJECT_OVERVIEW.md) | [简体中文](00_PROJECT_OVERVIEW_zh.md)
 
+> **Note**: Scripts are now organized under `scripts/tools/` and `scripts/demos/`. Legacy paths (e.g., `scripts/build_entity_v3.py`) still work via thin wrappers.
+
 ## 📋 Project Overview
 
 **Project Name**: Idea2Paper - Automated Academic Paper Generation System Based on Knowledge Graph

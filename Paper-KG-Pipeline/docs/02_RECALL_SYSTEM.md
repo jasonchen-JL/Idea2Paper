@@ -1,5 +1,7 @@
 # Three-Path Recall System Documentation
 
+> **Note**: Scripts are now organized under `scripts/tools/` and `scripts/demos/`. Legacy paths (e.g., `scripts/simple_recall_demo.py`) still work via thin wrappers.
+
 ## 📋 Overview
 
 This document provides a detailed description of the three-path recall system based on knowledge graph, including recall strategies, similarity calculation, multi-path fusion, parameter configuration, and execution methods.

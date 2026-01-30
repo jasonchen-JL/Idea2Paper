@@ -347,11 +347,20 @@ Paper-KG-Pipeline/
 ├── data/ICLR_25/               # 数据源
 ├── output/                     # 输出文件
 ├── scripts/
-│   ├── build_entity_v3.py      # 构建节点
-│   ├── build_edges.py          # 构建边
-│   ├── recall_system.py        # 召回系统
-│   ├── idea2story_pipeline.py  # Pipeline主入口
-│   └── pipeline/               # Pipeline模块
+│   ├── idea2story_pipeline.py  # Pipeline主入口（路径不变）
+│   ├── simple_recall_demo.py   # 兼容薄壳（推荐：demos/）
+│   ├── recall_system.py        # 召回系统（shim）
+│   ├── tools/                  # 构建/数据处理工具
+│   │   ├── build_entity_v3.py  # 构建节点
+│   │   ├── build_edges.py      # 构建边
+│   │   └── ...
+│   ├── demos/                  # Demo/实验脚本
+│   │   ├── simple_recall_demo.py
+│   │   ├── run_pipeline.py
+│   │   └── demo_pipeline.py
+│   ├── legacy/                 # 旧脚本归档
+│   │   └── generate_patterns_old.py
+│   └── pipeline/               # Pipeline模块（shim）
 │       ├── config.py
 │       ├── manager.py
 │       ├── pattern_selector.py
@@ -402,6 +411,5 @@ Paper-KG-Pipeline/
 **版本**: V3.1
 **更新时间**: 2026-01-25
 **联系方式**: 参考核心文档获取技术支持
-
 
 

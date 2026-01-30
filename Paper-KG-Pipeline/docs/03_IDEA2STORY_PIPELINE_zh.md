@@ -1,5 +1,7 @@
 # Idea2Story Pipeline 文档
 
+> **说明**：脚本已分类整理到 `scripts/tools/` 与 `scripts/demos/`。旧路径（如 `scripts/idea2story_pipeline.py`）仍可通过兼容薄壳运行。
+
 ## 📋 概述
 
 本文档详细说明了从用户Idea到可发表Paper Story的完整生成链路,包括Pattern选择、Idea Fusion、Story生成、Critic评审、智能修正机制、参数配置和运行方式。
@@ -1163,4 +1165,3 @@ def cached_llm_call(prompt):
 **生成时间**: 2026-01-25
 **版本**: V1.0
 **作者**: Idea2Paper Team
-

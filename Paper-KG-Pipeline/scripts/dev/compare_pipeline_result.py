@@ -1,65 +1,88 @@
+#!/usr/bin/env python3
+import argparse
 import json
-import sys
-from copy import deepcopy
-from difflib import unified_diff
 from pathlib import Path
+from typing import Any, List, Tuple
 
-
-DROP_KEYS = {
+IGNORE_KEYS = {
     "run_id",
-    "created_at",
-    "ts",
-    "duration_ms",
-    "latency_ms",
+    "results_dir",
     "log_dir",
-    "run_dir",
+    "run_log_dir",
+    "report_path",
+    "output_path",
+    "created_at",
+    "started_at",
+    "ended_at",
+    "duration",
+    "duration_ms",
+    "elapsed",
+    "elapsed_ms",
+    "timestamp",
+    "ts",
+    "time",
 }
 
 
-def _normalize(obj):
+def _normalize(obj: Any) -> Any:
     if isinstance(obj, dict):
-        normalized = {}
+        out = {}
         for k, v in obj.items():
-            if k in DROP_KEYS:
+            if k in IGNORE_KEYS:
                 continue
-            normalized[k] = _normalize(v)
-        return normalized
+            out[k] = _normalize(v)
+        return out
     if isinstance(obj, list):
-        return [_normalize(x) for x in obj]
+        return [_normalize(v) for v in obj]
     return obj
 
 
-def load_json(path: Path):
+def _diff(a: Any, b: Any, path: str = "") -> List[str]:
+    diffs: List[str] = []
+    if type(a) != type(b):
+        diffs.append(f"{path}: type {type(a).__name__} != {type(b).__name__}")
+        return diffs
+    if isinstance(a, dict):
+        a_keys = set(a.keys())
+        b_keys = set(b.keys())
+        for k in sorted(a_keys - b_keys):
+            diffs.append(f"{path}/{k}: missing in B")
+        for k in sorted(b_keys - a_keys):
+            diffs.append(f"{path}/{k}: extra in B")
+        for k in sorted(a_keys & b_keys):
+            diffs.extend(_diff(a[k], b[k], f"{path}/{k}"))
+        return diffs
+    if isinstance(a, list):
+        if len(a) != len(b):
+            diffs.append(f"{path}: len {len(a)} != {len(b)}")
+        for i, (va, vb) in enumerate(zip(a, b)):
+            diffs.extend(_diff(va, vb, f"{path}[{i}]"))
+        return diffs
+    if a != b:
+        diffs.append(f"{path}: {a!r} != {b!r}")
+    return diffs
+
+
+def load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python compare_pipeline_result.py <base.json> <new.json>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--a", required=True, help="baseline pipeline_result.json")
+    parser.add_argument("--b", required=True, help="after pipeline_result.json")
+    args = parser.parse_args()
 
-    base_path = Path(sys.argv[1])
-    new_path = Path(sys.argv[2])
-
-    base = _normalize(load_json(base_path))
-    new = _normalize(load_json(new_path))
-
-    base_text = json.dumps(base, ensure_ascii=False, sort_keys=True, indent=2)
-    new_text = json.dumps(new, ensure_ascii=False, sort_keys=True, indent=2)
-
-    if base_text == new_text:
-        print("✅ No diffs after normalization.")
-        return
-
-    print("❌ Differences found:")
-    for line in unified_diff(
-        base_text.splitlines(),
-        new_text.splitlines(),
-        fromfile=str(base_path),
-        tofile=str(new_path),
-        lineterm=""
-    ):
-        print(line)
+    a = _normalize(load_json(Path(args.a)))
+    b = _normalize(load_json(Path(args.b)))
+    diffs = _diff(a, b, "")
+    if diffs:
+        print("DIFF FOUND:")
+        for d in diffs[:200]:
+            print("-", d)
+        print(f"Total diffs: {len(diffs)}")
+        raise SystemExit(1)
+    print("OK: normalized results match")
 
 
 if __name__ == "__main__":

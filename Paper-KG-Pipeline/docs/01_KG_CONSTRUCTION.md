@@ -1,5 +1,7 @@
 # Knowledge Graph Construction Documentation
 
+> **Note**: Scripts are now organized under `scripts/tools/` and `scripts/demos/`. Legacy paths (e.g., `scripts/build_entity_v3.py`) still work via thin wrappers.
+
 ## 📋 Overview
 
 This document provides a detailed description of the knowledge graph construction process in the Idea2Paper project, including data sources, node and edge definitions, construction workflow, parameter configuration, and execution methods.

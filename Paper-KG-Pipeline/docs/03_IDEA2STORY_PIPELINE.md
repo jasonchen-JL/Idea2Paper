@@ -1,5 +1,7 @@
 # Idea2Story Pipeline Documentation
 
+> **Note**: Scripts are now organized under `scripts/tools/` and `scripts/demos/`. Legacy paths (e.g., `scripts/idea2story_pipeline.py`) still work via thin wrappers.
+
 ## 📋 Overview
 
 This document provides a detailed description of the complete generation pipeline from user Idea to publishable Paper Story, including Pattern selection, Idea Fusion, Story generation, Critic review, intelligent correction mechanism, parameter configuration, and execution methods.

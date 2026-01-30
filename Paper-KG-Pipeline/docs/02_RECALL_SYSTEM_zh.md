@@ -1,5 +1,7 @@
 # 三路召回系统文档
 
+> **说明**：脚本已分类整理到 `scripts/tools/` 与 `scripts/demos/`。旧路径（如 `scripts/simple_recall_demo.py`）仍可通过兼容薄壳运行。
+
 ## 📋 概述
 
 本文档详细说明了基于知识图谱的三路召回系统,包括召回策略、相似度计算、多路融合、参数配置和运行方式。
@@ -802,4 +804,3 @@ if domain == "Natural Language Processing":
 **生成时间**: 2026-01-25
 **版本**: V3.1
 **作者**: Idea2Paper Team
-

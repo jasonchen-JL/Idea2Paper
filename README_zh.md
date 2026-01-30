@@ -158,6 +158,10 @@ python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "你的研究Idea描述"
 入口脚本（命令不变）：
 - `Paper-KG-Pipeline/scripts/idea2story_pipeline.py`：端到端 pipeline 入口
 - `Paper-KG-Pipeline/scripts/simple_recall_demo.py`：仅召回 demo
+脚本分类：
+- `Paper-KG-Pipeline/scripts/tools/`：构建/数据处理工具
+- `Paper-KG-Pipeline/scripts/demos/`：示例与实验脚本
+- 旧路径仍可用（根目录脚本为兼容薄壳）
 数据/产物：
 - `Paper-KG-Pipeline/output/`：图谱与运行产物（nodes/edges/graph/story/result）
 - 仓库根 `log/`：每次 run 的审计日志

@@ -1,5 +1,7 @@
 # Idea2Paper 项目总结文档
 
+> **说明**：脚本已分类整理到 `scripts/tools/` 与 `scripts/demos/`。旧路径（如 `scripts/build_entity_v3.py`）仍可通过兼容薄壳运行。
+
 ## 📋 项目概述
 
 **项目名称**: Idea2Paper - 基于知识图谱的学术论文自动生成系统
@@ -910,4 +912,3 @@ grep "兜底策略" output/log.json
 **作者**: Idea2Paper Team
 
 **联系方式**: 参考各核心文档获取详细技术支持
-
