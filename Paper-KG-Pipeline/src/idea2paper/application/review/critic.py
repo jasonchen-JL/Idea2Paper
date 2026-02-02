@@ -194,7 +194,12 @@ Return ONLY the corrected JSON:
         pattern_id: str
     ) -> Tuple[List[Dict], List[str]]:
         base_prompt = self._build_anchor_prompt(story, reviewer, anchors)
-        response = call_llm(base_prompt, temperature=0.0, max_tokens=800, timeout=180)
+        response = call_llm(
+            base_prompt,
+            temperature=PipelineConfig.LLM_TEMPERATURE_CRITIC_MAIN,
+            max_tokens=800,
+            timeout=180,
+        )
         result = parse_json_from_llm(response)
         ok, reason, normalized = (False, "parse_failed", {})
         if result:
@@ -225,7 +230,12 @@ Return ONLY the corrected JSON:
                 prompt = self._build_reemit_prompt(story, reviewer, anchors)
 
             print(f"   ⏳ Critic JSON retry {attempt}/{retries} ({strategy})...")
-            response = call_llm(prompt, temperature=0.0, max_tokens=800, timeout=180)
+            response = call_llm(
+                prompt,
+                temperature=PipelineConfig.LLM_TEMPERATURE_CRITIC_REPAIR,
+                max_tokens=800,
+                timeout=180,
+            )
             result = parse_json_from_llm(response)
             ok, reason, normalized = (False, "parse_failed", {})
             if result:
@@ -527,7 +537,12 @@ Return ONLY the corrected JSON:
 """
 
         # 使用更长的超时时间（180 秒）以应对网络延迟
-        response = call_llm(prompt, temperature=0.3, max_tokens=800, timeout=180)
+        response = call_llm(
+            prompt,
+            temperature=PipelineConfig.LLM_TEMPERATURE_CRITIC_ANCHORED,
+            max_tokens=800,
+            timeout=180,
+        )
 
         # 1. 尝试标准 JSON 解析
         result = parse_json_from_llm(response)

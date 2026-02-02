@@ -149,12 +149,9 @@ RESULTS_ENABLE = _get(
     cast=bool,
     cfg_path=["results", "enable"],
 )
-RESULTS_MODE = _get(
-    "I2P_RESULTS_MODE",
-    "link",
-    cast=str,
-    cfg_path=["results", "mode"],
-)
+# Hard-coded: always copy results into `results/run_.../` (no symlinks).
+# This avoids platform-specific symlink issues and makes results fully portable.
+RESULTS_MODE = "copy"
 RESULTS_KEEP_LOG = _get(
     "I2P_RESULTS_KEEP_LOG",
     True,
@@ -319,6 +316,74 @@ class PipelineConfig:
         cast=str,
         cfg_path=["pass", "fallback"],
     )  # global|fixed
+
+    # LLM Temperature (per stage; defaults preserve current behavior)
+    LLM_TEMPERATURE_DEFAULT = _get(
+        "I2P_LLM_TEMPERATURE_DEFAULT",
+        0.7,
+        cast=float,
+        cfg_path=["llm", "temperature", "default"],
+    )
+    LLM_TEMPERATURE_STORY_GENERATOR = _get(
+        "I2P_LLM_TEMPERATURE_STORY_GENERATOR",
+        0.7,
+        cast=float,
+        cfg_path=["llm", "temperature", "story_generator"],
+    )
+    LLM_TEMPERATURE_STORY_GENERATOR_REWRITE = _get(
+        "I2P_LLM_TEMPERATURE_STORY_GENERATOR_REWRITE",
+        0.3,
+        cast=float,
+        cfg_path=["llm", "temperature", "story_generator_rewrite"],
+    )
+    LLM_TEMPERATURE_STORY_REFLECTOR = _get(
+        "I2P_LLM_TEMPERATURE_STORY_REFLECTOR",
+        0.5,
+        cast=float,
+        cfg_path=["llm", "temperature", "story_reflector"],
+    )
+    LLM_TEMPERATURE_PATTERN_SELECTOR = _get(
+        "I2P_LLM_TEMPERATURE_PATTERN_SELECTOR",
+        0.3,
+        cast=float,
+        cfg_path=["llm", "temperature", "pattern_selector"],
+    )
+    LLM_TEMPERATURE_IDEA_FUSION = _get(
+        "I2P_LLM_TEMPERATURE_IDEA_FUSION",
+        0.7,
+        cast=float,
+        cfg_path=["llm", "temperature", "idea_fusion"],
+    )
+    LLM_TEMPERATURE_IDEA_FUSION_STAGE2 = _get(
+        "I2P_LLM_TEMPERATURE_IDEA_FUSION_STAGE2",
+        0.8,
+        cast=float,
+        cfg_path=["llm", "temperature", "idea_fusion_stage2"],
+    )
+    LLM_TEMPERATURE_IDEA_FUSION_STAGE3 = _get(
+        "I2P_LLM_TEMPERATURE_IDEA_FUSION_STAGE3",
+        0.9,
+        cast=float,
+        cfg_path=["llm", "temperature", "idea_fusion_stage3"],
+    )
+    LLM_TEMPERATURE_CRITIC_MAIN = _get(
+        "I2P_LLM_TEMPERATURE_CRITIC_MAIN",
+        0.0,
+        cast=float,
+        cfg_path=["llm", "temperature", "critic_main"],
+    )
+    LLM_TEMPERATURE_CRITIC_REPAIR = _get(
+        "I2P_LLM_TEMPERATURE_CRITIC_REPAIR",
+        0.0,
+        cast=float,
+        cfg_path=["llm", "temperature", "critic_repair"],
+    )
+    LLM_TEMPERATURE_CRITIC_ANCHORED = _get(
+        "I2P_LLM_TEMPERATURE_CRITIC_ANCHORED",
+        0.3,
+        cast=float,
+        cfg_path=["llm", "temperature", "critic_anchored"],
+    )
 
     # 新颖性模式配置
     NOVELTY_MODE_MAX_PATTERNS = 3  # 新颖性模式最多尝试的 Pattern 数

@@ -204,7 +204,12 @@ Consider semantic and methodological distance, not just application domain.
 
         try:
             # 使用更长的超时时间（180 秒）以应对网络较慢的情况
-            response = call_llm(prompt, temperature=0.3, max_tokens=300, timeout=180)
+            response = call_llm(
+                prompt,
+                temperature=PipelineConfig.LLM_TEMPERATURE_PATTERN_SELECTOR,
+                max_tokens=300,
+                timeout=180,
+            )
             scores = parse_json_from_llm(response)
             if scores and all(k in scores for k in ['stability_score', 'novelty_score', 'domain_distance']):
                 return scores

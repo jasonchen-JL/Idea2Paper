@@ -17,16 +17,15 @@ import os
 import pickle
 import time
 import hashlib
-from collections import defaultdict
+from collections import defaultdict, Counter
 from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
-import requests
 
 from pipeline.run_context import get_logger
 from idea2paper.config import OUTPUT_DIR, PipelineConfig
-from idea2paper.infra.embeddings import get_embeddings_batch, EMBEDDING_MODEL
+from idea2paper.infra.embeddings import get_embedding, get_embeddings_batch, EMBEDDING_MODEL
 from idea2paper.recall.recall_text import build_recall_idea_text, build_recall_paper_text, truncate_for_embedding
 from idea2paper.recall.tokenize import to_token_set, jaccard_from_sets
 
@@ -48,6 +47,9 @@ class RecallConfig:
 
     PATH2_TOP_K_DOMAINS = 5      # 路径2: 召回前K个最相关的Domain
     PATH2_FINAL_TOP_K = 5        # 路径2: 最终只保留Top-K个Pattern（辅助通道）
+    PATH2_TOP_K_SUBDOMAINS = 5   # 路径2: 每个Domain保留Top-K个子领域
+    PATH2_SUBDOMAIN_BOOST = 1.0  # 子领域命中后对Pattern得分的加成倍率系数
+    PATH2_SUBDOMAIN_POOL_SIZE = 50  # 子领域候选池大小（由Pattern子领域压缩而来）
 
     PATH3_TOP_K_PAPERS = 20      # 路径3: 召回前K个最相似的Paper
     PATH3_FINAL_TOP_K = 10       # 路径3: 最终只保留Top-K个Pattern（重要通道）
@@ -92,6 +94,38 @@ class RecallSystem:
         self.pattern_id_to_pattern = {p['pattern_id']: p for p in self.patterns}
         self.domain_id_to_domain = {d['domain_id']: d for d in self.domains}
         self.paper_id_to_paper = {p['paper_id']: p for p in self.papers}
+
+        # Path2: Domain -> Pattern 边索引 & 子领域压缩池
+        self._domain_to_pattern_edges = {}
+        self._domain_subdomain_pool = {}
+        self._domain_subdomain_to_patterns = {}
+        for domain in self.domains:
+            domain_id = domain.get("domain_id")
+            if not domain_id or not self.G.has_node(domain_id):
+                continue
+            edges = []
+            for predecessor in self.G.predecessors(domain_id):
+                edge_data = self.G[predecessor][domain_id]
+                if edge_data.get("relation") == "works_well_in":
+                    edges.append((predecessor, edge_data))
+            if not edges:
+                continue
+            self._domain_to_pattern_edges[domain_id] = edges
+            sub_counter = Counter()
+            sub_to_patterns = defaultdict(set)
+            for pattern_id, _edge in edges:
+                pattern = self.pattern_id_to_pattern.get(pattern_id) or {}
+                for sd in pattern.get("sub_domains", []) or []:
+                    if not sd:
+                        continue
+                    sub_counter[sd] += 1
+                    sub_to_patterns[sd].add(pattern_id)
+            if sub_counter:
+                ranked = sorted(sub_counter.items(), key=lambda x: (-x[1], x[0]))
+                self._domain_subdomain_pool[domain_id] = [sd for sd, _ in ranked[:RecallConfig.PATH2_SUBDOMAIN_POOL_SIZE]]
+            else:
+                self._domain_subdomain_pool[domain_id] = []
+            self._domain_subdomain_to_patterns[domain_id] = sub_to_patterns
 
         self._use_embed_batch = True
         self._use_token_cache = True
@@ -322,71 +356,17 @@ class RecallSystem:
         return float(cosine_sim)
 
     def _get_embedding(self, text: str, max_retries: int = 3) -> List[float]:
-        """调用SiliconFlow API获取文本embedding"""
-        api_key = os.environ.get('SILICONFLOW_API_KEY', '')
-
-        if not api_key:
-            if not hasattr(self, '_embedding_warning_shown'):
-                print("  ⚠️  未设置SILICONFLOW_API_KEY，降级到Jaccard相似度")
-                self._embedding_warning_shown = True
-            return None
-
-        url = "https://api.siliconflow.cn/v1/embeddings"
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        }
-
-        payload = {
-            "model": EMBEDDING_MODEL,
-            "input": truncate_for_embedding(text)
-        }
-
+        """调用Embedding接口获取文本embedding（统一走可配置的infra实现）"""
+        text = truncate_for_embedding(text)
         for attempt in range(max_retries):
-            try:
-                start_ts = time.time()
-                response = requests.post(url, headers=headers, json=payload, timeout=10)
-                response.raise_for_status()
-                result = response.json()
-                if self.logger:
-                    self.logger.log_embedding_call(
-                        request={
-                            "provider": "siliconflow",
-                            "url": url,
-                            "model": payload["model"],
-                            "input_preview": truncate_for_embedding(text),
-                            "timeout": 10
-                        },
-                        response={
-                            "ok": True,
-                            "latency_ms": int((time.time() - start_ts) * 1000)
-                        }
-                    )
-                return result['data'][0]['embedding']
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    time.sleep(0.5)
-                else:
-                    if not hasattr(self, '_embedding_error_shown'):
-                        print(f"  ⚠️  Embedding API调用失败: {e}，降级到Jaccard相似度")
-                        self._embedding_error_shown = True
-                    if self.logger:
-                        self.logger.log_embedding_call(
-                            request={
-                                "provider": "siliconflow",
-                            "url": url,
-                            "model": payload["model"],
-                            "input_preview": truncate_for_embedding(text),
-                            "timeout": 10
-                        },
-                            response={
-                                "ok": False,
-                                "latency_ms": 0,
-                                "error": str(e)
-                            }
-                        )
-                    return None
-
+            emb = get_embedding(text, logger=self.logger, timeout=10)
+            if emb is not None:
+                return emb
+            if attempt < max_retries - 1:
+                time.sleep(0.5)
+        if not hasattr(self, "_embedding_error_shown"):
+            print("  ⚠️  Embedding 不可用或调用失败，降级到Jaccard相似度")
+            self._embedding_error_shown = True
         return None
 
     def _get_paper_quality(self, paper: Dict) -> float:
@@ -525,9 +505,9 @@ class RecallSystem:
         """路径2: 通过领域相关性召回Pattern
 
         流程:
-          1. 使用路径1召回的 Top-1 Idea 的 Domain
-          2. 在这些Domain中找到表现好的Pattern
-          3. 按Domain相关性和Pattern效果加权计算得分
+          1. 【粗层】先匹配一级Domain（embedding 或关键词/Jaccard）
+          2. 【精层】在Domain内匹配 sub_domain（embedding 或关键词/Jaccard）
+          3. 只从命中 sub_domain 对应的 Pattern 集合中召回并打分
 
         Args:
             user_idea: 用户输入的Idea描述
@@ -537,82 +517,129 @@ class RecallSystem:
         """
         print("\n🌍 [路径2] 领域相关性召回...")
 
-        # Step 1: 通过最相似Idea的Domain（与 simple_recall_demo.py 一致）
-        domain_scores = []
+        # Step 1: 粗层匹配一级Domain
+        domain_ids = list(self._domain_to_pattern_edges.keys())
+        domain_texts = []
+        for domain_id in domain_ids:
+            domain = self.domain_id_to_domain.get(domain_id, {})
+            name = domain.get("name", "N/A")
+            subs = self._domain_subdomain_pool.get(domain_id, []) or []
+            if subs:
+                domain_texts.append(truncate_for_embedding(f"{name}\nSub-domains: {', '.join(subs)}"))
+            else:
+                domain_texts.append(truncate_for_embedding(name))
 
-        # 如果提供了top_ideas，使用Top-1 Idea的Domain
-        if top_ideas:
+        user_tokens = to_token_set(user_idea)
+        query_emb = self._get_embedding(user_idea) if RecallConfig.USE_EMBEDDING else None
+        domain_scores = []
+        if query_emb is not None:
+            cand_embs = self._batch_embeddings(domain_texts)
+            if cand_embs is not None:
+                sims = self._cosine_scores(query_emb, np.array(cand_embs))
+                domain_scores = [(did, max(0.0, float(sim))) for did, sim in zip(domain_ids, sims)]
+            else:
+                domain_scores = [(did, float(jaccard_from_sets(user_tokens, to_token_set(txt))))
+                                 for did, txt in zip(domain_ids, domain_texts)]
+        else:
+            domain_scores = [(did, float(jaccard_from_sets(user_tokens, to_token_set(txt))))
+                             for did, txt in zip(domain_ids, domain_texts)]
+
+        domain_scores.sort(key=lambda x: x[1], reverse=True)
+        top_domains = [(did, score) for did, score in domain_scores[:RecallConfig.PATH2_TOP_K_DOMAINS] if score > 0]
+
+        # Fallback：如果完全没有Domain命中，用Top-1 Idea的belongs_to
+        if not top_domains and top_ideas:
             top_idea_id = top_ideas[0][0]
             top_idea = self.idea_id_to_idea.get(top_idea_id)
-
-            if top_idea and self.G.has_node(top_idea['idea_id']):
-                for successor in self.G.successors(top_idea['idea_id']):
-                    edge_data = self.G[top_idea['idea_id']][successor]
-                    if edge_data.get('relation') == 'belongs_to':
+            if top_idea and self.G.has_node(top_idea.get("idea_id")):
+                for successor in self.G.successors(top_idea["idea_id"]):
+                    edge_data = self.G[top_idea["idea_id"]][successor]
+                    if edge_data.get("relation") == "belongs_to":
                         domain_id = successor
-                        weight = edge_data.get('weight', 0.5)
-                        domain_scores.append((domain_id, weight))
+                        weight = float(edge_data.get("weight", 0.5))
+                        top_domains = [(domain_id, max(0.0, weight))]
+                        break
 
-        # Fallback: 如果没有找到Domain，重新计算最相似的Idea
-        if not domain_scores:
-            print("  未找到直接关联的Domain，重新计算最相似Idea...")
-            similarities = []
-            for idea in self.ideas:
-                sim = self._compute_text_similarity(user_idea, idea['description'])
-                if sim > 0:
-                    similarities.append((idea, sim))
-
-            similarities.sort(key=lambda x: x[1], reverse=True)
-            top_idea = similarities[0][0] if similarities else None
-
-            if top_idea:
-                # 通过图谱找到Idea的Domain
-                for successor in self.G.successors(top_idea['idea_id']):
-                    edge_data = self.G[top_idea['idea_id']][successor]
-                    if edge_data.get('relation') == 'belongs_to':
-                        domain_id = successor
-                        weight = edge_data.get('weight', 0.5)
-                        domain_scores.append((domain_id, weight))
-
-        # Step 2: 排序并选择Top-K Domain
-        domain_scores.sort(key=lambda x: x[1], reverse=True)
-        top_domains = domain_scores[:RecallConfig.PATH2_TOP_K_DOMAINS]
-        # 缓存用于审计
         self._last_path2_top_domains = top_domains
+        print(f"  找到 {len(domain_scores)} 个候选Domain，选择Top-{RecallConfig.PATH2_TOP_K_DOMAINS} (有效={len(top_domains)})")
 
-        print(f"  找到 {len(domain_scores)} 个相关Domain，选择Top-{RecallConfig.PATH2_TOP_K_DOMAINS}")
+        # Step 2: 精层匹配 sub_domain（每个Domain Top-K）
+        domain_to_top_subdomains = {}
+        for domain_id, _domain_weight in top_domains:
+            cand_subs = self._domain_subdomain_pool.get(domain_id, []) or []
+            if not cand_subs:
+                domain_to_top_subdomains[domain_id] = []
+                continue
 
-        # Step 3: 从这些Domain中找Pattern
+            if query_emb is not None:
+                sub_embs = self._batch_embeddings(cand_subs)
+                if sub_embs is not None:
+                    sims = self._cosine_scores(query_emb, np.array(sub_embs))
+                    scored = [(sd, max(0.0, float(sim))) for sd, sim in zip(cand_subs, sims)]
+                else:
+                    scored = [(sd, float(jaccard_from_sets(user_tokens, to_token_set(sd)))) for sd in cand_subs]
+            else:
+                scored = [(sd, float(jaccard_from_sets(user_tokens, to_token_set(sd)))) for sd in cand_subs]
+
+            scored.sort(key=lambda x: x[1], reverse=True)
+            domain_to_top_subdomains[domain_id] = scored[:RecallConfig.PATH2_TOP_K_SUBDOMAINS]
+
+        self._last_path2_top_subdomains = domain_to_top_subdomains
+
+        # Step 3: 从命中 sub_domain 对应的Pattern集合中召回并打分
         pattern_scores = defaultdict(float)
+        self._last_path2_candidate_stats = []
 
         for domain_id, domain_weight in top_domains:
             domain = self.domain_id_to_domain.get(domain_id)
             if not domain:
                 continue
 
-            # 打印Domain详细信息
             domain_name = domain.get('name', 'N/A')
             paper_count = domain.get('paper_count', 0)
-            sub_domains = domain.get('sub_domains', [])
-            sub_domain_str = ', '.join(sub_domains[:5])  # 只显示前5个sub_domain
-            if len(sub_domains) > 5:
-                sub_domain_str += f"... (共{len(sub_domains)}个)"
+            top_subs = domain_to_top_subdomains.get(domain_id, []) or []
+            sub_domain_str = ", ".join([sd for sd, _s in top_subs]) if top_subs else ""
 
             print(f"  - {domain_id} (名称={domain_name}, 相关度={domain_weight:.3f}, 论文数={paper_count})")
             if sub_domain_str:
-                print(f"    子领域: {sub_domain_str}")
+                print(f"    命中子领域Top-{RecallConfig.PATH2_TOP_K_SUBDOMAINS}: {sub_domain_str}")
 
-            # 找到在该Domain中表现好的Pattern
-            for predecessor in self.G.predecessors(domain_id):
-                edge_data = self.G[predecessor][domain_id]
-                if edge_data.get('relation') == 'works_well_in':
-                    pattern_id = predecessor
-                    effectiveness = edge_data.get('effectiveness', 0.0)
-                    confidence = edge_data.get('confidence', 0.0)
+            edges = self._domain_to_pattern_edges.get(domain_id, []) or []
+            all_pattern_ids = {pid for pid, _ in edges}
 
-                    # 得分 = Domain相关度 × 效果 × 置信度
-                    score = domain_weight * max(effectiveness, 0.1) * confidence
-                    pattern_scores[pattern_id] += score
+            top_sub_set = {sd for sd, sim in top_subs if sim > 0}
+            if top_sub_set:
+                sub_to_patterns = self._domain_subdomain_to_patterns.get(domain_id, {})
+                candidate_patterns = set()
+                for sd in top_sub_set:
+                    candidate_patterns.update(sub_to_patterns.get(sd, set()))
+            else:
+                candidate_patterns = all_pattern_ids
+
+            self._last_path2_candidate_stats.append({
+                "domain_id": domain_id,
+                "candidates_before": len(all_pattern_ids),
+                "candidates_after": len(candidate_patterns),
+            })
+
+            edge_map = {pid: edge for pid, edge in edges}
+            sd_sim_map = {sd: sim for sd, sim in top_subs}
+            for pattern_id in candidate_patterns:
+                edge_data = edge_map.get(pattern_id)
+                if not edge_data:
+                    continue
+                effectiveness = float(edge_data.get('effectiveness', 0.0) or 0.0)
+                confidence = float(edge_data.get('confidence', 0.0) or 0.0)
+
+                max_sd_sim = 0.0
+                pattern = self.pattern_id_to_pattern.get(pattern_id) or {}
+                for sd in pattern.get("sub_domains", []) or []:
+                    if sd in sd_sim_map:
+                        max_sd_sim = max(max_sd_sim, float(sd_sim_map[sd]))
+
+                score = float(domain_weight) * max(effectiveness, 0.1) * confidence
+                score *= (1.0 + RecallConfig.PATH2_SUBDOMAIN_BOOST * max_sd_sim)
+                pattern_scores[pattern_id] += score
 
         # 排序并只保留Top-K个Pattern（避免召回过多）
         sorted_patterns = sorted(pattern_scores.items(), key=lambda x: x[1], reverse=True)
@@ -835,6 +862,17 @@ class RecallSystem:
                     "weight": float(weight),
                     "paper_count": int(domain.get("paper_count", 0) or 0),
                 })
+            # 路径2 top subdomains
+            top_subdomains_raw = getattr(self, "_last_path2_top_subdomains", {}) or {}
+            top_subdomains_audit = []
+            for domain_id, _weight in top_domains_raw[:RecallConfig.PATH2_TOP_K_DOMAINS]:
+                subs = top_subdomains_raw.get(domain_id, [])[:RecallConfig.PATH2_TOP_K_SUBDOMAINS]
+                top_subdomains_audit.append({
+                    "domain_id": domain_id,
+                    "subdomains": [{"name": sd, "score": float(sim)} for sd, sim in subs],
+                })
+            candidate_stats_raw = getattr(self, "_last_path2_candidate_stats", []) or []
+            candidate_stats_map = {s.get("domain_id"): s for s in candidate_stats_raw}
 
             # 路径3 top papers
             top_papers_raw = getattr(self, "_last_path3_top_papers", []) or []
@@ -876,6 +914,8 @@ class RecallSystem:
                 },
                 "path2": {
                     "top_domains": top_domains_audit,
+                    "top_subdomains": top_subdomains_audit,
+                    "candidate_stats": [candidate_stats_map.get(d.get("domain_id")) for d in top_domains_audit],
                     "pattern_scores_topn": self._topn_dict(path2_weighted, topn),
                 },
                 "path3": {

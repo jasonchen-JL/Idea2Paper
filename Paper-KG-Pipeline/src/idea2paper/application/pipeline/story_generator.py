@@ -2,6 +2,7 @@ import json
 import re
 from typing import Dict, List, Optional
 
+from idea2paper.config import PipelineConfig
 from idea2paper.infra.llm import call_llm, parse_json_from_llm
 
 
@@ -60,7 +61,12 @@ class StoryGenerator:
         # 调用 LLM 生成
         print("   ⏳ 调用 LLM 生成...")
         # 使用更长的超时时间（180 秒）以应对长 Prompt 和网络延迟
-        response = call_llm(prompt, temperature=0.7, max_tokens=1500, timeout=180)
+        response = call_llm(
+            prompt,
+            temperature=PipelineConfig.LLM_TEMPERATURE_STORY_GENERATOR,
+            max_tokens=1500,
+            timeout=180,
+        )
 
         # 解析输出
         story = self._parse_story_response(response)
@@ -671,7 +677,12 @@ Output ONLY a JSON format (no other text):
 """
         try:
             # 使用更长的超时时间（180 秒）
-            response = call_llm(prompt, temperature=0.3, max_tokens=1000, timeout=180)
+            response = call_llm(
+                prompt,
+                temperature=PipelineConfig.LLM_TEMPERATURE_STORY_GENERATOR_REWRITE,
+                max_tokens=1000,
+                timeout=180,
+            )
             cn_story = parse_json_from_llm(response)
             if cn_story and isinstance(cn_story, dict):
                 return cn_story
