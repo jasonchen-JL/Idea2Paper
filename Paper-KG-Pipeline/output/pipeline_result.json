@@ -1,66 +1,66 @@
 {
-  "user_idea": "Propose the autoregressive image diffusion (AID) model for image sequence generation and apply it to sample the posterior for accelerated MRI reconstruction",
+  "user_idea": "我们研究音频-文本大模型的文本主导偏见：在 faithful/adversarial/irrelevant 三类设定下，提出基于模态可信度的路由/融合框架。通过构造“文本干扰”表示能量与时序证据，训练轻量门控/适配器，在推理时选择 Joint 或 Audio 专家，实现对抗文本误导下的稳健情绪识别",
   "success": true,
   "iterations": 1,
   "selected_patterns": {
     "stability": [
-      "pattern_100",
-      "pattern_115",
       "pattern_57",
-      "pattern_102",
+      "pattern_51",
+      "pattern_45",
+      "pattern_59",
       "pattern_114"
     ],
     "novelty": [
-      "pattern_49",
+      "pattern_7",
+      "pattern_58",
       "pattern_114",
-      "pattern_94",
-      "pattern_68",
-      "pattern_7"
+      "pattern_66",
+      "pattern_8"
     ],
     "domain_distance": [
-      "pattern_49",
-      "pattern_100",
+      "pattern_7",
+      "pattern_51",
+      "pattern_58",
       "pattern_114",
-      "pattern_99",
-      "pattern_94"
+      "pattern_8"
     ]
   },
   "final_story": {
-    "title": "Autoregressive Image Diffusion for Efficient Posterior Sampling in Accelerated MRI Reconstruction",
-    "abstract": "Accelerated MRI reconstruction requires sampling from complex posterior distributions to recover high-fidelity images from undersampled k-space data. We propose the Autoregressive Image Diffusion (AID) model, a novel framework designed to leverage the strengths of diffusion models for image sequence generation within the context of MRI reconstruction. To address the critical challenge of computational latency, we integrate advanced numerical integration techniques that transform the traditionally slow diffusion sampling process into a highly efficient operation. By utilizing a Diffusion Exponential Integrator Sampler (DEIS), our approach minimizes discretization errors and significantly reduces the number of required function evaluations. This allows AID to perform rapid posterior sampling while maintaining the structural coherence essential for medical imaging. Our results demonstrate that AID achieves superior reconstruction quality and speed compared to existing methods, establishing a new paradigm for efficient, high-fidelity MRI reconstruction.",
-    "problem_framing": "We reframe accelerated MRI reconstruction from a static inverse optimization problem into a dynamic sequence generation task governed by Autoregressive Image Diffusion (AID). Traditional methods often view MRI recovery as a one-time mapping, ignoring the sequential dependencies inherent in high-dimensional data distributions. By transforming the reconstruction process into an autoregressive generative modeling problem, we can capture complex spatial correlations and uncertainties in the posterior distribution. However, this shift introduces the challenge of generating coherent image sequences efficiently, requiring a fundamental rethinking of how we approach sampling in the context of medical imaging physics.",
-    "gap_pattern": "Current approaches for MRI reconstruction using generative models fail to effectively balance the computational demands of sequential sampling with the need for high diagnostic fidelity. Existing diffusion-based methods are limited by isotropic diffusion assumptions and require prohibitively slow sampling processes, involving hundreds to thousands of neural network evaluations. This inefficiency prevents their practical application in clinical settings where speed is paramount. Furthermore, these methods lack the specialized mechanisms to handle the autoregressive nature of image sequence generation, resulting in artifacts and inconsistencies when sampling from complex posteriors in accelerated MRI scenarios.",
-    "solution": "We introduce the Autoregressive Image Diffusion (AID) model to address the dual challenges of posterior sampling fidelity and computational efficiency in MRI reconstruction. Our solution leverages the semilinear structure of diffusion processes to implement a Diffusion Exponential Integrator Sampler (DEIS), which serves as the engine for rapid image sequence generation. By reframing the sampling trajectory as a numerical integration problem, we employ exponential integrators to drastically reduce discretization errors with fewer steps. Additionally, we modify the score network parameterization to support deterministic sampling within the autoregressive framework, ensuring stability and consistency across the generated sequence. This architecture not only accelerates the reconstruction process but also enhances the quality of the sampled posterior by effectively utilizing the temporal dependencies inherent in the AID model.",
-    "method_skeleton": "Construct the Autoregressive Image Diffusion (AID) architecture to model the conditional distribution of MRI image sequences given undersampled k-space data; Implement a Diffusion Exponential Integrator Sampler (DEIS) using exponential integrators to discretize the diffusion ODEs, minimizing error and accelerating the sampling process; Modify the score network parameterization to enable deterministic, high-fidelity posterior sampling across the autoregressive steps; Integrate quasi-Taylor schemes with ideal derivative substitution to further reduce neural function evaluations during the reconstruction phase.",
+    "title": "Overcoming Text-Dominant Bias via Modality Reliability-based Dynamic Routing",
+    "abstract": "Audio-text large models frequently exhibit text-dominant bias, where textual semantics override acoustic evidence, leading to failures in adversarial or irrelevant settings. We propose a novel framework centered on Modality Reliability to mitigate this bias and achieve robust sentiment recognition. By constructing fine-grained Text Interference representations that quantify energy and temporal mismatches, we train lightweight gating adapters to assess modality trustworthiness. This mechanism enables Dynamic Routing, automatically selecting either a Joint or Audio expert during inference. Our approach transforms the fusion process from static aggregation to adaptive reliability assessment, ensuring the model remains faithful to acoustic cues when text is misleading.",
+    "problem_framing": "We reframe the challenge of multimodal sentiment analysis from static feature fusion to a dynamic reliability assessment problem. Current models struggle because they implicitly assume text is the dominant truth-teller, leading to systematic failures in adversarial settings where textual content contradicts acoustic reality. Our approach transforms this perspective by treating modality selection as a function of measured reliability, rather than relying on fixed architectural priors that inevitably favor text.",
+    "gap_pattern": "Existing fusion methods for audio-text models fail to address text-dominant bias because they lack fine-grained mechanisms to detect 'text interference.' They rely on indiscriminate attention or concatenation, assuming uniform reliability across faithful, adversarial, and irrelevant contexts. This paradigm fails to distinguish between helpful text and misleading signals, resulting in models that are easily hijacked by textual content, rendering the audio modality effectively dormant in critical inference scenarios.",
+    "solution": "We introduce a Modality Reliability-based Routing framework that shifts the paradigm from passive fusion to active expert selection. By implementing fine-grained Text Interference signals—derived from energy and temporal evidence—we calculate a dynamic reliability score for the textual modality. This score drives a constrained gating mechanism that routes inputs to a Joint expert when modalities are consistent, or an Audio expert when text interference is detected. This ensures that acoustic evidence acts as a robust anchor, preventing the model from being misled by adversarial text.",
+    "method_skeleton": "Construct Text Interference Representations by calculating energy and temporal evidence mismatches between audio and text streams to quantify local modality reliability; Train a Lightweight Gating Adapter using a constrained optimization objective that learns to map interference signals to routing weights; Implement a Dynamic Routing Mechanism at inference that selects the Joint or Audio expert based on the thresholded reliability score from the adapter.",
     "innovation_claims": [
-      "Transform MRI reconstruction from static recovery to a dynamic autoregressive process by introducing Autoregressive Image Diffusion (AID), enabling the coherent modeling of image sequences and complex posterior distributions inherently present in accelerated MRI.",
-      "Revolutionize the sampling efficiency of diffusion-based MRI reconstruction by integrating a Diffusion Exponential Integrator Sampler (DEIS), which reframes the slow sampling trajectory as a semilinear ODE problem solvable with exponential integrators, drastically reducing computational costs.",
-      "Enhance the fidelity of posterior sampling by modifying the score network parameterization to support deterministic sampling, thereby transforming the stochastic autoregressive generation into a stable and reliable process suitable for clinical diagnostic requirements."
+      "Transform multimodal fusion from static aggregation to adaptive routing by quantifying text interference, enabling the model to dynamically suppress misleading text in favor of audio evidence.",
+      "Shift sentiment recognition from text-reliant to reliability-aware processing by introducing energy-based modality scoring, ensuring robustness across faithful, adversarial, and irrelevant settings.",
+      "Reframe the handling of irrelevant text from noise filtering to expert-based selection, utilizing lightweight adapters to switch between integrated and audio-only processing without sacrificing model capacity."
     ],
-    "experiments_plan": "We evaluate the AID model on the fastMRI dataset, comparing reconstruction quality (PSNR, SSIM) and sampling time against standard diffusion models and compressed sensing baselines. Ablation studies will validate the contributions of the exponential integrator and the autoregressive structure."
+    "experiments_plan": "We evaluate on standard multimodal sentiment datasets (e.g., MOSI, IEMOCAP) restructured into faithful, adversarial, and irrelevant splits. We compare accuracy and robustness against state-of-the-art fusion baselines to demonstrate the effectiveness of our reliability-based routing."
   },
   "review_history": [
     {
       "pass": true,
-      "avg_score": 6.669999999999901,
+      "avg_score": 7.013333333333228,
       "reviews": [
         {
           "reviewer": "Reviewer A",
           "role": "Methodology",
-          "score": 6.369999999999908,
-          "feedback": "Main gaps: Limited theoretical foundation compared to anchors with convergence bounds, Novelty mainly in combination rather than new mathematical concepts, Lack of clinical validation for medical imaging application. Anchored against 9 papers."
+          "score": 6.359999999999908,
+          "feedback": "Main gaps: Limited evaluation on only two datasets, Lack of comparison with recent state-of-the-art methods, Potential overfitting to specific types of text-dominant bias. Anchored against 7 papers."
         },
         {
           "reviewer": "Reviewer B",
           "role": "Novelty",
-          "score": 6.629999999999902,
-          "feedback": "Main gaps: Limited theoretical justification for the autoregressive approach in MRI reconstruction, Lack of comparison with other state-of-the-art diffusion-based MRI reconstruction methods, Potential concerns about the clinical applicability and generalization of the proposed method. Anchored against 9 papers."
+          "score": 7.7399999999998785,
+          "feedback": "Main gaps: Limited theoretical justification for the reliability metric, Potential scalability concerns with dynamic routing in larger models, Lack of analysis on computational overhead of the proposed approach. Anchored against 7 papers."
         },
         {
           "reviewer": "Reviewer C",
           "role": "Storyteller",
-          "score": 7.009999999999894,
-          "feedback": "Main gaps: Limited theoretical analysis compared to anchor papers with convergence bounds, Narrow application focus on MRI reconstruction limits broader applicability, Potential lack of novelty in combining autoregressive modeling with diffusion models and exponential integrators. Anchored against 9 papers."
+          "score": 6.939999999999896,
+          "feedback": "Main gaps: Limited evaluation on diverse multimodal tasks, Scalability concerns for larger models, Lack of theoretical analysis. Anchored against 7 papers."
         }
       ],
       "main_issue": "stability",
@@ -69,404 +69,331 @@
         "注入成熟方法增强鲁棒性"
       ],
       "audit": {
-        "pattern_id": "pattern_100",
+        "pattern_id": "pattern_57",
         "anchors": [
           {
-            "paper_id": "HyjIEf90Tn",
-            "title": "Glauber Generative Model: Discrete Diffusion Models via Binary Classification",
-            "pattern_id": "pattern_100",
-            "score10": 5.9319999999999995,
+            "paper_id": "ULGbw2URE3",
+            "title": "L3Ms — Lagrange Large Language Models",
+            "pattern_id": "pattern_57",
+            "score10": 5.859999999999999,
             "review_count": 5,
             "dispersion10": 1.08,
             "weight": 0.8614228217442572
           },
           {
-            "paper_id": "spDUv05cEq",
-            "title": "Flow-based Variational Mutual Information: Fast and Flexible Approximations",
-            "pattern_id": "pattern_100",
-            "score10": 6.040000000000001,
+            "paper_id": "FJWT0692hw",
+            "title": "SequenceMatch: Imitation Learning for Autoregressive Sequence Modelling with Backtracking",
+            "pattern_id": "pattern_57",
+            "score10": 6.004,
             "review_count": 5,
-            "dispersion10": 1.2600000000000002,
-            "weight": 0.7928139244371923
+            "dispersion10": 0.7200000000000006,
+            "weight": 1.0417206216442176
           },
           {
-            "paper_id": "RZHdb7FnqlY",
-            "title": "Towards the Detection of Diffusion Model Deepfakes",
-            "pattern_id": "pattern_100",
-            "score10": 6.25,
+            "paper_id": "0tAXMiSufG",
+            "title": "BOND: Aligning LLMs with Best-of-N Distillation",
+            "pattern_id": "pattern_57",
+            "score10": 6.13,
             "review_count": 6,
-            "dispersion10": 4.140000000000001,
-            "weight": 0.37858174106134496
+            "dispersion10": 0.9000000000000008,
+            "weight": 1.0241632363449014
           },
           {
-            "paper_id": "RaR3ETzyKp",
-            "title": "Easing Training Process of Rectified Flow Models Via Lengthening Inter-Path Distance",
-            "pattern_id": "pattern_100",
+            "paper_id": "oF6e2WwxX0",
+            "title": "TIS-DPO: Token-level Importance Sampling for Direct Preference Optimization With Estimated Weights",
+            "pattern_id": "pattern_57",
+            "score10": 6.327999999999999,
+            "review_count": 5,
+            "dispersion10": 1.7999999999999996,
+            "weight": 0.6399140961528769
+          },
+          {
+            "paper_id": "d94x0gWTUX",
+            "title": "Tool-Augmented Reward Modeling",
+            "pattern_id": "pattern_57",
             "score10": 6.49,
             "review_count": 4,
             "dispersion10": 0.9000000000000008,
             "weight": 0.8470725854916313
           },
           {
-            "paper_id": "zWy7dqOcel",
-            "title": "Sampling with Mollified Interaction Energy Descent",
-            "pattern_id": "pattern_100",
-            "score10": 7.057,
-            "review_count": 5,
-            "dispersion10": 1.7099999999999995,
-            "weight": 0.6611658558037105
-          },
-          {
-            "paper_id": "r5njV3BsuD",
-            "title": "Nearly $d$-Linear Convergence Bounds for Diffusion Models via Stochastic Localization",
-            "pattern_id": "pattern_100",
-            "score10": 6.477142857142857,
-            "review_count": 7,
-            "dispersion10": 0.9000000000000008,
-            "weight": 1.0944429166735974
-          },
-          {
-            "paper_id": "PP1rudnxiW",
-            "title": "Transport meets Variational Inference: Controlled Monte Carlo Diffusions",
-            "pattern_id": "pattern_100",
-            "score10": 6.430000000000001,
-            "review_count": 6,
-            "dispersion10": 0.9000000000000008,
-            "weight": 1.0241632363449014
-          },
-          {
-            "paper_id": "Y8KK9kjgIK",
-            "title": "SigDiffusions: Score-Based Diffusion Models for Time Series via Log-Signature Embeddings",
-            "pattern_id": "pattern_100",
-            "score10": 5.589999999999999,
+            "paper_id": "QEHrmQPBdd",
+            "title": "RM-Bench: Benchmarking Reward Models of Language Models with Subtlety and Style",
+            "pattern_id": "pattern_57",
+            "score10": 6.715,
             "review_count": 4,
-            "dispersion10": 2.5199999999999996,
-            "weight": 0.45722667966877856
+            "dispersion10": 0.18000000000000016,
+            "weight": 1.3639304342661864
           },
           {
-            "paper_id": "s7gnrEtWSm",
-            "title": "Iterative $\\alpha$-(de)Blending: Learning a Deterministic Mapping Between Arbitrary Densities",
-            "pattern_id": "pattern_100",
-            "score10": 6.571,
+            "paper_id": "LNLjU5C5dK",
+            "title": "Beyond Imitation: Leveraging Fine-grained Quality Signals for Alignment",
+            "pattern_id": "pattern_57",
+            "score10": 6.183999999999999,
             "review_count": 5,
-            "dispersion10": 3.6900000000000004,
-            "weight": 0.3820382663599264
+            "dispersion10": 0.9000000000000008,
+            "weight": 0.9430312995937128
           }
         ],
         "role_details": {
           "Methodology": {
             "comparisons": [
               {
-                "paper_id": "HyjIEf90Tn",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "AID combines multiple techniques for MRI reconstruction, more complex than binary classification, score10: 5.9"
-              },
-              {
-                "paper_id": "spDUv05cEq",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "AID's specialized MRI approach is more impactful than flow-based mutual information, score10: 6.0"
-              },
-              {
-                "paper_id": "RZHdb7FnqlY",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "AID's technical complexity for medical imaging exceeds deepfake detection methodology, score10: 6.2"
-              },
-              {
-                "paper_id": "RaR3ETzyKp",
+                "paper_id": "ULGbw2URE3",
                 "judgement": "better",
                 "confidence": 0.6,
-                "rationale": "AID combines multiple techniques for specific application, more complex than rectified flow training, score10: 6.5"
+                "rationale": "Story's dynamic routing is more innovative than L3Ms' Lagrange formulation, score10: 5.9"
               },
               {
-                "paper_id": "zWy7dqOcel",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "Mollified interaction energy descent offers more theoretical novelty than AID's application approach, score10: 7.1"
-              },
-              {
-                "paper_id": "r5njV3BsuD",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "Stochastic localization provides stronger theoretical foundation than AID's applied methodology, score10: 6.5"
-              },
-              {
-                "paper_id": "PP1rudnxiW",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Controlled Monte Carlo diffusions offer more theoretical novelty than AID's application approach, score10: 6.4"
-              },
-              {
-                "paper_id": "Y8KK9kjgIK",
+                "paper_id": "FJWT0692hw",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "AID's methodology for MRI reconstruction is more complex than log-signature embeddings, score10: 5.6"
+                "confidence": 0.6,
+                "rationale": "Story's modality reliability is more novel than SequenceMatch's backtracking, score10: 6.0"
               },
               {
-                "paper_id": "s7gnrEtWSm",
+                "paper_id": "0tAXMiSufG",
+                "judgement": "better",
+                "confidence": 0.6,
+                "rationale": "Story's dynamic routing is more innovative than BOND's distillation, score10: 6.1"
+              },
+              {
+                "paper_id": "oF6e2WwxX0",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers introduce novel methodological approaches, score10: 6.3"
+              },
+              {
+                "paper_id": "d94x0gWTUX",
                 "judgement": "worse",
                 "confidence": 0.6,
-                "rationale": "Deterministic mapping between densities offers more theoretical novelty than AID's application approach, score10: 6.6"
+                "rationale": "Tool-Augmented Reward Modeling is more rigorous than Story's methodology, score10: 6.5"
+              },
+              {
+                "paper_id": "QEHrmQPBdd",
+                "judgement": "worse",
+                "confidence": 0.6,
+                "rationale": "RM-Bench's benchmarking is more rigorous than Story's methodology, score10: 6.7"
+              },
+              {
+                "paper_id": "LNLjU5C5dK",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers introduce novel methodological approaches, score10: 6.2"
               }
             ],
             "main_gaps": [
-              "Limited theoretical foundation compared to anchors with convergence bounds",
-              "Novelty mainly in combination rather than new mathematical concepts",
-              "Lack of clinical validation for medical imaging application",
-              "Unclear generalizability beyond MRI reconstruction"
+              "Limited evaluation on only two datasets",
+              "Lack of comparison with recent state-of-the-art methods",
+              "Potential overfitting to specific types of text-dominant bias",
+              "Limited analysis of the dynamic routing mechanism",
+              "Lack of computational efficiency analysis"
             ],
-            "score": 6.369999999999908,
-            "loss": 0.35942072458262014,
-            "avg_confidence": 0.6666666666666666,
-            "monotonic_violations": 1
+            "score": 6.359999999999908,
+            "loss": 0.16823557117266907,
+            "avg_confidence": 0.5714285714285714,
+            "monotonic_violations": 0
           },
           "Novelty": {
             "comparisons": [
               {
-                "paper_id": "HyjIEf90Tn",
+                "paper_id": "ULGbw2URE3",
+                "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "Dynamic routing for modality reliability is more novel than applying Lagrangian methods to LLMs. score10: 5.9"
+              },
+              {
+                "paper_id": "FJWT0692hw",
+                "judgement": "better",
+                "confidence": 0.75,
+                "rationale": "Novel approach to text-dominant bias surpasses imitation learning with backtracking in innovation. score10: 6.0"
+              },
+              {
+                "paper_id": "0tAXMiSufG",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "AID's novel autoregressive diffusion for MRI is more innovative than binary classification for discrete diffusion, score10: 5.9"
+                "rationale": "Modality reliability-based routing offers more novelty than best-of-N distillation for alignment. score10: 6.1"
               },
               {
-                "paper_id": "spDUv05cEq",
+                "paper_id": "oF6e2WwxX0",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "AID's autoregressive diffusion with exponential integrators is more novel than flow-based mutual information estimation, score10: 6.0"
+                "rationale": "Dynamic fusion based on reliability is more innovative than token-level importance sampling for DPO. score10: 6.3"
               },
               {
-                "paper_id": "RZHdb7FnqlY",
+                "paper_id": "d94x0gWTUX",
+                "judgement": "better",
+                "confidence": 0.75,
+                "rationale": "Novel text interference quantification surpasses tool augmentation of reward models in innovation. score10: 6.5"
+              },
+              {
+                "paper_id": "QEHrmQPBdd",
+                "judgement": "better",
+                "confidence": 0.8,
+                "rationale": "Technical innovation in dynamic routing exceeds benchmarking contribution for reward models. score10: 6.7"
+              },
+              {
+                "paper_id": "LNLjU5C5dK",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "AID's autoregressive diffusion for MRI is more innovative than diffusion model deepfake detection, score10: 6.2"
-              },
-              {
-                "paper_id": "RaR3ETzyKp",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "AID's MRI reconstruction has similar novelty to improving rectified flow training via inter-path distance, score10: 6.5"
-              },
-              {
-                "paper_id": "zWy7dqOcel",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "AID's MRI reconstruction is less novel than sampling with mollified interaction energy descent, score10: 7.1"
-              },
-              {
-                "paper_id": "r5njV3BsuD",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "AID's MRI reconstruction has similar novelty to convergence bounds for diffusion via stochastic localization, score10: 6.5"
-              },
-              {
-                "paper_id": "PP1rudnxiW",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "AID's MRI reconstruction has similar novelty to combining transport methods with variational inference, score10: 6.4"
-              },
-              {
-                "paper_id": "Y8KK9kjgIK",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "AID's autoregressive diffusion for MRI is more novel than diffusion models for time series, score10: 5.6"
-              },
-              {
-                "paper_id": "s7gnrEtWSm",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "AID's MRI reconstruction has similar novelty to learning deterministic mappings between arbitrary densities, score10: 6.6"
+                "rationale": "Reliability-based dynamic routing is more novel than leveraging fine-grained quality signals. score10: 6.2"
               }
             ],
             "main_gaps": [
-              "Limited theoretical justification for the autoregressive approach in MRI reconstruction",
-              "Lack of comparison with other state-of-the-art diffusion-based MRI reconstruction methods",
-              "Potential concerns about the clinical applicability and generalization of the proposed method"
+              "Limited theoretical justification for the reliability metric",
+              "Potential scalability concerns with dynamic routing in larger models",
+              "Lack of analysis on computational overhead of the proposed approach"
             ],
-            "score": 6.629999999999902,
-            "loss": 0.07605419302636927,
-            "avg_confidence": 0.6555555555555554,
+            "score": 7.7399999999998785,
+            "loss": 0.02155020169102061,
+            "avg_confidence": 0.7428571428571429,
             "monotonic_violations": 0
           },
           "Storyteller": {
             "comparisons": [
               {
-                "paper_id": "HyjIEf90Tn",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's practical MRI application with efficient sampling is more impactful than theoretical binary classification, score10: 5.9"
-              },
-              {
-                "paper_id": "spDUv05cEq",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's specific MRI application with efficiency improvements is more impactful than general mutual information approximation, score10: 6.0"
-              },
-              {
-                "paper_id": "RZHdb7FnqlY",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's medical imaging application is more impactful than deepfake detection with similar technical complexity, score10: 6.2"
-              },
-              {
-                "paper_id": "RaR3ETzyKp",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's specific MRI application with efficiency improvements is more impactful than general training improvements, score10: 6.5"
-              },
-              {
-                "paper_id": "zWy7dqOcel",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Anchor's general sampling approach with higher score suggests broader impact than Story's specific MRI application, score10: 7.1"
-              },
-              {
-                "paper_id": "r5njV3BsuD",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's practical MRI application with efficiency improvements is more impactful than theoretical convergence bounds, score10: 6.5"
-              },
-              {
-                "paper_id": "PP1rudnxiW",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's specific MRI application with efficiency improvements is more impactful than general transport and inference combination, score10: 6.4"
-              },
-              {
-                "paper_id": "Y8KK9kjgIK",
+                "paper_id": "ULGbw2URE3",
                 "judgement": "better",
                 "confidence": 0.7,
-                "rationale": "Story's efficiency improvements and medical application are more impactful than time series application with lower score, score10: 5.6"
+                "rationale": "Story's dynamic routing for multimodal bias is more innovative than L3Ms' constraints, score10: 5.9"
               },
               {
-                "paper_id": "s7gnrEtWSm",
-                "judgement": "worse",
+                "paper_id": "FJWT0692hw",
+                "judgement": "better",
+                "confidence": 0.7,
+                "rationale": "Story's targeted solution for text-dominant bias is more impactful than sequence modeling, score10: 6.0"
+              },
+              {
+                "paper_id": "0tAXMiSufG",
+                "judgement": "better",
                 "confidence": 0.6,
-                "rationale": "Anchor's general deterministic mapping approach with higher score suggests broader impact than Story's specific MRI application, score10: 6.6"
+                "rationale": "Story's adaptive multimodal fusion is more novel than distillation techniques, score10: 6.1"
+              },
+              {
+                "paper_id": "oF6e2WwxX0",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers address specific problems with innovative approaches, score10: 6.3"
+              },
+              {
+                "paper_id": "d94x0gWTUX",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers introduce novel mechanisms for their domains, score10: 6.5"
+              },
+              {
+                "paper_id": "QEHrmQPBdd",
+                "judgement": "better",
+                "confidence": 0.6,
+                "rationale": "Story's solution to text-dominant bias is more innovative than benchmarking, score10: 6.7"
+              },
+              {
+                "paper_id": "LNLjU5C5dK",
+                "judgement": "tie",
+                "confidence": 0.5,
+                "rationale": "Both papers address important problems with novel approaches, score10: 6.2"
               }
             ],
             "main_gaps": [
-              "Limited theoretical analysis compared to anchor papers with convergence bounds",
-              "Narrow application focus on MRI reconstruction limits broader applicability",
-              "Potential lack of novelty in combining autoregressive modeling with diffusion models and exponential integrators"
+              "Limited evaluation on diverse multimodal tasks",
+              "Scalability concerns for larger models",
+              "Lack of theoretical analysis"
             ],
-            "score": 7.009999999999894,
-            "loss": 0.14326958301616005,
-            "avg_confidence": 0.6111111111111112,
-            "monotonic_violations": 0
+            "score": 6.939999999999896,
+            "loss": 0.1397930148721958,
+            "avg_confidence": 0.5857142857142856,
+            "monotonic_violations": 1
           }
         },
         "anchors_rounds": [
           [
             {
-              "paper_id": "HyjIEf90Tn",
-              "title": "Glauber Generative Model: Discrete Diffusion Models via Binary Classification",
-              "pattern_id": "pattern_100",
-              "score10": 5.9319999999999995,
+              "paper_id": "ULGbw2URE3",
+              "title": "L3Ms — Lagrange Large Language Models",
+              "pattern_id": "pattern_57",
+              "score10": 5.859999999999999,
               "review_count": 5,
               "dispersion10": 1.08,
               "weight": 0.8614228217442572
             },
             {
-              "paper_id": "spDUv05cEq",
-              "title": "Flow-based Variational Mutual Information: Fast and Flexible Approximations",
-              "pattern_id": "pattern_100",
-              "score10": 6.040000000000001,
+              "paper_id": "FJWT0692hw",
+              "title": "SequenceMatch: Imitation Learning for Autoregressive Sequence Modelling with Backtracking",
+              "pattern_id": "pattern_57",
+              "score10": 6.004,
               "review_count": 5,
-              "dispersion10": 1.2600000000000002,
-              "weight": 0.7928139244371923
+              "dispersion10": 0.7200000000000006,
+              "weight": 1.0417206216442176
             },
             {
-              "paper_id": "RZHdb7FnqlY",
-              "title": "Towards the Detection of Diffusion Model Deepfakes",
-              "pattern_id": "pattern_100",
-              "score10": 6.25,
+              "paper_id": "0tAXMiSufG",
+              "title": "BOND: Aligning LLMs with Best-of-N Distillation",
+              "pattern_id": "pattern_57",
+              "score10": 6.13,
               "review_count": 6,
-              "dispersion10": 4.140000000000001,
-              "weight": 0.37858174106134496
+              "dispersion10": 0.9000000000000008,
+              "weight": 1.0241632363449014
             },
             {
-              "paper_id": "RaR3ETzyKp",
-              "title": "Easing Training Process of Rectified Flow Models Via Lengthening Inter-Path Distance",
-              "pattern_id": "pattern_100",
+              "paper_id": "oF6e2WwxX0",
+              "title": "TIS-DPO: Token-level Importance Sampling for Direct Preference Optimization With Estimated Weights",
+              "pattern_id": "pattern_57",
+              "score10": 6.327999999999999,
+              "review_count": 5,
+              "dispersion10": 1.7999999999999996,
+              "weight": 0.6399140961528769
+            },
+            {
+              "paper_id": "d94x0gWTUX",
+              "title": "Tool-Augmented Reward Modeling",
+              "pattern_id": "pattern_57",
               "score10": 6.49,
               "review_count": 4,
               "dispersion10": 0.9000000000000008,
               "weight": 0.8470725854916313
             },
             {
-              "paper_id": "zWy7dqOcel",
-              "title": "Sampling with Mollified Interaction Energy Descent",
-              "pattern_id": "pattern_100",
-              "score10": 7.057,
-              "review_count": 5,
-              "dispersion10": 1.7099999999999995,
-              "weight": 0.6611658558037105
-            },
-            {
-              "paper_id": "r5njV3BsuD",
-              "title": "Nearly $d$-Linear Convergence Bounds for Diffusion Models via Stochastic Localization",
-              "pattern_id": "pattern_100",
-              "score10": 6.477142857142857,
-              "review_count": 7,
-              "dispersion10": 0.9000000000000008,
-              "weight": 1.0944429166735974
-            },
-            {
-              "paper_id": "PP1rudnxiW",
-              "title": "Transport meets Variational Inference: Controlled Monte Carlo Diffusions",
-              "pattern_id": "pattern_100",
-              "score10": 6.430000000000001,
-              "review_count": 6,
-              "dispersion10": 0.9000000000000008,
-              "weight": 1.0241632363449014
-            }
-          ],
-          [
-            {
-              "paper_id": "Y8KK9kjgIK",
-              "title": "SigDiffusions: Score-Based Diffusion Models for Time Series via Log-Signature Embeddings",
-              "pattern_id": "pattern_100",
-              "score10": 5.589999999999999,
+              "paper_id": "QEHrmQPBdd",
+              "title": "RM-Bench: Benchmarking Reward Models of Language Models with Subtlety and Style",
+              "pattern_id": "pattern_57",
+              "score10": 6.715,
               "review_count": 4,
-              "dispersion10": 2.5199999999999996,
-              "weight": 0.45722667966877856
+              "dispersion10": 0.18000000000000016,
+              "weight": 1.3639304342661864
             },
             {
-              "paper_id": "s7gnrEtWSm",
-              "title": "Iterative $\\alpha$-(de)Blending: Learning a Deterministic Mapping Between Arbitrary Densities",
-              "pattern_id": "pattern_100",
-              "score10": 6.571,
+              "paper_id": "LNLjU5C5dK",
+              "title": "Beyond Imitation: Leveraging Fine-grained Quality Signals for Alignment",
+              "pattern_id": "pattern_57",
+              "score10": 6.183999999999999,
               "review_count": 5,
-              "dispersion10": 3.6900000000000004,
-              "weight": 0.3820382663599264
+              "dispersion10": 0.9000000000000008,
+              "weight": 0.9430312995937128
             }
           ]
         ],
         "pass": {
           "mode": "two_of_three_q75_and_avg_ge_q50",
           "used_distribution": "pattern",
-          "pattern_paper_count": 148,
-          "q50": 6.25,
-          "q75": 6.49,
-          "count_roles_ge_q75": 2,
+          "pattern_paper_count": 111,
+          "q50": 6.13,
+          "q75": 6.327999999999999,
+          "count_roles_ge_q75": 3,
           "roles_ge_q75": {
-            "Methodology": false,
+            "Methodology": true,
             "Novelty": true,
             "Storyteller": true
           },
           "avg_ge_q50": true,
-          "avg_score": 6.669999999999901
+          "avg_score": 7.013333333333228
         }
       }
     }
   ],
-  "results_dir": "results/run_20260131_124028_1894_ca362b",
+  "results_dir": "results/run_20260202_055504_6507_531158",
   "novelty_report": {
-    "run_id": "run_20260131_124028_1894_ca362b",
-    "created_at": "2026-01-31T12:51:18.824195+00:00",
-    "user_idea": "Propose the autoregressive image diffusion (AID) model for image sequence generation and apply it to sample the posterior for accelerated MRI reconstruction",
+    "run_id": "run_20260202_055504_6507_531158",
+    "created_at": "2026-02-02T07:44:06.837886+00:00",
+    "user_idea": "我们研究音频-文本大模型的文本主导偏见：在 faithful/adversarial/irrelevant 三类设定下，提出基于模态可信度的路由/融合框架。通过构造“文本干扰”表示能量与时序证据，训练轻量门控/适配器，在推理时选择 Joint 或 Audio 专家，实现对抗文本误导下的稳健情绪识别",
     "embedding_available": true,
     "embedding_model": "Qwen/Qwen3-Embedding-8B",
     "top_k": 100,
@@ -475,579 +402,547 @@
       "medium": 0.82
     },
     "risk_level": "low",
-    "max_similarity": 0.6557393074035645,
+    "max_similarity": 0.5963850021362305,
     "candidates": [
       {
-        "paper_id": "Loek7hfb46P",
-        "title": "Fast Sampling of Diffusion Models with Exponential Integrator",
-        "pattern_id": "pattern_100",
-        "domain": "Machine Learning",
-        "text_hash": "0aea4f541f32674144e4aaef17ca7bc5015733dcf7eaf9f2ea8fd58b35e1f01e",
-        "cosine": 0.6557393074035645,
-        "keyword_overlap": 0.17857142857142858
-      },
-      {
-        "paper_id": "qeXcMutEZY",
-        "title": "Ambient Diffusion Posterior Sampling: Solving Inverse Problems with Diffusion Models Trained on Corrupted Data",
-        "pattern_id": "pattern_49",
-        "domain": "Machine Learning",
-        "text_hash": "ab12790514782e57f8a77bf37779ebe8d98b379c4505fda197af756c511123a3",
-        "cosine": 0.6326676607131958,
-        "keyword_overlap": 0.09688581314878893
-      },
-      {
-        "paper_id": "6EUtjXAvmj",
-        "title": "Variational Diffusion Posterior Sampling with Midpoint Guidance",
-        "pattern_id": "pattern_49",
-        "domain": "Machine Learning",
-        "text_hash": "409fa7e25287199214dfcec3dc4f4c911e53b60c683e6b5ab1676806a614d8cd",
-        "cosine": 0.6113014221191406,
-        "keyword_overlap": 0.10104529616724739
-      },
-      {
-        "paper_id": "tplXNcHZs1",
-        "title": "Diffusion Posterior Sampling for Linear Inverse Problem Solving: A Filtering Perspective",
-        "pattern_id": "pattern_49",
-        "domain": "Machine Learning",
-        "text_hash": "afa2520fd3c02d1a21b964699156cc80727c795ab6b8c79b04cb88a2ac089211",
-        "cosine": 0.6079820394515991,
-        "keyword_overlap": 0.10847457627118644
-      },
-      {
-        "paper_id": "0vqjc50HfcC",
-        "title": "DDM$^2$: Self-Supervised Diffusion MRI Denoising with Generative Diffusion Models",
+        "paper_id": "TPZRq4FALB",
+        "title": "Test-time Adaptation against Multi-modal Reliability Bias",
         "pattern_id": "",
-        "domain": "Medical Imaging",
-        "text_hash": "a65b79d04b833964ab7e6478af757c015bcd9754ad463e87c32facf553b10b75",
-        "cosine": 0.6067171096801758,
-        "keyword_overlap": 0.099644128113879
-      },
-      {
-        "paper_id": "1YO4EE3SPB",
-        "title": "A Variational Perspective on Solving Inverse Problems with Diffusion Models",
-        "pattern_id": "pattern_49",
-        "domain": "Computer Vision",
-        "text_hash": "c5ec3e720ee46fb12f0eae3be28ee6ceb4c79601da5823759e48b0644caa5448",
-        "cosine": 0.6062808632850647,
-        "keyword_overlap": 0.1099290780141844
-      },
-      {
-        "paper_id": "yVeNBxwL5W",
-        "title": "MaRS: A Fast Sampler for Mean Reverting Diffusion based on ODE and SDE Solvers",
-        "pattern_id": "pattern_100",
         "domain": "Machine Learning",
-        "text_hash": "b4b933e0e01cc1e1d70ad7b075bc6a338fbcaff2d01fcbff37425b103868a15d",
-        "cosine": 0.6039837598800659,
-        "keyword_overlap": 0.1288135593220339
+        "text_hash": "85ecbb7da83a1aaae886311195041898f0bd5a40aeffc5097b95fc79d213ed50",
+        "cosine": 0.5963850021362305,
+        "keyword_overlap": 0.08108108108108109
       },
       {
-        "paper_id": "wxPnuFp8fZ",
-        "title": "Self-Supervised Diffusion MRI Denoising via Iterative and Stable Refinement",
+        "paper_id": "ePJrZLIqpV",
+        "title": "Rethinking Audio-Visual Adversarial Vulnerability from Temporal and Modality Perspectives",
         "pattern_id": "",
-        "domain": "Medical Imaging",
-        "text_hash": "6b7cde32d7f09a924e1fd95330fd1a5b94156e8f138a2a9955b31e1f71e747ef",
-        "cosine": 0.5982657670974731,
-        "keyword_overlap": 0.10273972602739725
+        "domain": "Machine Learning",
+        "text_hash": "d3f943cf44bf7e970363fa0aedc8716afdd67cc46e915d54ff2861ebe664249d",
+        "cosine": 0.5668509602546692,
+        "keyword_overlap": 0.07894736842105263
       },
       {
-        "paper_id": "wmmDvZGFK7",
-        "title": "PFDiff: Training-Free Acceleration of Diffusion Models Combining Past and Future Scores",
-        "pattern_id": "pattern_100",
+        "paper_id": "AV7OXVlAyi",
+        "title": "Mitigating Modality Prior-Induced Hallucinations in Multimodal Large Language Models via Deciphering Attention Causality",
+        "pattern_id": "pattern_13",
         "domain": "Machine Learning",
-        "text_hash": "c873412f84761714475556e74a7d55a9f22253f92d61246013d76129e2b74b48",
-        "cosine": 0.5957354307174683,
-        "keyword_overlap": 0.12413793103448276
+        "text_hash": "2b00d0adacffa9b4b76e94a68ebe21328497754c613a608494520d4cccc2d32e",
+        "cosine": 0.5544014573097229,
+        "keyword_overlap": 0.11372549019607843
       },
       {
-        "paper_id": "rCGleSgNBK",
-        "title": "Enhanced Diffusion Sampling via Extrapolation with Multiple ODE Solutions",
-        "pattern_id": "pattern_100",
+        "paper_id": "vtT09dYPGI",
+        "title": "Routing Experts: Learning to Route Dynamic Experts in Existing Multi-modal Large Language Models",
+        "pattern_id": "pattern_74",
         "domain": "Machine Learning",
-        "text_hash": "6f68c40c7510d4f147c06e945bf126a4565354133504dc7332decb1b7738f44d",
-        "cosine": 0.5860313177108765,
-        "keyword_overlap": 0.13402061855670103
+        "text_hash": "59b22728a0b85817d085cc72b342dae6e768ff39578b9a159327d2d8445e6d8c",
+        "cosine": 0.5399153232574463,
+        "keyword_overlap": 0.11969111969111969
+      },
+      {
+        "paper_id": "l60EM8md3t",
+        "title": "Revisiting Deep Audio-Text Retrieval Through the Lens of Transportation",
+        "pattern_id": "",
+        "domain": "Machine Learning",
+        "text_hash": "283fd505312f835e0c070c65fdd13e3d83bcd45f433e9e03aed7bb9a3e4e5108",
+        "cosine": 0.5366950035095215,
+        "keyword_overlap": 0.08235294117647059
+      },
+      {
+        "paper_id": "1SYUKPeM12",
+        "title": "Aligned Better, Listen Better for Audio-Visual Large Language Models",
+        "pattern_id": "pattern_13",
+        "domain": "Machine Learning",
+        "text_hash": "e80f050a72eb521e9a39c1ad0e8bf7d83712f9be0580d5b59057d0d81b9fcc27",
+        "cosine": 0.5312134027481079,
+        "keyword_overlap": 0.1
+      },
+      {
+        "paper_id": "74vnDs1R97",
+        "title": "Wayward Concepts In Multimodal Models",
+        "pattern_id": "pattern_51",
+        "domain": "Machine Learning",
+        "text_hash": "e3575cced82c01c31692bb5ad0e1b47a531a5a79bf5f4da6c81d24b34c00224a",
+        "cosine": 0.5265761613845825,
+        "keyword_overlap": 0.08300395256916997
+      },
+      {
+        "paper_id": "H-T3F0dMbyj",
+        "title": "CLIPSep: Learning Text-queried Sound Separation with Noisy Unlabeled Videos",
+        "pattern_id": "pattern_7",
+        "domain": "Machine Learning",
+        "text_hash": "eb4f5bb7908e3c70f31e81e249b34175823164cc723accd9cda3bcc4ffcfb121",
+        "cosine": 0.5243499279022217,
+        "keyword_overlap": 0.09019607843137255
+      },
+      {
+        "paper_id": "vbmSSIhKAM",
+        "title": "VoxDialogue: Can Spoken Dialogue Systems Understand Information Beyond Words?",
+        "pattern_id": "pattern_58",
+        "domain": "Natural Language Processing",
+        "text_hash": "7774ff496e604d63f22e6484690265ff5fec1017bc86a0ca9d5a457451c90865",
+        "cosine": 0.5201357007026672,
+        "keyword_overlap": 0.07434944237918216
+      },
+      {
+        "paper_id": "QsA3YzNUxA",
+        "title": "Is Your Multimodal Language Model Oversensitive to Safe Queries?",
+        "pattern_id": "",
+        "domain": "Natural Language Processing",
+        "text_hash": "64df7fdc506738da7e13192c30d071f24d3a5f4fdaf1fc1a5f01969049bba016",
+        "cosine": 0.5149638056755066,
+        "keyword_overlap": 0.08396946564885496
       }
     ],
     "notes": [
       "index_reused"
     ],
-    "report_path": "results/run_20260131_124028_1894_ca362b/novelty_report.json",
+    "report_path": "results/run_20260202_055504_6507_531158/novelty_report.json",
     "pivot_attempts": 0,
     "action": "pivot"
   },
   "recall_audit": {
     "final_top_k": [
       {
-        "pattern_id": "pattern_100",
-        "name": "Reframing Diffusion Sampling Efficiency",
-        "final_score": 1.201746166059375,
-        "path1_score": 1.041083574295044,
+        "pattern_id": "pattern_7",
+        "name": "Reframing Audio Understanding Through Multimodal and Probabilistic Learning",
+        "final_score": 2.474976572969851,
+        "path1_score": 1.7213249039064422,
         "path2_score": 0.0,
-        "path3_score": 0.16066259176433093,
-        "cluster_size": 148
+        "path3_score": 0.7536516690634086,
+        "cluster_size": 41
       },
       {
-        "pattern_id": "pattern_115",
-        "name": "Semantic Alignment for Compositional Generation",
-        "final_score": 0.674303454139328,
-        "path1_score": 0.25385723114013675,
-        "path2_score": 0.020000000000000004,
-        "path3_score": 0.4004462229991913,
-        "cluster_size": 107
-      },
-      {
-        "pattern_id": "pattern_102",
-        "name": "Text to 3D generation robustness",
-        "final_score": 0.4798963576522828,
-        "path1_score": 0.2566413879394531,
-        "path2_score": 0.020000000000000004,
-        "path3_score": 0.2032549697128296,
-        "cluster_size": 50
-      },
-      {
-        "pattern_id": "pattern_49",
-        "name": "Reframing Inverse Problems with Diffusion",
-        "final_score": 0.39806022421312337,
-        "path1_score": 0.25667169094085696,
+        "pattern_id": "pattern_58",
+        "name": "Reframing Dialogue System Challenges",
+        "final_score": 0.5128803872894196,
+        "path1_score": 0.4400013396156977,
         "path2_score": 0.0,
-        "path3_score": 0.14138853327226644,
-        "cluster_size": 15
-      },
-      {
-        "pattern_id": "pattern_114",
-        "name": "Reframing Video Generation Challenges",
-        "final_score": 0.37045553854217533,
-        "path1_score": 0.2752640962600708,
-        "path2_score": 0.0,
-        "path3_score": 0.09519144228210452,
-        "cluster_size": 44
+        "path3_score": 0.07287904767372198,
+        "cluster_size": 17
       },
       {
         "pattern_id": "pattern_57",
         "name": "Preference Alignment Through Distributional Modeling",
-        "final_score": 0.27318592071533204,
-        "path1_score": 0.27318592071533204,
+        "final_score": 0.30065407269232813,
+        "path1_score": 0.21875833134011288,
         "path2_score": 0.0,
-        "path3_score": 0.0,
+        "path3_score": 0.08189574135221524,
         "cluster_size": 111
       },
       {
-        "pattern_id": "pattern_94",
-        "name": "Reframing Generation Through Multi-Feature Integration",
-        "final_score": 0.2681644201278687,
-        "path1_score": 0.2681644201278687,
+        "pattern_id": "pattern_114",
+        "name": "Reframing Video Generation Challenges",
+        "final_score": 0.2854420301220971,
+        "path1_score": 0.20265463607399292,
         "path2_score": 0.0,
-        "path3_score": 0.0,
-        "cluster_size": 34
+        "path3_score": 0.08278739404810422,
+        "cluster_size": 44
       },
       {
-        "pattern_id": "pattern_68",
-        "name": "Language Model Driven Planning Paradigms",
-        "final_score": 0.2571013689041138,
-        "path1_score": 0.2571013689041138,
-        "path2_score": 0.0,
-        "path3_score": 0.0,
-        "cluster_size": 20
-      },
-      {
-        "pattern_id": "pattern_7",
-        "name": "Reframing Audio Understanding Through Multimodal and Probabilistic Learning",
-        "final_score": 0.25541176795959475,
-        "path1_score": 0.25541176795959475,
-        "path2_score": 0.0,
-        "path3_score": 0.0,
-        "cluster_size": 41
-      },
-      {
-        "pattern_id": "pattern_99",
-        "name": "Frequency Aware Adaptive Restoration",
-        "final_score": 0.15380655369186405,
+        "pattern_id": "pattern_8",
+        "name": "Reframing Speech Synthesis Efficiency",
+        "final_score": 0.14661099612023606,
         "path1_score": 0.0,
         "path2_score": 0.0,
-        "path3_score": 0.15380655369186405,
+        "path3_score": 0.14661099612023606,
+        "cluster_size": 33
+      },
+      {
+        "pattern_id": "pattern_33",
+        "name": "Transformer Training Stability Paradigms",
+        "final_score": 0.07825587092494557,
+        "path1_score": 0.0,
+        "path2_score": 0.0,
+        "path3_score": 0.07825587092494557,
+        "cluster_size": 31
+      },
+      {
+        "pattern_id": "pattern_51",
+        "name": "Adversarial Vulnerabilities and Robustness in Large Language Models",
+        "final_score": 0.020000000000000004,
+        "path1_score": 0.0,
+        "path2_score": 0.020000000000000004,
+        "path3_score": 0.0,
+        "cluster_size": 92
+      },
+      {
+        "pattern_id": "pattern_59",
+        "name": "Data driven backdoor attack strategies",
+        "final_score": 0.020000000000000004,
+        "path1_score": 0.0,
+        "path2_score": 0.020000000000000004,
+        "path3_score": 0.0,
+        "cluster_size": 51
+      },
+      {
+        "pattern_id": "pattern_45",
+        "name": "Personalized Privacy Accounting",
+        "final_score": 0.020000000000000004,
+        "path1_score": 0.0,
+        "path2_score": 0.020000000000000004,
+        "path3_score": 0.0,
+        "cluster_size": 100
+      },
+      {
+        "pattern_id": "pattern_66",
+        "name": "Adversarial Transferability Reframing",
+        "final_score": 0.016000000000000004,
+        "path1_score": 0.0,
+        "path2_score": 0.016000000000000004,
+        "path3_score": 0.0,
         "cluster_size": 23
       }
     ],
     "path1": {
       "top_ideas": [
         {
-          "idea_id": "idea_8082",
-          "similarity": 0.6984537839889526,
-          "snippet": "Utilize image diffusion models to address video inverse problems by treating the time dimension as a batch dimension and ensuring batch consistency.",
+          "idea_id": "idea_5431",
+          "similarity": 0.5905706019769511,
+          "snippet": "Introduce a novel adversarial attack framework, AdvWave, that effectively jailbreaks large audio-language models while maintaining audio stealthiness.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_7839",
-          "similarity": 0.6927803158760071,
-          "snippet": "Combine diffusion synchronization and score distillation sampling to enable zero-shot image generation in arbitrary spaces with weak conditioning.",
+          "idea_id": "idea_7273",
+          "similarity": 0.5731957830148035,
+          "snippet": "Introduce a comprehensive benchmark to evaluate audio understanding models on complex, expert-level tasks across multiple audio domains.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_5588",
-          "similarity": 0.688160240650177,
-          "snippet": "Integrate autoregressive models with diffusion transformers to enhance long video generation by leveraging spatial and temporal information.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_3845",
-          "similarity": 0.6829648017883301,
-          "snippet": "Reframe autoregressive sequence generation as an imitation learning problem to address compounding errors and improve sequence quality.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_4171",
-          "similarity": 0.6704110503196716,
-          "snippet": "Leverage diffusion models for flexible and controlled human motion generation through novel composition methods.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_4315",
-          "similarity": 0.6689131259918213,
-          "snippet": "Introduce a diffusion model that learns from a single motion sequence to synthesize diverse and realistic animations without additional training.",
+          "idea_id": "idea_8256",
+          "similarity": 0.5724538131188435,
+          "snippet": "Introduce a spatial-aware model to generate controllable and immersive stereo audio from text, leveraging a large-scale multimodal dataset.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_6340",
-          "similarity": 0.6650488376617432,
-          "snippet": "Integrate text and drag signals for precise and ambiguity-free image editing using diffusion models.",
+          "idea_id": "idea_7643",
+          "similarity": 0.5698447398804021,
+          "snippet": "Introduce a comprehensive framework for generating natural language explanations of audio differences using large language models and novel datasets.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_4641",
+          "similarity": 0.5604307295566653,
+          "snippet": "Leverage bi-modal semantic similarity to enable weakly-supervised audio separation by using language descriptions as a proxy for single-source audio supervision.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_684",
+          "similarity": 0.5575136990165491,
+          "snippet": "Integrate contrastive learning with masked data modeling to enhance joint audio-visual representation learning.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_4133",
-          "similarity": 0.659588634967804,
-          "snippet": "Enhance diffusion model diversity by annealing the conditioning signal during sampling to balance diversity and quality.",
+          "idea_id": "idea_5293",
+          "similarity": 0.5505212521821985,
+          "snippet": "Introduce a novel evaluation protocol to assess audio foundation models on their ability to handle turn-taking dynamics in conversations.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_6252",
-          "similarity": 0.6575317978858948,
-          "snippet": "Improve diffusion model training efficiency and generation quality by aligning noisy input states with clean image representations from external encoders.",
+          "idea_id": "idea_6236",
+          "similarity": 0.5494820968570456,
+          "snippet": "Introduce a benchmark to evaluate spoken dialogue systems' ability to interpret multi-modal audio cues beyond text.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_5061",
-          "similarity": 0.6564894318580627,
-          "snippet": "Introduce block diffusion models that combine the strengths of autoregressive and diffusion models to enable flexible-length generation and improved inference efficiency.",
+          "idea_id": "idea_5355",
+          "similarity": 0.5484116226064176,
+          "snippet": "Introduce a generative audio model capable of following text instructions and achieving compositional audio transformations through a novel dataset and inference technique.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_5541",
+          "similarity": 0.5468958283502822,
+          "snippet": "Introduce a natural language-based speech evaluation corpus and an alignment approach to enhance audio LLMs' ability to assess speech quality.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_7438",
+          "similarity": 0.5379040598625446,
+          "snippet": "Enhance audio classification accuracy by using text-to-audio diffusion models to generate synthetic data aligned with small-scale datasets.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_5968",
+          "similarity": 0.5283200253358297,
+          "snippet": "Utilize synthetic audio doppelgängers to enhance contrastive learning by generating diverse and causally manipulated audio variations.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_6706",
+          "similarity": 0.526478534698108,
+          "snippet": "Introduce a cooperative diffusion framework that aligns audio and video generation using a discriminator-guided joint guidance module.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_4542",
-          "similarity": 0.6561887264251709,
-          "snippet": "Extend diffusion models to pixel-level sketch generation with scale-adaptive guidance to balance recognizability and complexity.",
+          "idea_id": "idea_1972",
+          "similarity": 0.5241112130267457,
+          "snippet": "Develop an auto-regressive model to generate high-fidelity audio samples conditioned on text inputs, overcoming challenges of source separation and data scarcity.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_5612",
+          "similarity": 0.5233202974820639,
+          "snippet": "Introduce a self-supervised learning framework, CAV2vec, to enhance audio-visual speech recognition by addressing joint audio-visual corruption.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_8125",
+          "similarity": 0.5232739396879981,
+          "snippet": "Enhance deepfake audio detection by focusing on high-frequency features through frequency-selective adversarial training.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_5696",
-          "similarity": 0.6525541543960571,
-          "snippet": "Transform discrete diffusion model learning into a binary classification task to improve performance in language and image generation.",
+          "idea_id": "idea_2391",
+          "similarity": 0.5109695720154371,
+          "snippet": "Introduce a method to convert audio sequences into concise discrete tokens for efficient retrieval across various audio types.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_1665",
-          "similarity": 0.647049605846405,
-          "snippet": "Enhance text-to-image generation by integrating retrieval mechanisms to improve image fidelity for rare entities.",
+          "idea_id": "idea_866",
+          "similarity": 0.5066365901849823,
+          "snippet": "Enable realistic video synthesis from open domain text prompts by leveraging a novel causal model and joint training on image-text and video-text data.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_1496",
+          "similarity": 0.4960455156561936,
+          "snippet": "Identify vocoder-specific fingerprints in generated audio to enable source attribution in forensic applications.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_7137",
-          "similarity": 0.6427534222602844,
-          "snippet": "Introduce discrete diffusion models to address the limitations of autoregressive models in complex reasoning and planning tasks.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_4607",
-          "similarity": 0.6416792273521423,
-          "snippet": "Introduce a filtering-based approach to efficiently and accurately sample from the Bayesian posterior in diffusion models for linear inverse problems.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_7456",
-          "similarity": 0.6416034698486328,
-          "snippet": "Integrate video generation and novel view synthesis into a unified diffusion model for consistent dynamic 3D content creation.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_4280",
-          "similarity": 0.6385294198989868,
-          "snippet": "Introduce an autoregressive diffusion model for direct raw waveform generation, enabling high-fidelity and temporally coherent speech synthesis.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_5733",
-          "similarity": 0.6346430778503418,
-          "snippet": "Introduce Condition Contrastive Alignment to unify language and visual modalities in autoregressive visual generation, eliminating the need for guided sampling.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_8069",
-          "similarity": 0.6336281299591064,
-          "snippet": "Introduce a unified model for scalable visual content generation across multiple modalities by leveraging a view-wise sampling algorithm and autoregressive generation.",
+          "idea_id": "idea_5104",
+          "similarity": 0.49485337823826037,
+          "snippet": "Introduce a joint inference framework for fully unsupervised adaptation of large language and vision-language models, eliminating the need for manual prompt engineering and labeled examples.",
           "pattern_count": 0
-        },
-        {
-          "idea_id": "idea_7957",
-          "similarity": 0.633034348487854,
-          "snippet": "Introduce a unified diffusion model that combines blurring and noise to leverage both high-frequency and low-frequency image structures for improved generative performance.",
-          "pattern_count": 1
         }
       ],
       "pattern_scores_topn": [
         {
-          "pattern_id": "pattern_100",
-          "score": 1.041083574295044
+          "pattern_id": "pattern_7",
+          "score": 1.7213249039064422
         },
         {
-          "pattern_id": "pattern_114",
-          "score": 0.2752640962600708
+          "pattern_id": "pattern_58",
+          "score": 0.4400013396156977
         },
         {
           "pattern_id": "pattern_57",
-          "score": 0.27318592071533204
+          "score": 0.21875833134011288
         },
         {
-          "pattern_id": "pattern_94",
-          "score": 0.2681644201278687
-        },
-        {
-          "pattern_id": "pattern_68",
-          "score": 0.2571013689041138
-        },
-        {
-          "pattern_id": "pattern_49",
-          "score": 0.25667169094085696
-        },
-        {
-          "pattern_id": "pattern_102",
-          "score": 0.2566413879394531
-        },
-        {
-          "pattern_id": "pattern_7",
-          "score": 0.25541176795959475
-        },
-        {
-          "pattern_id": "pattern_115",
-          "score": 0.25385723114013675
+          "pattern_id": "pattern_114",
+          "score": 0.20265463607399292
         }
       ]
     },
     "path2": {
       "top_domains": [
         {
-          "domain_id": "domain_1",
-          "name": "Computer Vision",
+          "domain_id": "domain_11",
+          "name": "Security & Privacy",
           "weight": 1.0,
-          "paper_count": 1076
+          "paper_count": 236
         }
       ],
       "pattern_scores_topn": [
         {
-          "pattern_id": "pattern_112",
+          "pattern_id": "pattern_45",
           "score": 0.020000000000000004
         },
         {
-          "pattern_id": "pattern_115",
+          "pattern_id": "pattern_51",
           "score": 0.020000000000000004
         },
         {
-          "pattern_id": "pattern_103",
+          "pattern_id": "pattern_59",
           "score": 0.020000000000000004
         },
         {
-          "pattern_id": "pattern_105",
-          "score": 0.020000000000000004
+          "pattern_id": "pattern_66",
+          "score": 0.016000000000000004
         },
         {
-          "pattern_id": "pattern_102",
-          "score": 0.020000000000000004
+          "pattern_id": "pattern_12",
+          "score": 0.016000000000000004
         }
       ]
     },
     "path3": {
       "top_papers": [
         {
-          "paper_id": "VM8batVBWvg",
-          "similarity": 0.7434985041618347,
-          "title": "Discrete Predictor-Corrector Diffusion Models for Image Synthesis",
-          "quality": 0.7350000000000001,
-          "review_count": 4
-        },
-        {
-          "paper_id": "mRieQgMtNTQ",
-          "similarity": 0.7500475645065308,
-          "title": "Zero-Shot Image Restoration Using Denoising Diffusion Null-Space Model",
-          "quality": 0.7160000000000001,
+          "paper_id": "CYK7RfcOzQ4",
+          "similarity": 0.5934568778418134,
+          "title": "AudioGen: Textually Guided Audio Generation",
+          "quality": 0.726,
           "review_count": 5
         },
         {
-          "paper_id": "OnD9zGAGT0k",
-          "similarity": 0.7511141896247864,
-          "title": "Diffusion Posterior Sampling for General Noisy Inverse Problems",
-          "quality": 0.6860000000000002,
+          "paper_id": "5-Df3tljit7",
+          "similarity": 0.5813019642858354,
+          "title": "Defending against Adversarial Audio via Diffusion Model",
+          "quality": 0.7010000000000001,
           "review_count": 5
         },
         {
-          "paper_id": "o3yygm3lnzS",
-          "similarity": 0.6451258659362793,
-          "title": "PV3D: A 3D Generative Model for Portrait Video Generation",
-          "quality": 0.7580000000000001,
+          "paper_id": "TeVAZXr3yv",
+          "similarity": 0.5988290817956903,
+          "title": "MMAU: A Massive Multi-Task Audio Understanding and Reasoning Benchmark",
+          "quality": 0.616,
           "review_count": 5
         },
         {
-          "paper_id": "op-ceGueqc4",
-          "similarity": 0.7312357425689697,
-          "title": "Scaling Laws For Deep Learning Based Image Reconstruction",
-          "quality": 0.6566666666666666,
+          "paper_id": "l4fMj4Vnly",
+          "similarity": 0.5894818969853043,
+          "title": "ADIFF: Explaining audio difference using natural language",
+          "quality": 0.616,
+          "review_count": 5
+        },
+        {
+          "paper_id": "v8Mi8KU6056",
+          "similarity": 0.5411520977176486,
+          "title": "wav2tok: Deep Sequence Tokenizer for Audio Retrieval",
+          "quality": 0.6625000000000001,
           "review_count": 6
         },
         {
-          "paper_id": "jQj-_rLVXsj",
-          "similarity": 0.6854962706565857,
-          "title": "DiffuSeq: Sequence to Sequence Text Generation with Diffusion Models",
-          "quality": 0.683,
-          "review_count": 5
-        },
-        {
-          "paper_id": "U2g8OGONA_V",
-          "similarity": 0.6693718433380127,
-          "title": "Multi-domain image generation and translation with identifiability guarantees",
-          "quality": 0.6809999999999999,
-          "review_count": 5
-        },
-        {
-          "paper_id": "UaAD-Nu86WX",
-          "similarity": 0.6322396993637085,
-          "title": "DiGress: Discrete Denoising diffusion for graph generation",
-          "quality": 0.7162499999999999,
-          "review_count": 4
-        },
-        {
-          "paper_id": "8JqINxA-2a",
-          "similarity": 0.6645233631134033,
-          "title": "Unified Discrete Diffusion for Simultaneous Vision-Language Generation",
-          "quality": 0.6679999999999999,
-          "review_count": 5
-        },
-        {
-          "paper_id": "gzqrANCF4g",
-          "similarity": 0.6851406693458557,
-          "title": "Language Model Beats Diffusion - Tokenizer is key to visual generation",
-          "quality": 0.635,
-          "review_count": 4
-        },
-        {
-          "paper_id": "kJUS5nD0vPB",
-          "similarity": 0.5843643546104431,
-          "title": "Out-of-Distribution Detection and Selective Generation for Conditional Language Models",
-          "quality": 0.74125,
-          "review_count": 4
-        },
-        {
-          "paper_id": "1-MBdJssZ-S",
-          "similarity": 0.6407157182693481,
-          "title": "Discrete Contrastive Diffusion for Cross-Modal Music and Image Generation",
-          "quality": 0.666,
-          "review_count": 5
-        },
-        {
-          "paper_id": "8pusxkLEQO",
-          "similarity": 0.737634539604187,
-          "title": "ARLON: Boosting Diffusion Transformers with Autoregressive Models for Long Video Generation",
-          "quality": 0.5680000000000001,
-          "review_count": 5
-        },
-        {
-          "paper_id": "hQwb-lbM6EL",
-          "similarity": 0.5901069045066833,
-          "title": "InCoder: A Generative Model for Code Infilling and Synthesis",
-          "quality": 0.7060000000000001,
-          "review_count": 5
-        },
-        {
-          "paper_id": "bvpkw7UIRdU",
-          "similarity": 0.5483822822570801,
-          "title": "On the Usefulness of Embeddings, Clusters and Strings for Text Generation Evaluation",
-          "quality": 0.756,
-          "review_count": 5
-        },
-        {
-          "paper_id": "H2Gxil855b",
-          "similarity": 0.6724796295166016,
-          "title": "Atlas Gaussians Diffusion for 3D Generation",
-          "quality": 0.616,
-          "review_count": 5
-        },
-        {
-          "paper_id": "BWuBDdXVnH",
-          "similarity": 0.7266196608543396,
-          "title": "ControlAR: Controllable Image Generation with Autoregressive Models",
-          "quality": 0.568,
-          "review_count": 5
-        },
-        {
-          "paper_id": "M2SsqpxGtc",
-          "similarity": 0.6666411757469177,
-          "title": "CubeDiff: Repurposing Diffusion-Based Image Models for Panorama Generation",
-          "quality": 0.616,
-          "review_count": 5
-        },
-        {
-          "paper_id": "OuV9ZrkQlc",
-          "similarity": 0.6925970911979675,
-          "title": "ImagenHub: Standardizing the evaluation of conditional image generation models",
+          "paper_id": "U42TkrEDzb",
+          "similarity": 0.5921703728207518,
+          "title": "Audio Large Language Models Can Be Descriptive Speech Quality Evaluators",
           "quality": 0.5880000000000001,
           "review_count": 5
         },
         {
-          "paper_id": "QE1LFzXQPL",
-          "similarity": 0.7150833606719971,
-          "title": "ImageFolder: Autoregressive Image Generation with Folded Tokens",
-          "quality": 0.5680000000000001,
+          "paper_id": "qPx3i9sMxv",
+          "similarity": 0.5494159698103142,
+          "title": "Both Ears Wide Open: Towards Language-Driven Spatial Audio Generation",
+          "quality": 0.616,
           "review_count": 5
+        },
+        {
+          "paper_id": "B2Fqu7Y2cd",
+          "similarity": 0.5760646573604059,
+          "title": "Fugatto 1: Foundational Generative Audio Transformer Opus 1",
+          "quality": 0.585,
+          "review_count": 4
+        },
+        {
+          "paper_id": "2GcR9bO620",
+          "similarity": 0.5651715665881771,
+          "title": "I Can Hear You: Selective Robust Training for Deepfake Audio Detection",
+          "quality": 0.596,
+          "review_count": 5
+        },
+        {
+          "paper_id": "90Db4RUBc7",
+          "similarity": 0.5658512579028526,
+          "title": "Joint Fine-tuning and Conversion of Pretrained Speech and Language Models towards Linear Complexity",
+          "quality": 0.5880000000000001,
+          "review_count": 5
+        },
+        {
+          "paper_id": "2e4ECh0ikn",
+          "similarity": 0.6023061791216693,
+          "title": "Talking Turns: Benchmarking Audio Foundation Models on Turn-Taking Dynamics",
+          "quality": 0.5499999999999999,
+          "review_count": 6
+        },
+        {
+          "paper_id": "4N97bz1sP6",
+          "similarity": 0.5632372384464233,
+          "title": "Weakly-supervised Audio Separation via Bi-modal Semantic Similarity",
+          "quality": 0.585,
+          "review_count": 4
+        },
+        {
+          "paper_id": "agbiPPuSeQ",
+          "similarity": 0.5854480892892995,
+          "title": "MMDisCo: Multi-Modal Discriminator-Guided Cooperative Diffusion for Joint Audio and Video Generation",
+          "quality": 0.5559999999999999,
+          "review_count": 5
+        },
+        {
+          "paper_id": "FyMjfDQ9RO",
+          "similarity": 0.5448145791483149,
+          "title": "Sylber: Syllabic Embedding Representation of Speech from Raw Audio",
+          "quality": 0.588,
+          "review_count": 5
+        },
+        {
+          "paper_id": "LbEWwJOufy",
+          "similarity": 0.4928947690906981,
+          "title": "TANGO: Co-Speech Gesture Video Reenactment with Hierarchical Audio Motion Embedding and Diffusion Interpolation",
+          "quality": 0.648,
+          "review_count": 5
+        },
+        {
+          "paper_id": "yBlVlS2Fd9",
+          "similarity": 0.536992182820744,
+          "title": "WavTokenizer: an Efficient Acoustic Discrete Codec Tokenizer for Audio Language Modeling",
+          "quality": 0.576,
+          "review_count": 5
+        },
+        {
+          "paper_id": "XRtyVELwr6",
+          "similarity": 0.5424834309067207,
+          "title": "Contrastive Learning from Synthetic Audio Doppelgängers",
+          "quality": 0.568,
+          "review_count": 5
+        },
+        {
+          "paper_id": "odU59TxdiB",
+          "similarity": 0.5133568420691389,
+          "title": "SSLAM: Enhancing Self-Supervised Models with Audio Mixtures for Polyphonic Soundscapes",
+          "quality": 0.596,
+          "review_count": 5
+        },
+        {
+          "paper_id": "bR1J7SpzrD",
+          "similarity": 0.5186610814975181,
+          "title": "Synthio: Augmenting Small-Scale Audio Classification Datasets with Synthetic Data",
+          "quality": 0.588,
+          "review_count": 5
+        },
+        {
+          "paper_id": "53T6FlFulCV",
+          "similarity": 0.49732941263771097,
+          "title": "SoundCount: Sound Counting from Raw Audio with Dyadic Decomposition Neural Network",
+          "quality": 0.6075,
+          "review_count": 6
         }
       ],
       "pattern_scores_topn": [
         {
-          "pattern_id": "pattern_115",
-          "score": 0.4004462229991913
+          "pattern_id": "pattern_7",
+          "score": 0.7536516690634086
         },
         {
-          "pattern_id": "pattern_102",
-          "score": 0.2032549697128296
-        },
-        {
-          "pattern_id": "pattern_100",
-          "score": 0.16066259176433093
-        },
-        {
-          "pattern_id": "pattern_99",
-          "score": 0.15380655369186405
-        },
-        {
-          "pattern_id": "pattern_49",
-          "score": 0.14138853327226644
-        },
-        {
-          "pattern_id": "pattern_24",
-          "score": 0.1297391426577419
-        },
-        {
-          "pattern_id": "pattern_96",
-          "score": 0.12536808642883301
-        },
-        {
-          "pattern_id": "pattern_101",
-          "score": 0.11765221002187731
+          "pattern_id": "pattern_8",
+          "score": 0.14661099612023606
         },
         {
           "pattern_id": "pattern_114",
-          "score": 0.09519144228210452
+          "score": 0.08278739404810422
+        },
+        {
+          "pattern_id": "pattern_57",
+          "score": 0.08189574135221524
+        },
+        {
+          "pattern_id": "pattern_33",
+          "score": 0.07825587092494557
+        },
+        {
+          "pattern_id": "pattern_58",
+          "score": 0.07287904767372198
         }
       ]
     }
   },
   "review_summary": {
     "total_reviews": 1,
-    "final_score": 6.669999999999901
+    "final_score": 7.013333333333228
   },
   "refinement_summary": {
     "total_refinements": 0,
@@ -1055,6 +950,6 @@
   },
   "verification_summary": {
     "collision_detected": false,
-    "max_similarity": 0.6557393074035645
+    "max_similarity": 0.5963850021362305
   }
 }
