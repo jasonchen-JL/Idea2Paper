@@ -27,6 +27,8 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Dict, List
 
+from tqdm import tqdm
+
 # ===================== 配置 =====================
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -185,7 +187,7 @@ class KnowledgeGraphBuilderV2:
         """构建 Idea 节点（第一遍：仅收集 Idea 和 Paper 映射）"""
         print("\n💡 构建 Idea 节点...")
 
-        for paper in papers:
+        for paper in tqdm(papers, desc="Processing papers"):
             ideal_info = paper.get('ideal', {})
             core_idea = ideal_info.get('core_idea', '')
 
@@ -263,7 +265,7 @@ class KnowledgeGraphBuilderV2:
             'applications': set()
         })
 
-        for paper in papers:
+        for paper in tqdm(papers, desc="Processing papers"):
             domain_info = paper.get('domain', {})
             domains_list = domain_info.get('domains', [])
 
@@ -321,7 +323,7 @@ class KnowledgeGraphBuilderV2:
                     'weaknesses': review.get('weaknesses', '')[:300]
                 })
 
-        for paper in papers:
+        for paper in tqdm(papers, desc="Processing papers"):
             paper_id = paper.get('paper_id', '')
             self.paper_map[paper_id] = paper_id
 
