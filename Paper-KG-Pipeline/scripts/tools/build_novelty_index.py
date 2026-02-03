@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import List, Dict
 
 import numpy as np
+from tqdm import tqdm
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SCRIPTS_DIR = SCRIPT_DIR.parent
@@ -183,7 +184,7 @@ def build_novelty_index(
 
         return part_idx
 
-    for paper in papers:
+    for paper in tqdm(papers, desc="Processing papers"):
         pid = paper.get("paper_id")
         if pid in done_ids:
             continue

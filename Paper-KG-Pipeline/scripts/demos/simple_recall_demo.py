@@ -21,6 +21,8 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
+from tqdm import tqdm
+
 # 提前加载 .env（确保配置读取前生效）
 SCRIPT_DIR = Path(__file__).resolve().parent
 SCRIPTS_DIR = SCRIPT_DIR.parent
@@ -385,7 +387,7 @@ def main():
     if TWO_STAGE_RECALL and USE_EMBEDDING:
         print(f"  [粗排] 使用Jaccard快速筛选Top-{COARSE_RECALL_SIZE}...")
         coarse_similarities = []
-        for paper in papers:
+        for paper in tqdm(papers, desc="Processing papers"):
             paper_title = paper.get('title', '')
             if not paper_title:
                 continue
@@ -418,7 +420,7 @@ def main():
     else:
         # 单阶段召回（原逻辑）
         similarities = []
-        for paper in papers:
+        for paper in tqdm(papers, desc="Processing papers"):
             paper_title = paper.get('title', '')
             if not paper_title:
                 continue
