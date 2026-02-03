@@ -9,8 +9,37 @@ from idea2paper.infra.llm import call_llm, parse_json_from_llm
 class StoryGenerator:
     """Story 生成器: 基于 Idea + Pattern 生成结构化 Story"""
 
-    def __init__(self, user_idea: str):
+    def __init__(self, user_idea: str, idea_brief: Optional[Dict] = None):
         self.user_idea = user_idea
+        self.idea_brief = idea_brief
+
+    def _build_idea_brief_block(self) -> str:
+        if not self.idea_brief:
+            return ""
+        constraints = ", ".join(self.idea_brief.get("constraints", []) or [])
+        contributions = self.idea_brief.get("expected_contributions", []) or []
+        keywords_en = ", ".join(self.idea_brief.get("keywords_en", []) or [])
+        block = "\n【User Requirements Brief】\n"
+        if self.idea_brief.get("motivation"):
+            block += f"Motivation: {self.idea_brief.get('motivation')}\n"
+        if self.idea_brief.get("problem_definition"):
+            block += f"Problem Definition: {self.idea_brief.get('problem_definition')}\n"
+        if constraints:
+            block += f"Constraints: {constraints}\n"
+        if self.idea_brief.get("technical_plan"):
+            block += f"Technical Plan: {self.idea_brief.get('technical_plan')}\n"
+        if contributions:
+            block += "Expected Contributions:\n"
+            for i, c in enumerate(contributions, 1):
+                block += f"  {i}. {c}\n"
+        if self.idea_brief.get("evaluation_plan"):
+            block += f"Evaluation Plan: {self.idea_brief.get('evaluation_plan')}\n"
+        if keywords_en:
+            block += f"Keywords (EN): {keywords_en}\n"
+        block += "HARD REQUIREMENTS:\n"
+        block += "- MUST respect constraints and reflect them in method_skeleton and experiments_plan.\n"
+        block += "- MUST include an explicit evaluation plan (datasets/metrics/baselines/ablations) in experiments_plan.\n"
+        return block
 
     def generate(self, pattern_id: str, pattern_info: Dict,
                  constraints: Optional[List[str]] = None,
@@ -238,11 +267,13 @@ class StoryGenerator:
 
         # 提取用户Idea核心概念
         user_idea_reminder = f"\n【User's Original Idea - THE PROTAGONIST】\n\"{self.user_idea}\"\n\nCore Concepts to Preserve: [Identify 2-4 key concepts from the idea above]\n"
+        idea_brief_block = self._build_idea_brief_block()
 
         prompt = f"""
 You are a senior paper author at a top AI conference, skilled in deeply integrating new techniques into existing methods to form innovative technical combinations.
 
 {user_idea_reminder}
+{idea_brief_block}
 
 ⚠️ 【CRITICAL: User Idea Protection Rules During Refinement】
 When refining, ALWAYS remember:
@@ -437,6 +468,7 @@ You are a senior paper author at a top AI conference. Generate a structured pape
 
 【STEP 1: Extract Core Concepts from User Idea】
 User Idea: "{self.user_idea}"
+{self._build_idea_brief_block()}
 
 Before writing anything, identify the CORE ENTITIES in the user idea (e.g., "Agent", "Reflection", "Memory", "Self-Evolution").
 These are the TRUE subjects of your paper. Write them down:

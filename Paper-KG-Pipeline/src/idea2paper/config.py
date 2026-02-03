@@ -385,6 +385,64 @@ class PipelineConfig:
         cfg_path=["llm", "temperature", "critic_anchored"],
     )
 
+    # Idea Packaging (optional; defaults preserve current behavior)
+    IDEA_PACKAGING_ENABLE = _get(
+        "I2P_IDEA_PACKAGING_ENABLE",
+        False,
+        cast=bool,
+        cfg_path=["idea", "packaging_enable"],
+    )
+    IDEA_PACKAGING_TOPN_PATTERNS = _get(
+        "I2P_IDEA_PACKAGING_TOPN_PATTERNS",
+        5,
+        cast=int,
+        cfg_path=["idea", "packaging_topn_patterns"],
+    )
+    IDEA_PACKAGING_MAX_EXEMPLAR_PAPERS = _get(
+        "I2P_IDEA_PACKAGING_MAX_EXEMPLAR_PAPERS",
+        8,
+        cast=int,
+        cfg_path=["idea", "packaging_max_exemplar_papers"],
+    )
+    IDEA_PACKAGING_CANDIDATE_K = _get(
+        "I2P_IDEA_PACKAGING_CANDIDATE_K",
+        3,
+        cast=int,
+        cfg_path=["idea", "packaging_candidate_k"],
+    )
+    IDEA_PACKAGING_SELECT_MODE = _get(
+        "I2P_IDEA_PACKAGING_SELECT_MODE",
+        "llm_then_recall",
+        cast=str,
+        cfg_path=["idea", "packaging_select_mode"],
+    )
+    IDEA_PACKAGING_FORCE_EN_QUERY = _get(
+        "I2P_IDEA_PACKAGING_FORCE_EN_QUERY",
+        True,
+        cast=bool,
+        cfg_path=["idea", "packaging_force_en_query"],
+    )
+
+    # Idea Packaging LLM temperatures
+    LLM_TEMPERATURE_IDEA_PACKAGING_PARSE = _get(
+        "I2P_LLM_TEMPERATURE_IDEA_PACKAGING_PARSE",
+        0.0,
+        cast=float,
+        cfg_path=["llm", "temperature", "idea_packaging_parse"],
+    )
+    LLM_TEMPERATURE_IDEA_PACKAGING_PATTERN_GUIDED = _get(
+        "I2P_LLM_TEMPERATURE_IDEA_PACKAGING_PATTERN_GUIDED",
+        0.3,
+        cast=float,
+        cfg_path=["llm", "temperature", "idea_packaging_pattern_guided"],
+    )
+    LLM_TEMPERATURE_IDEA_PACKAGING_JUDGE = _get(
+        "I2P_LLM_TEMPERATURE_IDEA_PACKAGING_JUDGE",
+        0.0,
+        cast=float,
+        cfg_path=["llm", "temperature", "idea_packaging_judge"],
+    )
+
     # 新颖性模式配置
     NOVELTY_MODE_MAX_PATTERNS = 3  # 新颖性模式最多尝试的 Pattern 数
     NOVELTY_SCORE_THRESHOLD = 6.0  # 新颖性得分阈值
@@ -437,6 +495,24 @@ class PipelineConfig:
         False,
         cast=bool,
         cfg_path=["recall", "use_offline_index"],
+    )
+    SUBDOMAIN_TAXONOMY_ENABLE = _get(
+        "I2P_SUBDOMAIN_TAXONOMY_ENABLE",
+        False,
+        cast=bool,
+        cfg_path=["recall", "subdomain_taxonomy_enable"],
+    )
+    SUBDOMAIN_TAXONOMY_PATH = _get(
+        "I2P_SUBDOMAIN_TAXONOMY_PATH",
+        "",
+        cast=str,
+        cfg_path=["recall", "subdomain_taxonomy_path"],
+    )
+    SUBDOMAIN_TAXONOMY_STOPLIST_MODE = _get(
+        "I2P_SUBDOMAIN_TAXONOMY_STOPLIST_MODE",
+        "drop",
+        cast=str,
+        cfg_path=["recall", "subdomain_taxonomy_stoplist_mode"],
     )
     RECALL_INDEX_DIR = _get(
         "I2P_RECALL_INDEX_DIR",

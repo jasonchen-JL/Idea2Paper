@@ -95,6 +95,15 @@ class RecallSystem:
         self.domain_id_to_domain = {d['domain_id']: d for d in self.domains}
         self.paper_id_to_paper = {p['paper_id']: p for p in self.papers}
 
+        # Subdomain taxonomy (optional)
+        self._subdomain_mapping = {}
+        self._subdomain_stoplist = set()
+        self._subdomain_taxonomy_manifest = {}
+        self._subdomain_taxonomy_counts = {"raw_count": 0, "canonical_count": 0, "stoplist_count": 0}
+        self._subdomain_stoplist_mode = str(getattr(PipelineConfig, "SUBDOMAIN_TAXONOMY_STOPLIST_MODE", "drop") or "drop").lower()
+        self._subdomain_taxonomy_used = False
+        self._load_subdomain_taxonomy()
+
         # Path2: Domain -> Pattern 边索引 & 子领域压缩池
         self._domain_to_pattern_edges = {}
         self._domain_subdomain_pool = {}
@@ -115,9 +124,7 @@ class RecallSystem:
             sub_to_patterns = defaultdict(set)
             for pattern_id, _edge in edges:
                 pattern = self.pattern_id_to_pattern.get(pattern_id) or {}
-                for sd in pattern.get("sub_domains", []) or []:
-                    if not sd:
-                        continue
+                for sd in self._map_subdomains(pattern.get("sub_domains", []) or []):
                     sub_counter[sd] += 1
                     sub_to_patterns[sd].add(pattern_id)
             if sub_counter:
@@ -175,6 +182,54 @@ class RecallSystem:
             for chunk in iter(lambda: f.read(1024 * 1024), b""):
                 h.update(chunk)
         return h.hexdigest()
+
+    def _load_subdomain_taxonomy(self):
+        if not bool(getattr(PipelineConfig, "SUBDOMAIN_TAXONOMY_ENABLE", False)):
+            return
+        path_cfg = getattr(PipelineConfig, "SUBDOMAIN_TAXONOMY_PATH", "") or ""
+        if path_cfg:
+            tax_path = Path(path_cfg)
+        else:
+            tax_path = Path(PipelineConfig.RECALL_INDEX_DIR) / "subdomain_taxonomy.json"
+        if not tax_path.exists():
+            if self.logger:
+                self.logger.log_event("subdomain_taxonomy_missing", {"path": str(tax_path)})
+            return
+        try:
+            data = json.loads(tax_path.read_text(encoding="utf-8"))
+            mapping = data.get("mapping") or {}
+            stoplist = set(data.get("stoplist") or [])
+            if mapping:
+                self._subdomain_mapping = mapping
+                self._subdomain_stoplist = stoplist
+                self._subdomain_taxonomy_manifest = data.get("manifest") or {}
+                self._subdomain_taxonomy_counts = {
+                    "raw_count": int(data.get("stats", {}).get("raw_count", len(mapping)) or len(mapping)),
+                    "canonical_count": int(data.get("stats", {}).get("canonical_count", len(set(mapping.values()))) or len(set(mapping.values()))),
+                    "stoplist_count": int(data.get("stats", {}).get("stoplist_count", len(stoplist)) or len(stoplist)),
+                }
+                self._subdomain_taxonomy_used = True
+        except Exception:
+            if self.logger:
+                self.logger.log_event("subdomain_taxonomy_invalid", {"path": str(tax_path)})
+
+    def _map_subdomains(self, subdomains: List[str]) -> List[str]:
+        if not subdomains:
+            return []
+        if not self._subdomain_mapping:
+            return [sd for sd in subdomains if sd]
+        mapped = []
+        seen = set()
+        for sd in subdomains:
+            if not sd:
+                continue
+            canonical = self._subdomain_mapping.get(sd, sd)
+            if self._subdomain_stoplist_mode == "drop" and canonical in self._subdomain_stoplist:
+                continue
+            if canonical not in seen:
+                mapped.append(canonical)
+                seen.add(canonical)
+        return mapped
 
     def _load_index_kind(self, kind: str, emb_path: Path, meta_path: Path, manifest_path: Path, expected_hash: str):
         if not emb_path.exists() or not meta_path.exists() or not manifest_path.exists():
@@ -633,7 +688,7 @@ class RecallSystem:
 
                 max_sd_sim = 0.0
                 pattern = self.pattern_id_to_pattern.get(pattern_id) or {}
-                for sd in pattern.get("sub_domains", []) or []:
+                for sd in self._map_subdomains(pattern.get("sub_domains", []) or []):
                     if sd in sd_sim_map:
                         max_sd_sim = max(max_sd_sim, float(sd_sim_map[sd]))
 
@@ -873,6 +928,8 @@ class RecallSystem:
                 })
             candidate_stats_raw = getattr(self, "_last_path2_candidate_stats", []) or []
             candidate_stats_map = {s.get("domain_id"): s for s in candidate_stats_raw}
+            taxonomy_stats = getattr(self, "_subdomain_taxonomy_counts", {}) or {}
+            taxonomy_used = bool(getattr(self, "_subdomain_taxonomy_used", False))
 
             # 路径3 top papers
             top_papers_raw = getattr(self, "_last_path3_top_papers", []) or []
@@ -917,6 +974,10 @@ class RecallSystem:
                     "top_subdomains": top_subdomains_audit,
                     "candidate_stats": [candidate_stats_map.get(d.get("domain_id")) for d in top_domains_audit],
                     "pattern_scores_topn": self._topn_dict(path2_weighted, topn),
+                    "subdomain_taxonomy_used": taxonomy_used,
+                    "raw_subdomain_count": int(taxonomy_stats.get("raw_count", 0) or 0),
+                    "canonical_subdomain_count": int(taxonomy_stats.get("canonical_count", 0) or 0),
+                    "stoplist_count": int(taxonomy_stats.get("stoplist_count", 0) or 0),
                 },
                 "path3": {
                     "top_papers": top_papers_audit,

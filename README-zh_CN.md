@@ -85,6 +85,8 @@ python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your idea"
 > **建议（速度/稳定性）：** 建议设置 `I2P_ANCHOR_DENSIFY_ENABLE=0` 以关闭 Adaptive Densify；否则 Phase 3 的 Critic 可能会非常耗时，并且在严格 JSON 校验下更容易因为格式问题失败。  
 > **建议（排障）：** 若反复出现 Critic JSON 格式/解析错误，可设置 `I2P_CRITIC_STRICT_JSON=0`（或 `critic.strict_json=false`）关闭严格模式，允许降级继续运行。  
 > **建议（温度配置）：** 支持通过 `I2P_LLM_TEMPERATURE_*` 或 `llm.temperature.*` 配置各阶段温度，默认保持不变；critic 建议低温更稳，story 生成可中温。  
+> **建议（Idea Packaging）：** 可选的质量增强（默认关闭），开启后会进行 pattern 引导的 idea 包装与二次召回：`I2P_IDEA_PACKAGING_ENABLE=1` 或 `idea.packaging_enable=true`。  
+> **建议（Subdomain Taxonomy）：** 可选质量增强，用于减少 Path2 子领域重复与长尾影响。先离线生成一次：`Paper-KG-Pipeline/scripts/tools/build_subdomain_taxonomy.py`，再启用 `I2P_SUBDOMAIN_TAXONOMY_ENABLE=1`（可选 `I2P_SUBDOMAIN_TAXONOMY_PATH`）。  
 > **当前可直接适配（无需改代码）：** 兼容 OpenAI Embeddings API 的 `/v1/embeddings`（要求 `input` 支持字符串或数组，例如 SiliconFlow、OpenAI 及其它 OpenAI-compatible 服务）。  
 > **暂不直接支持：** DashScope/百炼原生 embeddings 接口（`/api/v1/services/embeddings/...`），需要额外适配层。
 

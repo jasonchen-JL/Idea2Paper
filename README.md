@@ -97,6 +97,8 @@ pip install -r Paper-KG-Pipeline/requirements.txt
 > **Tip (speed/stability):** set `I2P_ANCHOR_DENSIFY_ENABLE=0` to skip Adaptive Densify; otherwise Phase 3 Critic can be much slower and may fail due to strict JSON validation.  
 > **Tip (debug):** if you repeatedly hit Critic JSON errors, set `I2P_CRITIC_STRICT_JSON=0` (or `critic.strict_json=false`) to disable strict mode and allow fallback.  
 > **Tip (LLM temperature):** per-stage temperatures are configurable via `I2P_LLM_TEMPERATURE_*` or `llm.temperature.*`; defaults preserve current behavior. Critic is usually low temp for stability, while story generation can be moderate.  
+> **Tip (Idea Packaging):** optional quality boost via pattern-guided idea packaging + double recall (default off). Enable with `I2P_IDEA_PACKAGING_ENABLE=1` or `idea.packaging_enable=true`.  
+> **Tip (Subdomain taxonomy):** optional quality boost for Path2 to reduce duplicated/long-tail subdomains. Build once offline via `Paper-KG-Pipeline/scripts/tools/build_subdomain_taxonomy.py`, then enable with `I2P_SUBDOMAIN_TAXONOMY_ENABLE=1` (and optional `I2P_SUBDOMAIN_TAXONOMY_PATH`).  
 > **Supported (no code changes):** OpenAI-compatible Embeddings APIs (`/v1/embeddings`) that accept `input` as a string or a list (e.g., SiliconFlow, OpenAI, and other OpenAI-compatible providers).  
 > **Not supported yet:** DashScope “native” embeddings endpoint (`/api/v1/services/embeddings/...`) requires an adapter.
 

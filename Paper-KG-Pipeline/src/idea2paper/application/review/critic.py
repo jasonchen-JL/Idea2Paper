@@ -107,6 +107,21 @@ class MultiAgentCritic:
 
         return True, "", {"comparisons": ordered, "main_gaps": main_gaps}
 
+    def _build_idea_brief_block(self) -> str:
+        brief = getattr(self, "_idea_brief", None)
+        if not brief:
+            return ""
+        constraints = ", ".join(brief.get("constraints", []) or [])
+        keywords_en = ", ".join(brief.get("keywords_en", []) or [])
+        block = "\nUser Requirements Brief (for alignment only):\n"
+        if brief.get("problem_definition"):
+            block += f"- Problem: {brief.get('problem_definition')}\n"
+        if constraints:
+            block += f"- Constraints: {constraints}\n"
+        if keywords_en:
+            block += f"- Keywords: {keywords_en}\n"
+        return block
+
     def _build_anchor_prompt(self, story: Dict, reviewer: Dict, anchors: List[Dict]) -> str:
         problem_text = story.get('problem_framing') or story.get('problem_definition', '')
         method_text = story.get('method_skeleton', '')
@@ -119,6 +134,7 @@ class MultiAgentCritic:
                 f"- paper_id: {a['paper_id']} | title: {a.get('title','')} | score10: {a['score10']:.1f}"
             )
         anchor_text = "\n".join(anchor_lines)
+        idea_brief_block = self._build_idea_brief_block()
 
         return f"""
 You are a strict reviewer ({reviewer['role']}) for top-tier ML/NLP conferences.
@@ -126,6 +142,7 @@ You must NOT output a direct score. Only compare the Story against anchor papers
 
 Anchors (score10 comes from real review statistics):
 {anchor_text}
+{idea_brief_block}
 
 Story:
 Title: {story.get('title','')}
@@ -365,6 +382,7 @@ Return ONLY the corrected JSON:
         pattern_id = context.get("pattern_id", "")
         pattern_info = context.get("pattern_info", {}) or {}
         anchors = context.get("anchors", []) or []
+        self._idea_brief = context.get("idea_brief")
 
         if not anchors and pattern_id and self.review_index:
             anchors = self.review_index.select_initial_anchors(
