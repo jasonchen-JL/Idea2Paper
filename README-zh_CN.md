@@ -15,17 +15,47 @@
 
 </div>
 
-## 📄 论文
+<details>
+  <summary><h2>📌 目录</h2></summary>
+
+  <br/>
+
+  - [📄 Idea2Paper](#-idea2paper)
+  - [✨ 核心特性](#-核心特性)
+  - [📦 输出内容](#-你将得到输出)
+  - [🚀 快速开始](#-快速开始)
+  - [🤖 锚定式多智能体评审](#-multiagent-review可标定可追溯)
+  - [📚 文件与文档](#-files--docs-important-paths)
+  - [🤝 贡献指南与许可证](#-contributing--license)
+  - [🙏 致谢](#-致谢--credits)
+  - [👥 贡献者](#-贡献者--contributors)
+  - [📑 引用（Idea2Story）](#-引用idea2story)
+
+</details>
+
+
+## 📄 Idea2Paper
+
+Idea2Paper 是一个端到端的研究智能体框架，旨在系统地定义和分析当代研究过程中的主要阶段，以及各阶段内在的核心挑战。Idea2Paper 并不将论文写作视为一个单体式的生成问题，而是明确地将科学研究拆解为结构化的阶段，并识别阻碍原始想法转化为连贯、可提交的学术叙事的关键瓶颈。
+
+-  **Idea2Paper** : https://www.researchgate.net/publication/400280248_Idea2Paper_What_Should_an_End-to-End_Research_Agent_Really_Do
 
 ### Idea2Story（Idea2Paper 的核心子模块）
+Idea2Story 提出了一种以“预计算”为核心驱动的自动化科研叙事生成框架，
+将对学术文献的理解从运行时推理（runtime reasoning）
+前移至离线的知识图谱构建阶段，从而实现更加高效、稳定且可审计的
+自主科学发现流程。
 
 - 🌐 **arXiv**：https://arxiv.org/abs/2601.20833  
 - 📘 **PDF**：[papers/Idea2Story.pdf](papers/Idea2Story.pdf)
 
-*Idea2Story 提出了一种以“预计算”为核心驱动的自动化科研叙事生成框架，
-将对学术文献的理解从运行时推理（runtime reasoning）
-前移至离线的知识图谱构建阶段，从而实现更加高效、稳定且可审计的
-自主科学发现流程。*
+<div align="center">
+<img src="https://arxiv.org/html/2601.20833v1/x1.png" alt="Idea2Paper Architecture" width="800"/>
+<br/>
+<em>Idea2Paper 流水线架构</em>
+</div>
+
+
 
 ## 💬用户交流群
 
@@ -53,11 +83,6 @@
 python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your idea"
 ```
 
-<div align="center">
-<img src="https://arxiv.org/html/2601.20833v1/x1.png" alt="Idea2Paper Architecture" width="800"/>
-<br/>
-<em>Idea2Paper 流水线架构</em>
-</div>
 
 ## ✨ 核心特性
 
