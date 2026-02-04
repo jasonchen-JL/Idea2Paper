@@ -559,19 +559,19 @@ class PipelineConfig:
     # Anchored Critic 配置
     ANCHOR_QUANTILES = _get(
         "I2P_ANCHOR_QUANTILES",
-        [0.1, 0.25, 0.5, 0.75, 0.9],
+        [0.05, 0.15, 0.25, 0.35, 0.5, 0.65, 0.75, 0.85, 0.95],
         cast=_cast_list_float,
         cfg_path=["anchors", "quantiles"],
     )
     ANCHOR_MAX_INITIAL = _get(
         "I2P_ANCHOR_MAX_INITIAL",
-        7,
+        11,
         cast=int,
         cfg_path=["anchors", "max_initial"],
     )
     ANCHOR_MAX_TOTAL = _get(
         "I2P_ANCHOR_MAX_TOTAL",
-        9,
+        13,
         cast=int,
         cfg_path=["anchors", "max_total"],
     )
@@ -583,9 +583,21 @@ class PipelineConfig:
     )
     DENSIFY_OFFSETS = _get(
         "I2P_DENSIFY_OFFSETS",
-        [-0.5, 0.5, -0.25, 0.25],
+        [-0.6, -0.4, -0.2, 0.2, 0.4, 0.6],
         cast=_cast_list_float,
         cfg_path=["anchors", "densify_offsets"],
+    )
+    ANCHOR_BUCKET_SIZE = _get(
+        "I2P_ANCHOR_BUCKET_SIZE",
+        1.0,
+        cast=float,
+        cfg_path=["anchors", "bucket_size"],
+    )
+    ANCHOR_BUCKET_COUNT = _get(
+        "I2P_ANCHOR_BUCKET_COUNT",
+        3,
+        cast=int,
+        cfg_path=["anchors", "bucket_count"],
     )
     SIGMOID_K = _get(
         "I2P_SIGMOID_K",
@@ -601,13 +613,13 @@ class PipelineConfig:
     )
     DENSIFY_LOSS_THRESHOLD = _get(
         "I2P_DENSIFY_LOSS_THRESHOLD",
-        0.03,
+        0.05,
         cast=float,
         cfg_path=["anchors", "densify_loss_threshold"],
     )
     DENSIFY_MIN_AVG_CONF = _get(
         "I2P_DENSIFY_MIN_AVG_CONF",
-        0.45,
+        0.35,
         cast=float,
         cfg_path=["anchors", "densify_min_avg_conf"],
     )
@@ -630,4 +642,54 @@ class PipelineConfig:
         2,
         cast=int,
         cfg_path=["critic", "json_retries"],
+    )
+
+    # Blind Judge tau config
+    JUDGE_TAU_PATH = _get(
+        "I2P_JUDGE_TAU_PATH",
+        str(OUTPUT_DIR / "judge_tau.json"),
+        cast=Path,
+        cfg_path=["critic", "tau_path"],
+    )
+    JUDGE_TAU_DEFAULT = _get(
+        "I2P_JUDGE_TAU_DEFAULT",
+        1.0,
+        cast=float,
+        cfg_path=["critic", "tau_default"],
+    )
+    TAU_METHODOLOGY = _get(
+        "I2P_TAU_METHODOLOGY",
+        1.0,
+        cast=float,
+        cfg_path=["critic", "tau_methodology"],
+    )
+    TAU_NOVELTY = _get(
+        "I2P_TAU_NOVELTY",
+        1.0,
+        cast=float,
+        cfg_path=["critic", "tau_novelty"],
+    )
+    TAU_STORYTELLER = _get(
+        "I2P_TAU_STORYTELLER",
+        1.0,
+        cast=float,
+        cfg_path=["critic", "tau_storyteller"],
+    )
+    CRITIC_COACH_ENABLE = _get(
+        "I2P_CRITIC_COACH_ENABLE",
+        True,
+        cast=bool,
+        cfg_path=["critic", "coach_enable"],
+    )
+    CRITIC_COACH_TEMPERATURE = _get(
+        "I2P_CRITIC_COACH_TEMPERATURE",
+        0.3,
+        cast=float,
+        cfg_path=["critic", "coach_temperature"],
+    )
+    CRITIC_COACH_MAX_TOKENS = _get(
+        "I2P_CRITIC_COACH_MAX_TOKENS",
+        900,
+        cast=int,
+        cfg_path=["critic", "coach_max_tokens"],
     )

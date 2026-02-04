@@ -7,9 +7,17 @@
     "max_text_chars": 20000
   },
   "critic": {
-    "__comment__": "Anchored Multi-Agent Critic JSON strictness. strict_json=true means: invalid JSON -> retry -> still invalid => fail the run (no silent fallback).",
+    "__comment__": "Blind Judge + τ-calibrated critic. strict_json=true means: invalid JSON -> retry -> still invalid => fail the run (no silent fallback).",
     "strict_json": true,
-    "json_retries": 2
+    "json_retries": 2,
+    "tau_path": "Paper-KG-Pipeline/output/judge_tau.json",
+    "tau_default": 1.0,
+    "tau_methodology": 1.0,
+    "tau_novelty": 1.4,
+    "tau_storyteller": 1.0,
+    "coach_enable": true,
+    "coach_temperature": 0.3,
+    "coach_max_tokens": 900
   },
   "pass": {
     "__comment__": "Pattern-aware pass rule based on the pattern's full real score10 distribution (NOT anchors). Default scheme: 2 of 3 roles >= q75 and avg >= q50.",
@@ -20,15 +28,14 @@
   },
   "anchors": {
     "__comment__": "Anchor selection + deterministic scoring knobs. densify_enable=false skips adaptive densify (no Round2), reducing LLM calls/latency. Usually keep defaults unless you know what you're doing.",
-    "quantiles": [0.1, 0.25, 0.5, 0.75, 0.9],
-    "max_initial": 7,
-    "max_total": 9,
+    "quantiles": [0.05, 0.15, 0.25, 0.35, 0.5, 0.65, 0.75, 0.85, 0.95],
+    "max_initial": 11,
     "max_exemplars": 2,
-    "densify_offsets": [-0.5, 0.5, -0.25, 0.25],
-    "sigmoid_k": 1.2,
+    "bucket_size": 1.0,
+    "bucket_count": 3,
     "grid_step": 0.01,
-    "densify_loss_threshold": 0.03,
-    "densify_min_avg_conf": 0.45,
+    "densify_loss_threshold": 0.05,
+    "densify_min_avg_conf": 0.35,
     "densify_enable": true
   },
   "llm": {
@@ -49,8 +56,7 @@
       "idea_fusion_stage2": 0.8,
       "idea_fusion_stage3": 0.9,
       "critic_main": 0.0,
-      "critic_repair": 0.0,
-      "critic_anchored": 0.3
+      "critic_repair": 0.0
     }
   },
   "idea": {
