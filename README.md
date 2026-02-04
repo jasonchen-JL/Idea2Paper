@@ -105,6 +105,20 @@ pip install -r Paper-KG-Pipeline/requirements.txt
 > **Supported (no code changes):** OpenAI-compatible Embeddings APIs (`/v1/embeddings`) that accept `input` as a string or a list (e.g., SiliconFlow, OpenAI, and other OpenAI-compatible providers).  
 > **Not supported yet:** DashScope “native” embeddings endpoint (`/api/v1/services/embeddings/...`) requires an adapter.
 
+### Dataset
+
+👉 **[DATA](https://huggingface.co/datasets/AgentAlphaAGI/Paper-Review-Dataset/tree/main)** <br>
+
+If you need to use the prebuilt local index, please place the two folders in `paper-embedding` from Hugging Face into `paper-KG-Pipeline/output`, <br>
+```text
+paper-KG-Pipeline/
+└── output/
+    ├── recall_index__siliconflow__Qwen_Qwen3-Embedding-8B__184936e8/
+    └── novelty_index__siliconflow__Qwen_Qwen3-Embedding-8B__184936e8/
+```
+and make sure the embedding model is configured as **SiliconFlow `Qwen/Qwen3-Embedding-8B`**, otherwise errors may occur.
+
+
 ### Configuration
 
 1. Copy `.env.example` to `.env` and fill in `SILICONFLOW_API_KEY`.
