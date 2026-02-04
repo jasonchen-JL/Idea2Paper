@@ -1,26 +1,44 @@
-# Frontend (Local Web UI)
+# 前端界面 (本地 Web UI)
 
-This is a lightweight local UI to run `idea2story_pipeline.py` and view **only** the high‑level status + final results.
+这是一个轻量级的本地 UI，用于运行 `idea2story_pipeline.py` 并在网页上直观地查看**高层状态**和**最终结果**。
 
-## Start the server
+> **注意**：该前端目前处于**不稳定 (Beta)** 状态。我们建议在终端中运行 pipeline 以获得最稳定的体验。
 
-From repo root:
+## 🚀 快速开始
 
-```
+### 1. 启动服务器
+
+在项目根目录下运行：
+
+```bash
 python frontend/server/app.py --host 127.0.0.1 --port 8080
 ```
 
-Open:
+### 2. 访问界面
+
+打开浏览器访问：
 
 ```
 http://127.0.0.1:8080/
 ```
 
-## What it does
-- Starts the pipeline via the existing CLI entrypoint.
-- Shows the current stage (not raw logs).
-- Displays final story + summary.
-- Downloads the log folder for the run as a zip.
+## ✨ 功能特性
 
-## Security note
-API keys are **not** stored on disk. They are only injected into the subprocess environment for the current run.
+*   **一键运行**：直接在网页上输入 Idea 并启动 Pipeline。
+*   **状态可视化**：实时展示当前运行阶段（Review, Refinement 等），而不是枯燥的日志流。
+*   **结果展示**：运行结束后直接查看生成的 Story 和摘要。
+*   **日志下载**：一键将本次运行的所有日志打包下载（Zip 格式）。
+*   **配置管理**：支持在 UI 上临时配置 API Key 和 Model（仅对当前运行有效）。
+
+## 🔒 安全说明
+
+*   **API Key 安全**：你在 UI 上输入的 API Key **不会**被保存到磁盘上。
+*   **运行隔离**：Key 仅在当前运行的子进程环境变量中注入，运行结束后即销毁。
+
+## 🛠️ 常见问题
+
+**Q: 为什么看不到详细的终端日志？**
+A: 前端设计初衷是提供高层概览。如果需要调试或查看详细的 Agent 交互日志，请点击“下载日志”按钮查看完整的日志文件，或者直接在终端运行。
+
+**Q: 页面卡住了怎么办？**
+A: 请检查终端中 `app.py` 的输出是否有报错。如果后端进程挂死，请尝试重启服务。
