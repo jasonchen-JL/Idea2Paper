@@ -101,12 +101,30 @@ python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your idea"
 
 ## 🚀 快速开始
 
-1. **Python 3.10+**
-2. **安装依赖**：
+### 准备
+**Python 3.10+**
+
+### **1. 安装依赖**：
+
    ```bash
    pip install -r Paper-KG-Pipeline/requirements.txt
    ```
-3. **配置**：
+### **2.数据集**：
+
+👉 **[DATA](https://huggingface.co/datasets/AgentAlphaAGI/Paper-Review-Dataset/tree/main)** <br>
+
+如果需要使用预制的本地索引，请将 Hugging Face 上 `paper-embedding` 中的两个文件夹放入 `paper-KG-Pipeline/output` 下，<br>
+```text
+paper-KG-Pipeline/
+└── output/
+    ├── recall_index__siliconflow__Qwen_Qwen3-Embedding-8B__184936e8/
+    └── novelty_index__siliconflow__Qwen_Qwen3-Embedding-8B__184936e8/
+```
+并确保 embedding 模型配置为 **SiliconFlow Qwen/Qwen3-Embedding-8B**，否则可能会出错。
+
+
+### **3.配置**：
+
    - 复制 `.env.example` -> `.env`，填写 `SILICONFLOW_API_KEY` 等敏感键（不要提交）
    - 可选：复制 `i2p_config.example.json` -> `i2p_config.json` 调整阈值/anchors 等
 
@@ -119,7 +137,7 @@ python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your idea"
 > **当前可直接适配（无需改代码）：** 兼容 OpenAI Embeddings API 的 `/v1/embeddings`（要求 `input` 支持字符串或数组，例如 SiliconFlow、OpenAI 及其它 OpenAI-compatible 服务）。  
 > **暂不直接支持：** DashScope/百炼原生 embeddings 接口（`/api/v1/services/embeddings/...`），需要额外适配层。
 
-4. **运行**：
+### **4. 运行**：
    ```bash
    python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "你的研究Idea描述"
    ```
