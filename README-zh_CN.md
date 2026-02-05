@@ -147,29 +147,29 @@ paper-KG-Pipeline/
   
 ## 🌐 前端（本地 Web UI）
 
-> **状态：** 当前前端仍处于不稳定阶段，建议暂时使用终端运行项目，不要使用前端；后续会持续完善。
+基于 React + TypeScript 的现代化 Web 界面，用于运行 Idea2Story 流水线并可视化结果。
 
-运行一个极简的本地 UI，用于启动 pipeline，并且**只展示**高层阶段信息与最终结果（不在页面上展示原始日志内容）。
+### 快速开始
 
-### 启动
+启动后端服务：
 
 ```bash
 python frontend/server/app.py --host 127.0.0.1 --port 8080
 ```
 
-在浏览器中打开：
+在浏览器中打开 `http://127.0.0.1:8080`
 
-```text
-http://127.0.0.1:8080/
-```
+前端已预先构建，后端服务器会自动提供静态文件。无需安装 Node.js。
 
-### 你可以在 UI 中做什么
-- 从网页运行同一个 pipeline 入口 (`idea2story_pipeline.py`) 。
-- 为本次运行配置 `SILICONFLOW_API_KEY`, `LLM_API_URL`, `LLM_MODEL` （服务端不会持久化保存）。
-- 开关 Novelty / Verification.
-- 一键下载本次运行的日志（zip）。
+### 功能特性
 
-更多说明见 `frontend/README.md`.
+- 通过 Web 界面运行 Idea2Story 流水线
+- 配置 API 密钥和模型参数
+- 查看实时进度和结果
+- 交互式知识图谱可视化
+- 导出结果和日志为 ZIP
+
+开发模式和更多说明见 `frontend/README.md`。
 
 
 ## 🤖 Multi‑Agent Review（可标定、可追溯）
