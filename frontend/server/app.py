@@ -21,7 +21,7 @@ PIPELINE_SCRIPT = REPO_ROOT / "Paper-KG-Pipeline" / "scripts" / "idea2story_pipe
 LOG_ROOT = REPO_ROOT / "log"
 RESULTS_ROOT = REPO_ROOT / "results"
 OUTPUT_ROOT = REPO_ROOT / "Paper-KG-Pipeline" / "output"
-WEB_ROOT = REPO_ROOT / "frontend" / "web"
+WEB_ROOT = REPO_ROOT / "frontend" / "web" / "dist"
 TMP_ROOT = REPO_ROOT / "frontend" / "server" / ".tmp"
 
 registry = RunRegistry(REPO_ROOT)
@@ -154,6 +154,19 @@ class Handler(BaseHTTPRequestHandler):
         path = parsed.path
         if path == "/api/health":
             return _json_response(self, {"ok": True})
+
+        if path == "/api/kg":
+            return self._handle_get_kg_data()
+
+        if path == "/api/results":
+            return self._handle_list_results()
+
+        if path.startswith("/api/results/"):
+            parts = path.strip("/").split("/")
+            # /api/results/<run_id>
+            if len(parts) >= 3:
+                run_id = parts[2]
+                return self._handle_get_result_by_id(run_id)
 
         if path.startswith("/api/runs/"):
             parts = path.strip("/").split("/")
@@ -441,6 +454,10 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/zip")
         self.send_header("Content-Disposition", f"attachment; filename={info.run_id}_logs.zip")
         self.send_header("Content-Length", str(len(data)))
+        # CORS headers
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.end_headers()
         self.wfile.write(data)
 
@@ -515,6 +532,142 @@ class Handler(BaseHTTPRequestHandler):
                 "pid": info.pid,
                 "status": info.status,
                 "terminated": True
+            })
+        except Exception as e:
+            return _json_response(self, {"ok": False, "error": str(e)}, status=500)
+
+    def _handle_list_results(self):
+        """List all available results from the results directory"""
+        try:
+            if not RESULTS_ROOT.exists():
+                return _json_response(self, {"ok": True, "results": []})
+
+            results = []
+            for run_dir in sorted(RESULTS_ROOT.iterdir(), reverse=True):
+                if not run_dir.is_dir():
+                    continue
+
+                manifest_path = run_dir / "manifest.json"
+                if not manifest_path.exists():
+                    continue
+
+                try:
+                    manifest = json.loads(manifest_path.read_text("utf-8"))
+                    final_story_path = run_dir / "final_story.json"
+
+                    # Read title from final_story if available
+                    title = None
+                    if final_story_path.exists():
+                        try:
+                            story = json.loads(final_story_path.read_text("utf-8"))
+                            title = story.get("title")
+                        except Exception:
+                            pass
+
+                    results.append({
+                        "run_id": manifest.get("run_id"),
+                        "created_at": manifest.get("created_at"),
+                        "user_idea": manifest.get("user_idea"),
+                        "title": title,
+                        "success": manifest.get("success", False),
+                    })
+                except Exception:
+                    continue
+
+            return _json_response(self, {"ok": True, "results": results})
+        except Exception as e:
+            return _json_response(self, {"ok": False, "error": str(e)}, status=500)
+
+    def _handle_get_result_by_id(self, run_id: str):
+        """Get a specific result by run_id"""
+        try:
+            result_dir = RESULTS_ROOT / run_id
+            if not result_dir.exists():
+                return _json_response(self, {"ok": False, "error": "result not found"}, status=404)
+
+            final_story_path = result_dir / "final_story.json"
+            pipeline_result_path = result_dir / "pipeline_result.json"
+
+            final_story = None
+            pipeline_result = None
+
+            if final_story_path.exists():
+                try:
+                    final_story = json.loads(final_story_path.read_text("utf-8"))
+                except Exception:
+                    pass
+
+            if pipeline_result_path.exists():
+                try:
+                    pipeline_result = json.loads(pipeline_result_path.read_text("utf-8"))
+                except Exception:
+                    pass
+
+            # Build summary
+            summary = {
+                "success": None,
+                "avg_score": None,
+                "verification": {"collision_detected": None, "max_similarity": None},
+                "novelty": {"risk_level": None, "max_similarity": None},
+            }
+            if pipeline_result:
+                summary["success"] = pipeline_result.get("success")
+                review_summary = pipeline_result.get("review_summary") or {}
+                summary["avg_score"] = review_summary.get("final_score")
+                verification_summary = pipeline_result.get("verification_summary") or {}
+                summary["verification"] = {
+                    "collision_detected": verification_summary.get("collision_detected"),
+                    "max_similarity": verification_summary.get("max_similarity"),
+                }
+                novelty_report = pipeline_result.get("novelty_report") or {}
+                summary["novelty"] = {
+                    "risk_level": novelty_report.get("risk_level"),
+                    "max_similarity": novelty_report.get("max_similarity"),
+                }
+
+            return _json_response(self, {
+                "ok": True,
+                "run_id": run_id,
+                "final_story": final_story,
+                "pipeline_result": pipeline_result,
+                "summary": summary,
+            })
+        except Exception as e:
+            return _json_response(self, {"ok": False, "error": str(e)}, status=500)
+
+    def _handle_get_kg_data(self):
+        """Get knowledge graph data (nodes and edges)"""
+        try:
+            nodes_paper_path = OUTPUT_ROOT / "nodes_paper.json"
+            edges_path = OUTPUT_ROOT / "edges.json"
+
+            if not nodes_paper_path.exists() or not edges_path.exists():
+                return _json_response(self, {
+                    "ok": False,
+                    "error": "Knowledge graph data not found. Please run the pipeline first."
+                }, status=404)
+
+            # Read nodes (limit to first 100 papers for performance)
+            with nodes_paper_path.open("r", encoding="utf-8") as f:
+                all_nodes = json.load(f)
+                nodes = all_nodes[:100]  # Limit for visualization performance
+
+            # Read edges and filter to only include edges for the selected nodes
+            node_ids = {node["paper_id"] for node in nodes}
+            with edges_path.open("r", encoding="utf-8") as f:
+                all_edges = json.load(f)
+                # Filter edges to only include those connected to our nodes
+                edges = [
+                    edge for edge in all_edges
+                    if edge["source"] in node_ids or edge["target"] in node_ids
+                ][:500]  # Limit edges for performance
+
+            return _json_response(self, {
+                "ok": True,
+                "nodes": nodes,
+                "edges": edges,
+                "total_nodes": len(all_nodes),
+                "total_edges": len(all_edges)
             })
         except Exception as e:
             return _json_response(self, {"ok": False, "error": str(e)}, status=500)

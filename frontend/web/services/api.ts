@@ -136,14 +136,14 @@ const MockStrategy = {
     addLog(PipelineStep.INIT, msgs.loading, "Mode: Mock Simulation");
 
     await wait(1200, signal);
-    addLog(PipelineStep.KG_SEARCH, msgs.kg_query);
+    addLog(PipelineStep.RECALL, msgs.kg_query);
     await wait(1000, signal);
-    addLog(PipelineStep.KG_SEARCH, msgs.kg_found, "Domains: [AI, Graph Theory]");
+    addLog(PipelineStep.RECALL, msgs.kg_found, "Domains: [AI, Graph Theory]");
 
     await wait(1500, signal);
-    addLog(PipelineStep.RETRIEVAL, msgs.retrieval);
+    addLog(PipelineStep.PATTERN_SELECTION, msgs.retrieval);
     await wait(800, signal);
-    addLog(PipelineStep.RETRIEVAL, msgs.ranking);
+    addLog(PipelineStep.PATTERN_SELECTION, msgs.ranking);
 
     await wait(2000, signal);
     addLog(PipelineStep.GENERATION, msgs.gen_skeleton);
@@ -324,10 +324,10 @@ async function pollPipelineStatus(
     'Pattern Selection': PipelineStep.RETRIEVAL,
     'Story Generation': PipelineStep.GENERATION,
     'Critic Review': PipelineStep.REVIEW,
-    'Refinement': PipelineStep.REFINEMENT,
-    'Novelty Check': PipelineStep.REFINEMENT,
-    'Verification': PipelineStep.REFINEMENT,
-    'Bundling': PipelineStep.REFINEMENT,
+    'Refinement': PipelineStep.REVIEW,
+    'Novelty Check': PipelineStep.VALIDATION,
+    'Verification': PipelineStep.VALIDATION,
+    'Bundling': PipelineStep.VALIDATION,
     'Done': PipelineStep.DONE,
     'Failed': PipelineStep.ERROR,
   };
@@ -420,19 +420,30 @@ async function pollPipelineStatus(
   const story: GeneratedStory = {
     title: finalStory.title || '',
     abstract: finalStory.abstract || '',
-    introduction: finalStory.introduction || '',
-    methodology: finalStory.methodology || '',
-    experiments: finalStory.experiments || '',
-    contributions: finalStory.contributions || []
+    // Map backend fields to frontend fields
+    introduction: finalStory.introduction || finalStory.problem_framing || '',
+    methodology: finalStory.methodology || finalStory.method_skeleton || finalStory.solution || '',
+    experiments: finalStory.experiments || finalStory.experiments_plan || '',
+    contributions: finalStory.contributions || finalStory.innovation_claims || []
   };
 
-  const reviews: ReviewScore[] = (pipelineResult.review_history || []).flatMap((review: any) =>
-    (review.reviews || []).map((r: any) => ({
-      criterion: r.criterion || '',
+  const reviews: ReviewScore[] = (pipelineResult.review_history || []).flatMap((reviewRound: any) => {
+    const audit = reviewRound.audit || {};
+    const anchors = (audit.anchors || []).slice(0, 5).map((anchor: any) => ({
+      paper_id: anchor.paper_id || '',
+      title: anchor.title || '',
+      score10: anchor.score10 || 0,
+      review_count: anchor.review_count || 0
+    }));
+
+    return (reviewRound.reviews || []).map((r: any) => ({
+      reviewer: r.reviewer || '',
+      role: r.role || '',
       score: r.score || 0,
-      reasoning: r.reasoning || ''
-    }))
-  );
+      feedback: r.feedback || '',
+      anchors: anchors
+    }));
+  });
 
   onLog({
     timestamp: new Date().toLocaleTimeString(),
@@ -495,6 +506,87 @@ export const api = {
         } catch (error) {
             console.error('Error terminating pipeline:', error);
             return false;
+        }
+    },
+
+    /**
+     * List all available results
+     */
+    listResults: async (config: AppConfig): Promise<any[]> => {
+        try {
+            const baseUrl = config.baseUrl || 'http://localhost:8080';
+            const response = await fetch(`${baseUrl}/api/results`);
+
+            if (!response.ok) {
+                console.error('Failed to fetch results:', response.statusText);
+                return [];
+            }
+
+            const data = await response.json();
+            return data.ok ? data.results : [];
+        } catch (error) {
+            console.error('Error fetching results:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get a specific result by run_id
+     */
+    getResultById: async (runId: string, config: AppConfig): Promise<PipelineResult | null> => {
+        try {
+            const baseUrl = config.baseUrl || 'http://localhost:8080';
+            const response = await fetch(`${baseUrl}/api/results/${runId}`);
+
+            if (!response.ok) {
+                console.error('Failed to fetch result:', response.statusText);
+                return null;
+            }
+
+            const data = await response.json();
+            if (!data.ok) {
+                return null;
+            }
+
+            const finalStory = data.final_story || {};
+            const pipelineResult = data.pipeline_result || {};
+
+            // Convert to frontend format
+            const story: GeneratedStory = {
+                title: finalStory.title || '',
+                abstract: finalStory.abstract || '',
+                introduction: finalStory.introduction || finalStory.problem_framing || '',
+                methodology: finalStory.methodology || finalStory.method_skeleton || finalStory.solution || '',
+                experiments: finalStory.experiments || finalStory.experiments_plan || '',
+                contributions: finalStory.contributions || finalStory.innovation_claims || []
+            };
+
+            const reviews: ReviewScore[] = (pipelineResult.review_history || []).flatMap((reviewRound: any) => {
+                const audit = reviewRound.audit || {};
+                const anchors = (audit.anchors || []).slice(0, 5).map((anchor: any) => ({
+                    paper_id: anchor.paper_id || '',
+                    title: anchor.title || '',
+                    score10: anchor.score10 || 0,
+                    review_count: anchor.review_count || 0
+                }));
+
+                return (reviewRound.reviews || []).map((r: any) => ({
+                    reviewer: r.reviewer || '',
+                    role: r.role || '',
+                    score: r.score || 0,
+                    feedback: r.feedback || '',
+                    anchors: anchors
+                }));
+            });
+
+            return {
+                story,
+                reviews,
+                logs: []
+            };
+        } catch (error) {
+            console.error('Error fetching result:', error);
+            return null;
         }
     }
 };

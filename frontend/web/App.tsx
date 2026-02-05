@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { PipelineVisualizer } from './components/PipelineVisualizer';
 import { ResultViewer } from './components/ResultViewer';
+import { KnowledgeGraph } from './components/KnowledgeGraph';
 import { IdeaInput } from './components/IdeaInput';
 import { ConfigPanel } from './components/ConfigPanel';
 import { 
@@ -55,7 +56,8 @@ const translations = {
       terminate: "Terminate",
       terminated_msg: "Pipeline terminated by user.",
       terminated_desc: "The process was manually stopped.",
-      elapsed: "Elapsed Time"
+      elapsed: "Elapsed Time",
+      notice: "This process may take several tens of minutes. Please be patient. If you encounter any errors, please report them to us on GitHub. Thank you for using!"
     },
     results: {
       no_story: "No story generated yet.",
@@ -114,11 +116,10 @@ const translations = {
     },
     steps: {
       [PipelineStep.INIT]: "Init",
-      [PipelineStep.KG_SEARCH]: "KG Search",
       [PipelineStep.RETRIEVAL]: "Retrieval",
-      [PipelineStep.GENERATION]: "Story Gen",
-      [PipelineStep.REVIEW]: "Agent Review",
-      [PipelineStep.REFINEMENT]: "Refinement",
+      [PipelineStep.GENERATION]: "Generation",
+      [PipelineStep.REVIEW]: "Review",
+      [PipelineStep.VALIDATION]: "Validation",
       [PipelineStep.DONE]: "Done",
       [PipelineStep.ERROR]: "Error"
     }
@@ -161,7 +162,8 @@ const translations = {
       terminate: "终止",
       terminated_msg: "流程已由用户终止。",
       terminated_desc: "操作被手动停止。",
-      elapsed: "耗时"
+      elapsed: "耗时",
+      notice: "该过程可能需要几十分钟，请耐心等候。如有报错，请在 GitHub 反馈给我们。感谢使用！"
     },
     results: {
       no_story: "尚未生成故事。",
@@ -220,11 +222,10 @@ const translations = {
     },
     steps: {
       [PipelineStep.INIT]: "初始化",
-      [PipelineStep.KG_SEARCH]: "图谱搜索",
-      [PipelineStep.RETRIEVAL]: "三路检索",
+      [PipelineStep.RETRIEVAL]: "知识检索",
       [PipelineStep.GENERATION]: "故事生成",
-      [PipelineStep.REVIEW]: "智能评审",
-      [PipelineStep.REFINEMENT]: "润色完善",
+      [PipelineStep.REVIEW]: "评审润色",
+      [PipelineStep.VALIDATION]: "验证检查",
       [PipelineStep.DONE]: "完成",
       [PipelineStep.ERROR]: "错误"
     }
@@ -476,6 +477,40 @@ function App() {
   }, [currentRunId, status]);
 
   const handleStartPipeline = async (idea: string) => {
+    // Validate critical configuration before starting
+    const missingFields: string[] = [];
+
+    if (!config.siliconFlowApiKey || config.siliconFlowApiKey.trim() === '') {
+      missingFields.push(lang === 'en' ? 'SiliconFlow API Key' : 'SiliconFlow API Key');
+    }
+    if (!config.llmUrl || config.llmUrl.trim() === '') {
+      missingFields.push(lang === 'en' ? 'LLM API URL' : 'LLM API URL');
+    }
+    if (!config.llmModel || config.llmModel.trim() === '') {
+      missingFields.push(lang === 'en' ? 'LLM Model' : 'LLM Model');
+    }
+    if (!config.embeddingUrl || config.embeddingUrl.trim() === '') {
+      missingFields.push(lang === 'en' ? 'Embedding API URL' : 'Embedding API URL');
+    }
+    if (!config.embeddingModel || config.embeddingModel.trim() === '') {
+      missingFields.push(lang === 'en' ? 'Embedding Model' : 'Embedding Model');
+    }
+    if (!config.embeddingApiKey || config.embeddingApiKey.trim() === '') {
+      missingFields.push(lang === 'en' ? 'Embedding API Key' : 'Embedding API Key');
+    }
+
+    if (missingFields.length > 0) {
+      const fieldsList = missingFields.map(f => `  • ${f}`).join('\n');
+      const message = lang === 'en'
+        ? `⚠️ Configuration Required\n\nThe following required fields are missing:\n\n${fieldsList}\n\nPlease configure these settings before running the pipeline.\n\nClick OK to go to Settings page.`
+        : `⚠️ 需要配置\n\n以下必填字段缺失：\n\n${fieldsList}\n\n请先在配置页面设置这些字段后再运行流水线。\n\n点击确定前往配置页面。`;
+
+      if (confirm(message)) {
+        setActiveTab('settings');
+      }
+      return;
+    }
+
     // Reset state
     if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -620,13 +655,15 @@ function App() {
             />
 
             {(status !== PipelineStatus.IDLE) && (
-              <PipelineVisualizer 
-                status={status} 
-                currentStep={currentStep} 
-                logs={logs} 
+              <PipelineVisualizer
+                status={status}
+                currentStep={currentStep}
+                logs={logs}
                 t={t}
                 onStop={handleStopPipeline}
                 elapsedTime={elapsedTime}
+                runId={currentRunId}
+                config={config}
               />
             )}
           </div>
@@ -634,7 +671,16 @@ function App() {
       case 'results':
         return (
           <div className="animate-in fade-in duration-500">
-            <ResultViewer story={story} reviews={reviews} t={t} />
+            <ResultViewer
+              story={story}
+              reviews={reviews}
+              t={t}
+              config={config}
+              onLoadResult={(result) => {
+                setStory(result.story);
+                setReviews(result.reviews);
+              }}
+            />
           </div>
         );
       case 'settings':
@@ -646,16 +692,9 @@ function App() {
         );
       case 'kg':
         return (
-          <div className="flex flex-col items-center justify-center h-[60vh] text-center p-8 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 border-dashed animate-in fade-in duration-500">
-             <div className="w-24 h-24 bg-violet-50 dark:bg-violet-900/20 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-10 h-10 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-             </div>
-             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">{t.kg.title}</h3>
-             <p className="text-slate-500 dark:text-slate-400 max-w-md">
-               {t.kg.desc}
-             </p>
+          <div className="animate-in fade-in duration-500">
+            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-8 tracking-tight">{t.kg.title}</h1>
+            <KnowledgeGraph config={config} t={t} />
           </div>
         );
       default:

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Circle, Loader2, Search, Book, PenTool, Gavel, FileCheck, Square, Timer } from 'lucide-react';
-import { PipelineStatus, PipelineStep, PipelineLog } from '../types';
+import { CheckCircle2, Circle, Loader2, Search, PenTool, Gavel, Shield, CheckCircle, Sparkles, Square, Timer, Info, Download } from 'lucide-react';
+import { PipelineStatus, PipelineStep, PipelineLog, AppConfig } from '../types';
 
 interface PipelineVisualizerProps {
   status: PipelineStatus;
@@ -9,35 +9,31 @@ interface PipelineVisualizerProps {
   t: any;
   onStop: () => void;
   elapsedTime: string;
+  runId: string | null;
+  config: AppConfig;
 }
 
 const getStepIcon = (id: PipelineStep) => {
     switch(id) {
-        case PipelineStep.INIT: return Book;
-        case PipelineStep.KG_SEARCH: return Search;
-        case PipelineStep.RETRIEVAL: return DatabaseIcon;
+        case PipelineStep.INIT: return Sparkles;
+        case PipelineStep.RETRIEVAL: return Search;
         case PipelineStep.GENERATION: return PenTool;
         case PipelineStep.REVIEW: return Gavel;
-        case PipelineStep.REFINEMENT: return FileCheck;
+        case PipelineStep.VALIDATION: return Shield;
+        case PipelineStep.DONE: return CheckCircle;
         default: return Circle;
     }
 }
 
-// Helper component for Icon
-function DatabaseIcon(props: any) {
-    return (
-        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s 9-1.34 9-3V5"/></svg>
-    )
-}
-
-export const PipelineVisualizer: React.FC<PipelineVisualizerProps> = ({ status, currentStep, logs, t, onStop, elapsedTime }) => {
+export const PipelineVisualizer: React.FC<PipelineVisualizerProps> = ({ status, currentStep, logs, t, onStop, elapsedTime, runId, config }) => {
+  // Simplified core steps for visualization
   const steps = [
     PipelineStep.INIT,
-    PipelineStep.KG_SEARCH,
     PipelineStep.RETRIEVAL,
     PipelineStep.GENERATION,
     PipelineStep.REVIEW,
-    PipelineStep.REFINEMENT
+    PipelineStep.VALIDATION,
+    PipelineStep.DONE
   ];
 
   // Auto-scroll logs
@@ -45,6 +41,36 @@ export const PipelineVisualizer: React.FC<PipelineVisualizerProps> = ({ status, 
   useEffect(() => {
     logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
+
+  // Download logs function
+  const handleDownloadLogs = async () => {
+    if (!runId) {
+      alert('No run ID available. Please wait for the pipeline to start.');
+      return;
+    }
+
+    try {
+      const baseUrl = config.baseUrl.replace(/\/$/, '');
+      const response = await fetch(`${baseUrl}/api/runs/${runId}/logs.zip`);
+
+      if (!response.ok) {
+        throw new Error('Failed to download logs');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${runId}_logs.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading logs:', error);
+      alert('Failed to download logs. Please try again or check the console for details.');
+    }
+  };
 
   const getStepStatus = (stepId: PipelineStep) => {
     const currentIndex = steps.indexOf(currentStep);
@@ -65,15 +91,26 @@ export const PipelineVisualizer: React.FC<PipelineVisualizerProps> = ({ status, 
            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{t.pipeline.subtitle}</p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
             {/* Timer Display */}
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
                 <Timer size={14} className={status === PipelineStatus.RUNNING ? "text-violet-500 animate-pulse" : "text-slate-400"} />
                 {elapsedTime}
             </div>
 
+            {/* Download Logs Button */}
+            <button
+                onClick={handleDownloadLogs}
+                disabled={!runId}
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-bold transition-colors border border-blue-200 dark:border-blue-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={runId ? "Download logs" : "Logs not available yet"}
+            >
+                <Download size={14} />
+                Logs
+            </button>
+
             {status === PipelineStatus.RUNNING && (
-            <button 
+            <button
                 onClick={onStop}
                 className="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg text-xs font-bold transition-colors border border-red-200 dark:border-red-800"
             >
@@ -128,6 +165,30 @@ export const PipelineVisualizer: React.FC<PipelineVisualizerProps> = ({ status, 
               </div>
             );
           })}
+        </div>
+
+        {/* Notice Banner */}
+        <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/30 rounded-2xl p-4 flex gap-3">
+          <Info size={20} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm text-blue-800 dark:text-blue-300 leading-relaxed">
+              {t.pipeline.notice.split('GitHub').map((part, idx, arr) => (
+                <React.Fragment key={idx}>
+                  {part}
+                  {idx < arr.length - 1 && (
+                    <a
+                      href="https://github.com/AgentAlphaAGI/Idea2Paper/issues"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline"
+                    >
+                      GitHub
+                    </a>
+                  )}
+                </React.Fragment>
+              ))}
+            </p>
+          </div>
         </div>
 
         {/* Live Logs Terminal */}

@@ -10,11 +10,10 @@ export enum PipelineStatus {
 
 export enum PipelineStep {
   INIT = 'INIT',
-  KG_SEARCH = 'KG_SEARCH',
-  RETRIEVAL = 'RETRIEVAL',
+  RETRIEVAL = 'RETRIEVAL', // Combines: Recall + Pattern Selection
   GENERATION = 'GENERATION',
-  REVIEW = 'REVIEW',
-  REFINEMENT = 'REFINEMENT',
+  REVIEW = 'REVIEW', // Combines: Critic Review + Refinement
+  VALIDATION = 'VALIDATION', // Combines: Novelty Check + Verification + Bundling
   DONE = 'DONE',
   ERROR = 'ERROR'
 }
@@ -36,9 +35,16 @@ export interface GeneratedStory {
 }
 
 export interface ReviewScore {
-  criterion: string;
+  reviewer: string;
+  role: string;
   score: number; // 1-10
-  reasoning: string;
+  feedback: string;
+  anchors?: Array<{
+    paper_id: string;
+    title: string;
+    score10: number;
+    review_count: number;
+  }>;
 }
 
 export interface PipelineResult {

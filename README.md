@@ -132,39 +132,29 @@ python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your research idea"
 
 ## 🌐 Frontend (Local Web UI)
 
-> **Status:** The frontend is currently unstable. We recommend running the pipeline from the terminal for now. We will improve the frontend in future updates.
+A modern React + TypeScript web interface for running the Idea2Story pipeline and visualizing results.
 
-Run a minimal local UI to launch the pipeline and view **only** high-level stage + final results (no raw logs on screen).
+### Quick Start
 
-### Start
+Start the backend server:
 
 ```bash
 python frontend/server/app.py --host 127.0.0.1 --port 8080
 ```
 
-Open in your browser:
+Open your browser to `http://127.0.0.1:8080`
 
-```text
-http://127.0.0.1:8080/
-```
+The frontend is pre-built and served automatically by the backend server. No Node.js installation required.
 
-### What you can do in the UI
-- Run the same pipeline entrypoint (`idea2story_pipeline.py`) from a web page.
-- Configure `SILICONFLOW_API_KEY`, `LLM_API_URL`, `LLM_MODEL` for the current run (not persisted by the server).
-- Toggle Novelty / Verification.
-- Download the current run logs as a zip.
+### Features
 
-For more details, see `frontend/README.md`.
+- Run Idea2Story pipeline from web interface
+- Configure API keys and model parameters
+- View real-time progress and results
+- Interactive knowledge graph visualization
+- Export results and logs as ZIP
 
-### Output
-
-```text
-output/
-├── final_story.json # Final generated paper story
-├── pipeline_result.json # Full pipeline results
-└── log.json # Detailed logs
-```
-Check `final_story.json` for the result and `pipeline_result.json` for the full process.
+For development mode and more details, see `frontend/README.md`.
 
 
 ## 🤖 Anchored Multi‑Agent Review

@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import { AppConfig } from '../types';
-import { 
-  Server, 
-  Key, 
-  Database, 
-  Cpu, 
-  Settings2, 
-  ChevronDown, 
-  ChevronUp, 
-  Sliders, 
-  Thermometer, 
-  ShieldCheck, 
+import {
+  Server,
+  Key,
+  Database,
+  Cpu,
+  Settings2,
+  ChevronDown,
+  ChevronUp,
+  Sliders,
+  Thermometer,
+  ShieldCheck,
   BrainCircuit,
   FileSearch,
-  Zap
+  Zap,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 interface ConfigPanelProps {
@@ -53,19 +55,42 @@ const CollapsibleSection = ({ title, icon: Icon, children, defaultOpen = false }
   );
 };
 
-const InputGroup = ({ label, value, onChange, type = "text", placeholder = "", desc = "" }: any) => (
-  <div className="space-y-2">
-    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</label>
-    <input
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all font-mono text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400"
-    />
-    {desc && <p className="text-xs text-slate-400 dark:text-slate-500">{desc}</p>}
-  </div>
-);
+const InputGroup = ({ label, value, onChange, type = "text", placeholder = "", desc = "", required = false }: any) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+  const inputType = isPassword && showPassword ? "text" : type;
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <div className="relative">
+        <input
+          type={inputType}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+          className={`w-full px-4 py-2.5 ${isPassword ? 'pr-12' : ''} bg-slate-50 dark:bg-slate-900 border ${required && !value ? 'border-red-300 dark:border-red-700' : 'border-slate-200 dark:border-slate-700'} rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all font-mono text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400`}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            title={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        )}
+      </div>
+      {required && !value && <p className="text-xs text-red-500 dark:text-red-400">This field is required</p>}
+      {desc && <p className="text-xs text-slate-400 dark:text-slate-500">{desc}</p>}
+    </div>
+  );
+};
 
 const ToggleGroup = ({ label, checked, onChange, desc = "" }: any) => (
   <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -125,54 +150,29 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig, t }
         </button>
       </div>
 
-      {/* 1. Pipeline Control (Primary) */}
-      <CollapsibleSection title={t.config.headers.pipeline} icon={Sliders} defaultOpen={true}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <ToggleGroup 
-               label={t.config.labels.enable_logging} 
-               checked={config.logging.enable} 
-               onChange={(val: boolean) => setConfig({...config, logging: {...config.logging, enable: val}})}
-             />
-             <ToggleGroup 
-               label={t.config.labels.enable_results} 
-               checked={config.results.enable} 
-               onChange={(val: boolean) => setConfig({...config, results: {...config.results, enable: val}})}
-             />
-          </div>
-          <ToggleGroup 
-            label={t.config.labels.novelty_check} 
-            checked={config.novelty.enable} 
-            onChange={(val: boolean) => setConfig({...config, novelty: {...config.novelty, enable: val}})}
-            desc={t.config.descriptions.novelty}
-          />
-           <ToggleGroup 
-            label={t.config.labels.verification} 
-            checked={config.verification.enable} 
-            onChange={(val: boolean) => setConfig({...config, verification: {...config.verification, enable: val}})}
-            desc={t.config.descriptions.verification}
-          />
-      </CollapsibleSection>
-
-      {/* 2. LLM Configuration (Primary - Moved API Key here) */}
+      {/* 1. LLM Configuration (Primary - High Priority) */}
       <CollapsibleSection title={t.config.headers.llm} icon={Cpu} defaultOpen={true}>
-         <InputGroup 
-            label={t.config.labels.silicon_key} 
-            value={config.siliconFlowApiKey} 
+         <InputGroup
+            label={t.config.labels.silicon_key}
+            value={config.siliconFlowApiKey}
             type="password"
             onChange={(e: any) => setConfig({...config, siliconFlowApiKey: e.target.value})}
             desc={t.config.descriptions.silicon_key}
+            required={true}
          />
-         <InputGroup 
-            label={t.config.labels.llm_url} 
-            value={config.llmUrl} 
-            onChange={(e: any) => setConfig({...config, llmUrl: e.target.value})} 
+         <InputGroup
+            label={t.config.labels.llm_url}
+            value={config.llmUrl}
+            onChange={(e: any) => setConfig({...config, llmUrl: e.target.value})}
+            required={true}
          />
-         <InputGroup 
-            label={t.config.labels.llm_model} 
-            value={config.llmModel} 
-            onChange={(e: any) => setConfig({...config, llmModel: e.target.value})} 
+         <InputGroup
+            label={t.config.labels.llm_model}
+            value={config.llmModel}
+            onChange={(e: any) => setConfig({...config, llmModel: e.target.value})}
+            required={true}
          />
-         
+
          <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
              <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-wider">
                 <Thermometer size={14} />
@@ -182,14 +182,14 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig, t }
                  {Object.entries(config.llmTemperatures).map(([key, val]) => (
                     <div key={key}>
                         <label className="block text-[10px] text-slate-500 dark:text-slate-400 mb-1 truncate" title={key}>{key}</label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             step="0.1"
                             min="0"
                             max="2"
                             value={val}
                             onChange={(e) => setConfig({
-                                ...config, 
+                                ...config,
                                 llmTemperatures: {
                                     ...config.llmTemperatures,
                                     [key]: parseFloat(e.target.value)
@@ -203,28 +203,60 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig, t }
          </div>
       </CollapsibleSection>
 
-      {/* 3. Embedding Configuration (Secondary) */}
-      <CollapsibleSection title={t.config.headers.embedding} icon={Database}>
-         <InputGroup 
-            label={t.config.labels.embed_url} 
-            value={config.embeddingUrl} 
-            onChange={(e: any) => setConfig({...config, embeddingUrl: e.target.value})} 
+      {/* 2. Embedding Configuration (Primary - High Priority) */}
+      <CollapsibleSection title={t.config.headers.embedding} icon={Database} defaultOpen={true}>
+         <InputGroup
+            label={t.config.labels.embed_url}
+            value={config.embeddingUrl}
+            onChange={(e: any) => setConfig({...config, embeddingUrl: e.target.value})}
+            required={true}
          />
-         <InputGroup 
-            label={t.config.labels.embed_model} 
-            value={config.embeddingModel} 
-            onChange={(e: any) => setConfig({...config, embeddingModel: e.target.value})} 
+         <InputGroup
+            label={t.config.labels.embed_model}
+            value={config.embeddingModel}
+            onChange={(e: any) => setConfig({...config, embeddingModel: e.target.value})}
+            required={true}
          />
-         <InputGroup 
-            label="Embedding API Key (Optional)" 
-            value={config.embeddingApiKey} 
+         <InputGroup
+            label="Embedding API Key"
+            value={config.embeddingApiKey}
             type="password"
-            onChange={(e: any) => setConfig({...config, embeddingApiKey: e.target.value})} 
-            placeholder="Inherits SiliconFlow Key if empty"
+            onChange={(e: any) => setConfig({...config, embeddingApiKey: e.target.value})}
+            placeholder="Enter your Embedding API Key"
+            required={true}
+            desc="API Key for the embedding service"
          />
       </CollapsibleSection>
 
-      {/* 4. Advanced Logic (Secondary - Collapsed) */}
+      {/* 3. Pipeline Control */}
+      <CollapsibleSection title={t.config.headers.pipeline} icon={Sliders} defaultOpen={false}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <ToggleGroup
+               label={t.config.labels.enable_logging}
+               checked={config.logging.enable}
+               onChange={(val: boolean) => setConfig({...config, logging: {...config.logging, enable: val}})}
+             />
+             <ToggleGroup
+               label={t.config.labels.enable_results}
+               checked={config.results.enable}
+               onChange={(val: boolean) => setConfig({...config, results: {...config.results, enable: val}})}
+             />
+          </div>
+          <ToggleGroup
+            label={t.config.labels.novelty_check}
+            checked={config.novelty.enable}
+            onChange={(val: boolean) => setConfig({...config, novelty: {...config.novelty, enable: val}})}
+            desc={t.config.descriptions.novelty}
+          />
+           <ToggleGroup
+            label={t.config.labels.verification}
+            checked={config.verification.enable}
+            onChange={(val: boolean) => setConfig({...config, verification: {...config.verification, enable: val}})}
+            desc={t.config.descriptions.verification}
+          />
+      </CollapsibleSection>
+
+      {/* 4. Advanced Logic (Collapsed by default) */}
       <CollapsibleSection title={t.config.headers.advanced} icon={Settings2}>
           {/* Idea Packaging */}
           <div className="space-y-4 border-b border-slate-100 dark:border-slate-700 pb-6">
