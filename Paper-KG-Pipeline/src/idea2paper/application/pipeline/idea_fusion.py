@@ -123,7 +123,7 @@ class IdeaFusionEngine:
         response = call_llm(
             prompt,
             temperature=PipelineConfig.LLM_TEMPERATURE_IDEA_FUSION,
-            max_tokens=500,
+            max_tokens=4096,
             timeout=120,
         )
         result = parse_json_from_llm(response)
@@ -180,7 +180,7 @@ class IdeaFusionEngine:
         response = call_llm(
             prompt,
             temperature=PipelineConfig.LLM_TEMPERATURE_IDEA_FUSION,
-            max_tokens=500,
+            max_tokens=4096,
             timeout=120,
         )
         result = parse_json_from_llm(response)
@@ -238,7 +238,7 @@ class IdeaFusionEngine:
         response = call_llm(
             prompt,
             temperature=PipelineConfig.LLM_TEMPERATURE_IDEA_FUSION_STAGE2,
-            max_tokens=800,
+            max_tokens=4096,
             timeout=180,
         )
         result = parse_json_from_llm(response)
@@ -326,7 +326,7 @@ KEY REQUIREMENTS:
         response = call_llm(
             prompt,
             temperature=PipelineConfig.LLM_TEMPERATURE_IDEA_FUSION_STAGE3,
-            max_tokens=1500,
+            max_tokens=4096,
             timeout=180,
         )
         result = parse_json_from_llm(response)

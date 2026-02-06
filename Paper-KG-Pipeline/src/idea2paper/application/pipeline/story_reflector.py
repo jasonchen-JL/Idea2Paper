@@ -200,7 +200,7 @@ class StoryReflector:
             response = call_llm(
                 prompt,
                 temperature=PipelineConfig.LLM_TEMPERATURE_STORY_REFLECTOR,
-                max_tokens=1000,
+                max_tokens=4096,
                 timeout=120,
             )
             result = parse_json_from_llm(response)
@@ -266,7 +266,7 @@ class StoryReflector:
             response = call_llm(
                 prompt,
                 temperature=PipelineConfig.LLM_TEMPERATURE_STORY_REFLECTOR,
-                max_tokens=800,
+                max_tokens=4096,
                 timeout=120,
             )
             result = parse_json_from_llm(response)

@@ -26,6 +26,10 @@ import numpy as np
 from pipeline.run_context import get_logger
 from idea2paper.config import OUTPUT_DIR, PipelineConfig
 from idea2paper.infra.embeddings import get_embedding, get_embeddings_batch, EMBEDDING_MODEL
+from idea2paper.infra.subdomain_taxonomy import (
+    validate_subdomain_taxonomy,
+    resolve_subdomain_taxonomy_paths,
+)
 from idea2paper.recall.recall_text import build_recall_idea_text, build_recall_paper_text, truncate_for_embedding
 from idea2paper.recall.tokenize import to_token_set, jaccard_from_sets
 
@@ -186,14 +190,18 @@ class RecallSystem:
     def _load_subdomain_taxonomy(self):
         if not bool(getattr(PipelineConfig, "SUBDOMAIN_TAXONOMY_ENABLE", False)):
             return
-        path_cfg = getattr(PipelineConfig, "SUBDOMAIN_TAXONOMY_PATH", "") or ""
-        if path_cfg:
-            tax_path = Path(path_cfg)
-        else:
-            tax_path = Path(PipelineConfig.RECALL_INDEX_DIR) / "subdomain_taxonomy.json"
+        tax_path, patterns_path = resolve_subdomain_taxonomy_paths()
         if not tax_path.exists():
             if self.logger:
                 self.logger.log_event("subdomain_taxonomy_missing", {"path": str(tax_path)})
+            return
+        status = validate_subdomain_taxonomy(tax_path, patterns_path)
+        if not status.get("ok"):
+            if self.logger:
+                self.logger.log_event("subdomain_taxonomy_mismatch", {
+                    "path": str(tax_path),
+                    "status": status,
+                })
             return
         try:
             data = json.loads(tax_path.read_text(encoding="utf-8"))

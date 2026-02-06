@@ -406,10 +406,11 @@ ASSIGNMENTS_FILE = DATA_DIR / "assignments.jsonl"
 CLUSTER_LIBRARY_FILE = DATA_DIR / "cluster_library_sorted.jsonl"
 PATTERN_DETAILS_FILE = DATA_DIR / "iclr_patterns_full.jsonl"
 
-# LLM API Config
-SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
-LLM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
+# LLM API Config (legacy KG script example; use unified LLM config)
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_PROVIDER = "openai_compatible_chat"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ### 5.2 Recall System
@@ -474,9 +475,10 @@ class PipelineConfig:
     HEAD_INJECTION_CLUSTER_THRESHOLD = 15
 
 # LLM Config
-LLM_API_KEY = os.getenv("SILICONFLOW_API_KEY")
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
-LLM_MODEL = "Qwen/Qwen3-14B"
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_PROVIDER = "openai_compatible_chat"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ---
@@ -493,7 +495,10 @@ cd /Users/gaoge/code/mycode/Idea2Paper/Paper-KG-Pipeline
 pip install -r requirements.txt
 
 # 3. Set Environment Variables
-export SILICONFLOW_API_KEY="your_api_key_here"
+export LLM_API_KEY="your_api_key_here"
+export LLM_PROVIDER="openai_compatible_chat"
+export LLM_BASE_URL="https://api.openai.com/v1"
+export LLM_MODEL="gpt-4o-mini"
 ```
 
 ### 6.2 One-Time Construction
@@ -822,10 +827,10 @@ grep "🎉 Critic Review Passed" output/log.json
 **Q: API key invalid**
 ```bash
 # Check Env Var
-echo $SILICONFLOW_API_KEY
+echo $LLM_API_KEY
 
 # Set Env Var
-export SILICONFLOW_API_KEY="your_key_here"
+export LLM_API_KEY="your_key_here"
 ```
 
 **Q: Missing Dependencies**
@@ -903,7 +908,7 @@ grep "Fallback Strategy" output/log.json
 
 ## 16. Acknowledgement
 
-Thanks to ICLR 2025 Paper Dataset support, and SiliconFlow for LLM API services.
+Thanks to the ICLR 2025 Paper Dataset support, and all LLM API providers.
 
 ---
 
@@ -1430,9 +1435,11 @@ Return in JSON format.
 ### 5.3 API Config
 
 ```python
-SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
-LLM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
+# Legacy KG script example; use unified LLM config
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_PROVIDER = "openai_compatible_chat"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ---
@@ -1462,14 +1469,16 @@ GRAPH_FILE = OUTPUT_DIR / "knowledge_graph_v2.gpickle"
 
 ```python
 # API Key (Env Var)
-SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
+LLM_API_KEY = os.getenv("LLM_API_KEY")
 
-# API Endpoint
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
+# Provider
+LLM_PROVIDER = "openai_compatible_chat"
+
+# Base URL (or use LLM_API_URL override)
+LLM_BASE_URL = "https://api.openai.com/v1"
 
 # Model Selection
-LLM_MODEL = "Qwen/Qwen2.5-7B-Instruct"  # Node Construction
-# or "Qwen/Qwen3-14B"  # Pipeline Generation
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ### 6.3 Edge Build Config
@@ -1497,7 +1506,7 @@ pip install -r requirements.txt
 
 **Set Environment Variables**:
 ```bash
-export SILICONFLOW_API_KEY="your_api_key_here"
+export LLM_API_KEY="your_api_key_here"
 ```
 
 ### 7.2 Build Nodes
@@ -1606,7 +1615,7 @@ Total Edges: 444,872
 Error: Connection timeout / API key invalid
 Solution:
 1. Check network connection
-2. Verify SILICONFLOW_API_KEY env var
+2. Verify LLM_API_KEY env var
 3. Check API quota
 ```
 
@@ -1698,7 +1707,7 @@ with ThreadPoolExecutor(max_workers=5) as executor:
 
 ### Technical Features
 
-✅ **LLM Integration**: Use SiliconFlow API to enhance Pattern descriptions
+✅ **LLM Integration**: Use a unified LLM provider to enhance Pattern descriptions
 ✅ **Prompt Engineering**: Structured Prompt design
 ✅ **Fault Tolerance**: Automatic JSON parsing and repair
 ✅ **Dual-Layer Description**: Concrete examples + Global summary
@@ -2228,13 +2237,13 @@ class RecallConfig:
 
 ```python
 # API Endpoint
-EMBEDDING_API_URL = "https://api.siliconflow.cn/v1/embeddings"
+EMBEDDING_API_URL = "https://api.openai.com/v1/embeddings"
 
 # Model Selection
-EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-4B"
+EMBEDDING_MODEL = "text-embedding-3-large"
 
 # API Key
-EMBEDDING_API_KEY = os.getenv("SILICONFLOW_API_KEY")
+EMBEDDING_API_KEY = os.getenv("EMBEDDING_API_KEY")
 ```
 
 ---
@@ -3293,9 +3302,10 @@ class PipelineConfig:
 ```python
 # scripts/pipeline/config.py
 
-LLM_API_KEY = os.getenv("SILICONFLOW_API_KEY")
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
-LLM_MODEL = "Qwen/Qwen3-14B"  # Optional: Qwen2.5-7B-Instruct
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_PROVIDER = "openai_compatible_chat"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ---
@@ -3530,4 +3540,3 @@ Novelty Mode:
 <br/>
 <br/>
 <br/>
-

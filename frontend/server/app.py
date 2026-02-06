@@ -138,9 +138,11 @@ def _read_json(handler: BaseHTTPRequestHandler):
 
 
 def _safe_env_meta(env: dict) -> dict:
-    redacted = {k: v for k, v in env.items() if k != "SILICONFLOW_API_KEY"}
-    if "SILICONFLOW_API_KEY" in env:
-        redacted["SILICONFLOW_API_KEY"] = "***redacted***"
+    redacted = {k: v for k, v in env.items() if k not in ("LLM_API_KEY", "EMBEDDING_API_KEY")}
+    if "LLM_API_KEY" in env:
+        redacted["LLM_API_KEY"] = "***redacted***"
+    if "EMBEDDING_API_KEY" in env:
+        redacted["EMBEDDING_API_KEY"] = "***redacted***"
     return redacted
 
 
@@ -261,7 +263,11 @@ class Handler(BaseHTTPRequestHandler):
         # Legacy format support
         api_key = llm.get("api_key")
         if api_key:
-            env["SILICONFLOW_API_KEY"] = api_key
+            env["LLM_API_KEY"] = api_key
+        if llm.get("provider"):
+            env["LLM_PROVIDER"] = llm.get("provider")
+        if llm.get("base_url"):
+            env["LLM_BASE_URL"] = llm.get("base_url")
         if llm.get("api_url"):
             env["LLM_API_URL"] = llm.get("api_url")
         if llm.get("model"):

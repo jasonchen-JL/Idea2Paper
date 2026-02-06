@@ -1,260 +1,352 @@
-# MultiAgentReview (Based on Graph-Based Real Review Ruler) Explanation
+# MultiAgentReview (Blind + τ-Calibrated + Deterministic Scoring) — Developer Technical Spec
 
-[English](MULTIAGENT_REVIEW.md) | [简体中文](MULTIAGENT_REVIEW_zh.md)
-
-
-This document explains the **MultiAgentReview / MultiAgentCritic** methodology used in `Paper-KG-Pipeline` within this repository: how to use real `review_stats` from the knowledge graph as a "calibrated" objective ruler, how to calculate final scores, and how to adjust "strictness" via configuration.
+This document is for developers maintaining the **new reviewer/critic system**.  
+Core idea: the **LLM only makes blind relative judgments** (better/tie/worse), while the **final 1–10 scores are deterministically inferred** from anchors’ real `score10` using an **offline-calibrated τ**. A separate **Coach Layer** generates field-level edit instructions and does **not** affect scoring.
 
 ---
 
-## 0. Quick Summary (Key Points to Remember)
+## 0. Quickstart (including τ fitting commands)
 
-* The LLM **no longer directly assigns scores from 1 to 10**; it only outputs "better/worse/tie relative to anchor papers + confidence + rationale (must cite anchor score10)".
-* The final 1~10 score is calculated by a **deterministic algorithm**: The same batch of anchors + the same comparisons JSON → The score is guaranteed to be consistent.
-* The passing standard is no longer a fixed 7.0: **Scheme B** is adopted by default (2/3 dimensions ≥ q75 and avg ≥ q50), where q50/q75 are derived from the real distribution of **all papers** under that pattern.
-* In strict quality mode: If the critic's JSON is invalid → Auto-retry → If it still fails, **terminate the current run immediately**, disallowing arbitrary 6.x fallback scores.
+### 0.1 Fit τ first (strongly recommended)
 
-Relevant Code Entry Points:
-
-* Anchored Critic: `Paper-KG-Pipeline/scripts/pipeline/critic.py`
-* Anchor/Distribution Index: `Paper-KG-Pipeline/scripts/pipeline/review_index.py`
-* Configuration: `Paper-KG-Pipeline/scripts/pipeline/config.py`
-* Run Logs: Repo root directory `log/run_.../`
-
----
-
-## 1. What is MultiAgentReview? (Three Reviewers + Three Dimensions)
-
-The system includes 3 fixed reviewer roles (multi-agent), each outputting a dimension score:
-
-* **Methodology**: Whether the method is sound, technical details are rigorous, and experiments are credible.
-* **Novelty**: Whether the innovation is solid or just a trivial stacking of existing methods.
-* **Storyteller**: Whether the narrative is complete (Motivation → Method → Experiments → Conclusion loop is closed).
-
-Final Output:
-
-* `score` (1~10) for each role
-* `avg_score` (Average of the three roles)
-* `main_issue` (The lowest scoring role mapped to `novelty / stability / domain_distance`)
-* `audit` (Audit information: anchors, comparisons, loss, passing thresholds, and decision details)
-
----
-
-## 2. Where Does the "Objective Ruler" Come From? (Real review_stats → score10)
-
-### 2.1 Data Source
-
-Only uses paper node data exported from the graph:
-
-* `Paper-KG-Pipeline/output/nodes_paper.json`
-  * Each paper carries `review_stats`: `avg_score`, `review_count`, `highest_score`, `lowest_score`, etc.
-
-
-
-### 2.2 score10 and Weight
-
-In `ReviewIndex`, real statistics are mapped to a 1~10 scale:
-
-* `score10 = 1 + 9 * avg_score`
-* `dispersion10 = 9 * (highest_score - lowest_score)` (Larger divergence implies lower reliability)
-* `weight = log(1 + review_count) / (1 + dispersion10)` (More reviews imply higher credibility; larger divergence implies lower weight)
-
-These values are cached as `paper_summary` and used for:
-
-* Selecting anchors
-* Fitting the final score (Weighted Loss)
-
----
-
-## 3. How are Anchors Selected? Why Not Give All?
-
-Feeding all papers under a pattern to the LLM would lead to context explosion, high costs, and unstable outputs. The correct approach:
-
-* **Offline/Index Layer**: Use "all papers" under that pattern to calculate the distribution (q50/q75, etc.).
-* **Online/LLM Benchmarking**: Only provide 5~9 anchor papers for benchmarking.
-
-Current Strategy (Fixed 5 + Adaptive Padding up to 9):
-
-1. Fixed Anchors (Most stable, reproducible)
-   * Take quantiles of `score10` under that pattern: q10/q25/q50/q75/q90 (5 papers).
-
-
-2. Optional Exemplars (If pattern_info contains exemplar_paper_ids)
-   * Supplement with 0~2 most reliable exemplars (sorted by weight/review_count).
-
-
-3. Adaptive Padding (Pad up to 9 papers if necessary)
-   * If the first round of fitting is unstable (high loss, low confidence, or non-monotonic benchmarking), pad with 2~4 papers closer to the "current estimated score" and benchmark again.
-
-
-
-Code Location: `Paper-KG-Pipeline/scripts/pipeline/review_index.py`
-
----
-
-## 4. What Does the LLM Actually Do in Review? (Relative Judgment Only)
-
-### 4.1 LLM Output Format (comparisons)
-
-Each role receives the same set of anchors (containing real `score10`), and the LLM must return JSON:
-
-* For each anchor, provide: `better / tie / worse` + `confidence(0~1)` + `rationale`
-* The rationale must cite the corresponding anchor's `score10: X.X`
-
-The LLM is **NOT allowed** to output a final score.
-
-### 4.2 From comparisons to Probability p_i (Deterministic Mapping)
-
-Map judgement/confidence to probability ("probability of beating the anchor"):
-
-* better: `p = 0.5 + 0.45 * confidence`
-* tie:    `p = 0.5`
-* worse:  `p = 0.5 - 0.45 * confidence`
-
-Intuition: Higher confidence pushes p further from 0.5; tie is always 0.5.
-
----
-
-## 5. How is the Final 1~10 Score Calculated? (Deterministic Fitting)
-
-Goal: Find a score S such that for each anchor score s_i, the model's predicted "win rate" is close to the p_i given by the LLM.
-
-* Predicted Win Rate: `sigmoid(k*(S - s_i))`
-* k is a constant (default 1.2)
-* Use Weighted Least Squares Fitting:
-  * `loss(S) = Σ w_i * (sigmoid(k*(S-s_i)) - p_i)^2`
-
-* Grid search for S over `[1,10]` (step size default 0.01), take S that minimizes loss.
-
-This step is completely deterministic: Same anchors + Same comparisons → The resulting S is guaranteed to be consistent.
-
-Code Location: `Paper-KG-Pipeline/scripts/pipeline/critic.py` (`_compute_score_from_comparisons`)
-
----
-
-## 6. Passing Standard (Scheme B): Relative to Full Pattern Distribution
-
-### 6.1 Why Not Use Fixed 7.0?
-
-The real paper distribution varies across different patterns: some themes generally have lower scores or stricter reviews; a fixed 7.0 would cause "deadlocks".
-
-### 6.2 Scheme B (Default)
-
-For the current `pattern_id`, use the score10 of **all papers** under that pattern to calculate:
-
-* `q50`: Median line
-* `q75`: Excellence line (Top 25%)
-
-Passing Conditions:
-
-* (A) At least **2 dimensions have score ≥ q75**
-* AND (B) **avg_score ≥ q50**
-
-Judgment and thresholds are written to:
-
-* `critic_result['audit']['pass']`
-* Also written to `events.jsonl` under `pass_threshold_computed`
-
-Code Location:
-
-* Quantile Calculation: `Paper-KG-Pipeline/scripts/pipeline/review_index.py`
-* Pass Judgment: `Paper-KG-Pipeline/scripts/pipeline/critic.py` (`_compute_pass_decision`)
-
-### 6.3 Fallback When Distribution Data is Insufficient
-
-If the number of papers under the pattern is too small (default < 20):
-
-* Default fallback to **global distribution** (q50/q75 of all papers globally).
-* Can also be configured to fallback to a fixed `PASS_SCORE`.
-
----
-
-## 7. How to Configure Strictness?
-
-All of the following are controlled via environment variables (no code changes required).
-
-### 7.1 Critic JSON Strict Mode (Most Critical)
-
-| Configuration | Default | Meaning |
-| --- | --- | --- |
-| `I2P_CRITIC_STRICT_JSON` | `1` | 1=Strict: Retries on invalid JSON, terminates run if still fails; 0=Allows neutral fallback |
-| `I2P_CRITIC_JSON_RETRIES` | `2` | Maximum retries after failure (Repair/Re-emit) |
-
-Common Usage:
-
-* Local smoke test without key: `I2P_CRITIC_STRICT_JSON=0`
-* Quality pursuit: Keep `I2P_CRITIC_STRICT_JSON=1`, and configure `SILICONFLOW_API_KEY`
-
-### 7.2 Passing Standard Strictness (Related to Scheme B)
-
-| Configuration | Default | Meaning |
-| --- | --- | --- |
-| `I2P_PASS_MODE` | `two_of_three_q75_and_avg_ge_q50` | Currently implemented Scheme B; other values fallback to fixed PASS_SCORE |
-| `I2P_PASS_MIN_PATTERN_PAPERS` | `20` | Triggers fallback when pattern paper count is below this value |
-| `I2P_PASS_FALLBACK` | `global` | `global`=Use global distribution; `fixed`=Use fixed `PASS_SCORE` |
-
-### 7.3 What is the Use of the Remaining `PASS_SCORE=7.0`?
-
-`PASS_SCORE` is now a **last resort fallback**, used only if you configure `I2P_PASS_FALLBACK=fixed` or when distributions are unavailable.
-
----
-
-## 8. How to Check Logs to Confirm "Fallback/Failure"?
-
-Every run generates a directory: Repo root `log/run_YYYYMMDD_HHMMSS_<pid>_<rand>/`
-
-Focus on:
-
-* `events.jsonl`
-  * Presence of `critic_fallback_neutral`: Indicates you allowed fallback (strict=0) and neutral fallback was triggered.
-  * Presence of `critic_invalid_output_fatal`: Indicates strict=1 and JSON failure caused termination.
-  * Presence of `pass_threshold_computed`: Records q50/q75, and pass judgment details.
-
-
-* `llm_calls.jsonl`
-  * `simulated=true`: No key, using simulated output.
-  * `ok=false`: Call failed.
-
-
-
----
-
-## 9. Common Run Commands (Suggested to Copy)
-
-### 9.1 Local Smoke Test Without Key (Allows Fallback, Test Pipeline Only)
+The τ fitting script judges sampled paper pairs per role. With default `--pairs=2000`, the three roles require about **6000 LLM calls** total (plus a small amount of retries), so plan for cost/time.
 
 ```bash
-I2P_CRITIC_STRICT_JSON=0 python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "test idea"
+# Methodology (default 2000 pairs)
+python Paper-KG-Pipeline/scripts/tools/fit_judge_tau.py --role Methodology --pairs 2000
+
+# Novelty (default 2000 pairs)
+python Paper-KG-Pipeline/scripts/tools/fit_judge_tau.py --role Novelty --pairs 2000
+
+# Storyteller (default 2000 pairs)
+python Paper-KG-Pipeline/scripts/tools/fit_judge_tau.py --role Storyteller --pairs 2000
 ```
 
-### 9.2 Quality Mode (Recommended: Strict + Real Benchmarking)
+Outputs:
+- Pair dataset: `Paper-KG-Pipeline/output/judge_pairs.jsonl`
+- τ file: `Paper-KG-Pipeline/output/judge_tau.json` (includes `tau_methodology/tau_novelty/tau_storyteller` + metadata like `rubric_version/card_version/judge_model/nodes_paper_hash`)
+
+Script location:
+- `Paper-KG-Pipeline/scripts/tools/fit_judge_tau.py`
+
+### 0.2 Run a pipeline smoke test (includes the new critic)
 
 ```bash
-export SILICONFLOW_API_KEY="your_key"
-I2P_CRITIC_STRICT_JSON=1 python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your idea"
+python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "test idea"
 ```
 
-### 9.3 Adjusting "Insufficient Data Fallback Strategy" for Passing Threshold
-
-```bash
-# Use global distribution when pattern data is insufficient (Default)
-I2P_PASS_FALLBACK=global ...
-
-# Fallback to fixed PASS_SCORE when pattern data is insufficient (More conservative)
-I2P_PASS_FALLBACK=fixed ...
-```
+Recommended logs:
+- `log/<run_id>/llm_calls.jsonl`
+- `log/<run_id>/events.jsonl`
 
 ---
 
-## 10. How to Troubleshoot "Why is the Score Always Around 6.x?"
+## 1. Non-negotiable principles (viewer相关.md alignment)
 
-Common Causes:
+1) **Blind judging**: judge/critic prompts must never expose real-world identifiers or any score-related data (e.g. `paper_id/title/author/url/doi/arxiv/score/score10/pattern_id`).  
+2) **LLM outputs relative judgments only**: `better|tie|worse` + `strength(weak|medium|strong)` + short rationale (≤ 25 words).  
+3) **Deterministic score inference**: final `S∈[1,10]` is inferred by code from anchors’ real `score10` using a fixed τ (offline-calibrated).  
+4) **Two-layer design**:
+   - **Score Layer**: blind comparisons → deterministic inference (reproducible)
+   - **Coach Layer**: field-level edits after scoring (does not affect scores)
 
-* LLM is not doing real work (No `SILICONFLOW_API_KEY` configured), or output JSON is invalid and intercepted/retried by strict mode.
-* Or the story is indeed only around the "median" compared to anchors.
+---
 
-Troubleshooting Order:
+## 2. Module map (where the implementation lives)
 
-1. Check `log/run_.../llm_calls.jsonl` for `simulated=true`.
-2. Check `events.jsonl` for `critic_invalid_output` / `critic_fallback_neutral`.
-3. Check `pass_threshold_computed` for q50/q75: q75 for many patterns might naturally be around 6.x (This is normal, depends on real distribution).
+### 2.1 Entry point: MultiAgentCritic
+
+- Main implementation: `Paper-KG-Pipeline/src/idea2paper/application/review/critic.py`
+- Compatibility wrapper (keeps old import paths working): `Paper-KG-Pipeline/src/idea2paper/review/critic.py`
+
+Primary API:
+- `MultiAgentCritic.review(story: Dict, context: Optional[Dict]) -> Dict`
+
+### 2.2 Score Layer modules
+
+- Blind Cards: `Paper-KG-Pipeline/src/idea2paper/application/review/cards.py`
+  - `build_story_card(...)`
+  - `build_paper_card(...)`
+  - `CARD_VERSION`
+- Rubric: `Paper-KG-Pipeline/src/idea2paper/application/review/rubric.py`
+  - `get_rubric(role)`
+  - `RUBRIC_VERSION`
+- Blind Judge: `Paper-KG-Pipeline/src/idea2paper/application/review/blind_judge.py`
+  - `BlindJudge.judge(...)` (prompt building + schema validation + repair/retry)
+  - `FORBIDDEN_TERMS` (rationale leak checks)
+- Deterministic inference: `Paper-KG-Pipeline/src/idea2paper/application/review/score_inference.py`
+  - `infer_score_from_comparisons(...)` (grid search over S)
+
+### 2.3 Anchor index & selection
+
+- `Paper-KG-Pipeline/src/idea2paper/application/review/review_index.py`
+  - Builds `score10/weight` from `nodes_paper.json` `review_stats`
+  - Initial anchors: `select_initial_anchors(...)` (dense quantiles + exemplars)
+  - Densify anchors: `select_bucket_anchors(...)` (bucket cache)
+
+### 2.4 Coach Layer
+
+- `Paper-KG-Pipeline/src/idea2paper/application/review/coach.py`
+  - `CoachReviewer.review(...)` (field-level JSON + repair/retry)
+
+### 2.5 Pipeline integration (where critic is called)
+
+- Pipeline orchestrator: `Paper-KG-Pipeline/src/idea2paper/application/pipeline/manager.py`
+  - `critic_result = self.critic.review(current_story, context=critic_context)`
+- StoryGenerator consumes coach outputs for refinement prompts: `Paper-KG-Pipeline/src/idea2paper/application/pipeline/story_generator.py`
+
+---
+
+## 3. Score Layer: end-to-end flow (Story → per-role scores)
+
+Orchestrated in: `Paper-KG-Pipeline/src/idea2paper/application/review/critic.py`
+
+### 3.1 Anchor selection (program-only; never shown to LLM)
+
+If `context["anchors"]` is not provided, anchors are chosen deterministically by `pattern_id`:
+1) Quantile anchors (default q05–q95)  
+2) Exemplar anchors (up to 2)  
+3) Truncate to `I2P_ANCHOR_MAX_INITIAL` (default 11)
+
+Implementation:
+- `ReviewIndex.select_initial_anchors(...)`
+
+Anchor summary fields (program-only):
+- `paper_id` (lookup key)
+- `score10` (real anchor score on 1–10 scale)
+- `weight` (anchor reliability weight)
+
+### 3.2 Blind card construction (anonymization)
+
+StoryCard and PaperCard share identical fields (treat this as the *only* information surface the LLM is allowed to see):
+- `problem`
+- `method`
+- `contrib`
+- `card_version`
+
+Design choices:
+- Only stable, widely available fields are shown to the judge to avoid “unknown” becoming a decisive negative signal.
+- Fields like `experiments_plan`, `domain/sub_domains/application`, and `notes` are **not** rendered into judge prompts.
+- Length caps are enforced on all three fields to prevent “longer = better” bias:
+  - `problem` ≤ 220 chars
+  - `method` ≤ 280 chars
+  - `contrib` ≤ 320 chars
+
+Implementation:
+- `cards.py:build_story_card(...)`
+- `cards.py:build_paper_card(...)`
+Current `CARD_VERSION`: `blind_card_v2_minimal` (changing it requires re-fitting τ).
+
+Crucially, cards do **not** include `paper_id/title/url/score/score10/pattern_id`.
+
+### 3.3 Blind Judge: one LLM call per role
+
+For each role (Methodology / Novelty / Storyteller), we ask the LLM to compare the StoryCard against all AnchorCards:
+
+Output schema (JSON-only):
+```json
+{
+  "rubric_version": "rubric_v1",
+  "comparisons": [
+    {"anchor_id":"A1","judgement":"better|tie|worse","strength":"weak|medium|strong","rationale":"..."}
+  ]
+}
+```
+
+Implementation:
+- Prompt: `blind_judge.py:_build_prompt(...)`
+- Validation: `blind_judge.py:_validate(...)` (strict schema + forbidden rationale terms)
+- Retry: `blind_judge.py:judge(...)` (repair prompt up to `I2P_CRITIC_JSON_RETRIES`)
+
+### 3.4 Map LLM judgments to observations
+
+Mapping (viewer-related contract):
+- better → `y=1`
+- worse → `y=0`
+- tie → `y=0.5` (soft label)
+
+Strength as weight multiplier (not numeric “confidence”):
+- weak=1, medium=2, strong=3
+
+Implementation:
+- `score_inference.py`
+
+### 3.5 Deterministic inference of S via grid search
+
+Given anchors’ real `score10_i` (program-only) and τ:
+- `p_i = sigmoid((S - score10_i) / tau)`
+- minimize: `NLL(S) = Σ w_i * CE(y_i, p_i)`
+  - `w_i = anchor_weight * strength_weight`
+  - `anchor_weight = log(1+review_count)/(1+dispersion10)` from `review_stats`
+
+Implementation:
+- `score_inference.py:infer_score_from_comparisons(...)`
+  - grid `S ∈ [1,10]`, step `I2P_GRID_STEP` (default 0.01)
+  - outputs diagnostics (`loss/avg_strength/monotonic_violations/ci_low/ci_high`)
+
+---
+
+## 4. τ: where it comes from and when to refit
+
+### 4.1 τ loading priority
+
+Implementation: `critic.py:_get_tau(...)`
+
+Priority:
+1) `I2P_JUDGE_TAU_PATH` JSON file keys `tau_methodology/tau_novelty/tau_storyteller`
+2) Env/config fallbacks: `I2P_TAU_METHODOLOGY/I2P_TAU_NOVELTY/I2P_TAU_STORYTELLER`
+3) Final fallback: `I2P_JUDGE_TAU_DEFAULT`
+
+### 4.2 When you MUST refit τ
+
+Refit τ if any of the following changes:
+- `RUBRIC_VERSION` changes (rubric text or criteria)
+- `CARD_VERSION` changes (card fields/mapping)
+- Judge model changes
+- Large changes in `nodes_paper.json` distribution
+
+The fitter writes `rubric_version/card_version/judge_model/nodes_paper_hash` into `judge_tau.json` to make mismatches detectable.
+
+---
+
+## 5. Densify (second round with extra anchors)
+
+If the first round looks unstable/inconsistent, densify adds a few anchors and re-runs all roles (still blind).
+
+Triggers (in `critic.py`):
+- `loss > I2P_DENSIFY_LOSS_THRESHOLD`, or
+- `monotonic_violations >= 1`, or
+- `avg_strength < I2P_DENSIFY_MIN_AVG_CONF`
+
+Extra anchor strategy:
+- bucketed selection around `S_hint`: `review_index.py:select_bucket_anchors(...)`
+- cached via `_bucket_cache` to avoid repeated slow selection
+
+Key configs:
+- `I2P_ANCHOR_DENSIFY_ENABLE`
+- `I2P_ANCHOR_BUCKET_SIZE` / `I2P_ANCHOR_BUCKET_COUNT`
+
+---
+
+## 6. Coach Layer (field-level actionable edits; does not affect scoring)
+
+After Score Layer completes, a separate LLM call produces structured rewrite guidance:
+
+```json
+{
+  "field_feedback": {
+    "title": {"issue":"...", "edit_instruction":"...", "expected_effect":"..."},
+    "abstract": {...},
+    "problem_framing": {...},
+    "method_skeleton": {...},
+    "innovation_claims": {...},
+    "experiments_plan": {...}
+  },
+  "suggested_edits":[{"field":"innovation_claims","action":"rewrite|add|delete|expand","content":"..."}],
+  "priority":["innovation_claims","method_skeleton","abstract"]
+}
+```
+
+Implementation:
+- `coach.py:CoachReviewer.review(...)` (includes JSON repair/retries)
+
+Configs:
+- `I2P_CRITIC_COACH_ENABLE`
+- `I2P_CRITIC_COACH_TEMPERATURE`
+- `I2P_CRITIC_COACH_MAX_TOKENS`
+
+---
+
+## 7. Public API & pipeline compatibility
+
+`MultiAgentCritic.review(...)` returns (core fields):
+
+```python
+{
+  "pass": bool,
+  "avg_score": float,
+  "reviews": [{"reviewer": "...", "role": "...", "score": float, "feedback": str}],
+  "main_issue": str,
+  "suggestions": [str, ...],
+  "audit": dict,
+
+  # Added for precise rewriting:
+  "field_feedback": dict,
+  "suggested_edits": list,
+  "priority": list,
+  "review_coach": dict,
+}
+```
+
+Compatibility:
+- Legacy code can still concatenate `reviews[*].feedback`
+- New code can prefer `field_feedback/suggested_edits/priority`
+
+---
+
+## 8. Logging, audit, and common phenomena (e.g., “why S becomes 10”)
+
+### 8.1 Audit is for reproducibility (and is allowed to include score10)
+
+`audit` is used to reproduce and debug results. It may contain `paper_id/score10/weight`, but those must never enter judge prompts.
+
+Key fields:
+- `audit.anchors[*]`: `paper_id/score10/weight`
+- `audit.role_details[role]`:
+  - `comparisons` (LLM relative judgments)
+  - `loss/avg_strength/monotonic_violations/ci_low/ci_high/tau`
+
+### 8.2 Interpreting “S=10”
+
+If the LLM outputs near-all `better` across anchors (y≈1), the likelihood objective can push `S` to the grid upper bound 10.  
+This is **not** “LLM directly outputting a 10”, but an inference saturation effect typically caused by low-score anchor ranges or weak anchor cards.
+
+### 8.3 Run logs
+
+With run logging enabled:
+- `log/<run_id>/llm_calls.jsonl`: prompt/response/latency (prompt/response may be truncated by `I2P_LOG_MAX_TEXT_CHARS`)
+- `log/<run_id>/events.jsonl`: structured events (e.g., pass threshold computed)
+
+Implementation:
+- `Paper-KG-Pipeline/src/idea2paper/infra/run_logger.py`
+
+---
+
+## 9. Configuration checklist (common)
+
+Config precedence: env/.env > `i2p_config.json` > defaults (implemented in `Paper-KG-Pipeline/src/idea2paper/config.py`).
+
+### 9.1 τ
+- `I2P_JUDGE_TAU_PATH`
+- `I2P_TAU_METHODOLOGY` / `I2P_TAU_NOVELTY` / `I2P_TAU_STORYTELLER`
+- `I2P_JUDGE_TAU_DEFAULT`
+
+### 9.2 Anchors / densify
+- `I2P_ANCHOR_QUANTILES`
+- `I2P_ANCHOR_MAX_INITIAL` / `I2P_ANCHOR_MAX_TOTAL` / `I2P_ANCHOR_MAX_EXEMPLARS`
+- `I2P_ANCHOR_DENSIFY_ENABLE`
+- `I2P_DENSIFY_LOSS_THRESHOLD` / `I2P_DENSIFY_MIN_AVG_CONF`
+- `I2P_ANCHOR_BUCKET_SIZE` / `I2P_ANCHOR_BUCKET_COUNT`
+- `I2P_GRID_STEP`
+
+### 9.3 JSON strictness / safety
+- `I2P_CRITIC_STRICT_JSON`
+- `I2P_CRITIC_JSON_RETRIES`
+
+### 9.4 Coach
+- `I2P_CRITIC_COACH_ENABLE`
+- `I2P_CRITIC_COACH_TEMPERATURE`
+- `I2P_CRITIC_COACH_MAX_TOKENS`
+
+---
+
+## 10. Why the old system was removed
+
+Typical issues with the old path:
+- LLM saw `score10`/titles → anchoring bias and leakage risk
+- LLM produced 1–10 scores directly → non-reproducible, hard to calibrate/audit
+- Unstructured feedback → hard to do precise rewrite loops
+
+Benefits of the new system:
+- Blind + τ-calibrated inference → controlled, reproducible, debuggable
+- Coach outputs are field-level → refinement can be “execute edits per field”

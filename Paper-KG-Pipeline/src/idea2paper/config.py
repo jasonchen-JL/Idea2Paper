@@ -1,4 +1,3 @@
-import hashlib
 import os
 import re
 from pathlib import Path
@@ -79,41 +78,70 @@ def _get(key: str, default, cast=None, cfg_path: list | None = None):
     return _cast(value, cast) if cast else value
 
 # ===================== LLM API 配置 =====================
-LLM_API_KEY = os.getenv("SILICONFLOW_API_KEY", "")
+# Secret: only from env/.env (do not put in i2p_config.json)
+LLM_API_KEY = os.getenv("LLM_API_KEY", "")
+LLM_PROVIDER = _get(
+    "LLM_PROVIDER",
+    "openai_compatible_chat",
+    cast=str,
+    cfg_path=["llm", "provider"],
+)
+LLM_BASE_URL = _get(
+    "LLM_BASE_URL",
+    "",
+    cast=str,
+    cfg_path=["llm", "base_url"],
+)
 LLM_API_URL = _get(
     "LLM_API_URL",
-    "https://api.siliconflow.cn/v1/chat/completions",
+    "",
     cast=str,
     cfg_path=["llm", "api_url"],
 )
 LLM_MODEL = _get(
     "LLM_MODEL",
-    "Pro/zai-org/GLM-4.7",
+    "gpt-4o-mini",
     cast=str,
     cfg_path=["llm", "model"],
 )
+LLM_ANTHROPIC_VERSION = _get(
+    "LLM_ANTHROPIC_VERSION",
+    "2023-06-01",
+    cast=str,
+    cfg_path=["llm", "anthropic_version"],
+)
+LLM_EXTRA_HEADERS = _get(
+    "LLM_EXTRA_HEADERS_JSON",
+    None,
+    cfg_path=["llm", "extra_headers"],
+)
+LLM_EXTRA_BODY = _get(
+    "LLM_EXTRA_BODY_JSON",
+    None,
+    cfg_path=["llm", "extra_body"],
+)
 
 # ===================== Embedding API 配置 =====================
-# Embedding 可独立配置；默认沿用 SiliconFlow + Qwen3-Embedding-8B。
+# Embedding 可独立配置；默认使用 OpenAI-compatible /v1/embeddings 形态。
 EMBEDDING_PROVIDER = _get(
     "EMBEDDING_PROVIDER",
-    "siliconflow",
+    "openai_compatible",
     cast=str,
     cfg_path=["embedding", "provider"],
 )
 EMBEDDING_API_URL = _get(
     "EMBEDDING_API_URL",
-    "https://api.siliconflow.cn/v1/embeddings",
+    "https://api.openai.com/v1/embeddings",
     cast=str,
     cfg_path=["embedding", "api_url"],
 )
 EMBEDDING_MODEL = _get(
     "EMBEDDING_MODEL",
-    "Qwen/Qwen3-Embedding-8B",
+    "text-embedding-3-large",
     cast=str,
     cfg_path=["embedding", "model"],
 )
-# Secret: only from env/.env; fallback to SILICONFLOW_API_KEY (LLM_API_KEY)
+# Secret: only from env/.env; fallback to LLM_API_KEY
 EMBEDDING_API_KEY = os.getenv("EMBEDDING_API_KEY", "") or LLM_API_KEY
 
 # ===================== Run Logging 配置 =====================
@@ -178,15 +206,13 @@ def _sanitize_profile_component(value: str) -> str:
     return _PROFILE_SAFE_RE.sub("_", text)
 
 
-def _compute_profile_id(provider: str, model: str, api_url: str) -> str:
-    provider_s = _sanitize_profile_component(provider)
+def _compute_profile_id(model: str) -> str:
     model_s = _sanitize_profile_component(model)
-    url_hash = hashlib.sha256(str(api_url).encode("utf-8")).hexdigest()[:8]
-    return f"{provider_s}__{model_s}__{url_hash}"
+    return model_s or "unknown_model"
 
 
 if INDEX_DIR_MODE == "auto_profile":
-    _PROFILE_ID = _compute_profile_id(EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_API_URL)
+    _PROFILE_ID = _compute_profile_id(EMBEDDING_MODEL)
     _DEFAULT_NOVELTY_INDEX_DIR = str(OUTPUT_DIR / f"novelty_index__{_PROFILE_ID}")
     _DEFAULT_RECALL_INDEX_DIR = str(OUTPUT_DIR / f"recall_index__{_PROFILE_ID}")
 else:
@@ -559,19 +585,19 @@ class PipelineConfig:
     # Anchored Critic 配置
     ANCHOR_QUANTILES = _get(
         "I2P_ANCHOR_QUANTILES",
-        [0.1, 0.25, 0.5, 0.75, 0.9],
+        [0.05, 0.15, 0.25, 0.35, 0.5, 0.65, 0.75, 0.85, 0.95],
         cast=_cast_list_float,
         cfg_path=["anchors", "quantiles"],
     )
     ANCHOR_MAX_INITIAL = _get(
         "I2P_ANCHOR_MAX_INITIAL",
-        7,
+        11,
         cast=int,
         cfg_path=["anchors", "max_initial"],
     )
     ANCHOR_MAX_TOTAL = _get(
         "I2P_ANCHOR_MAX_TOTAL",
-        9,
+        13,
         cast=int,
         cfg_path=["anchors", "max_total"],
     )
@@ -583,9 +609,21 @@ class PipelineConfig:
     )
     DENSIFY_OFFSETS = _get(
         "I2P_DENSIFY_OFFSETS",
-        [-0.5, 0.5, -0.25, 0.25],
+        [-0.6, -0.4, -0.2, 0.2, 0.4, 0.6],
         cast=_cast_list_float,
         cfg_path=["anchors", "densify_offsets"],
+    )
+    ANCHOR_BUCKET_SIZE = _get(
+        "I2P_ANCHOR_BUCKET_SIZE",
+        1.0,
+        cast=float,
+        cfg_path=["anchors", "bucket_size"],
+    )
+    ANCHOR_BUCKET_COUNT = _get(
+        "I2P_ANCHOR_BUCKET_COUNT",
+        3,
+        cast=int,
+        cfg_path=["anchors", "bucket_count"],
     )
     SIGMOID_K = _get(
         "I2P_SIGMOID_K",
@@ -601,13 +639,13 @@ class PipelineConfig:
     )
     DENSIFY_LOSS_THRESHOLD = _get(
         "I2P_DENSIFY_LOSS_THRESHOLD",
-        0.03,
+        0.05,
         cast=float,
         cfg_path=["anchors", "densify_loss_threshold"],
     )
     DENSIFY_MIN_AVG_CONF = _get(
         "I2P_DENSIFY_MIN_AVG_CONF",
-        0.45,
+        0.35,
         cast=float,
         cfg_path=["anchors", "densify_min_avg_conf"],
     )
@@ -630,4 +668,54 @@ class PipelineConfig:
         2,
         cast=int,
         cfg_path=["critic", "json_retries"],
+    )
+
+    # Blind Judge tau config
+    JUDGE_TAU_PATH = _get(
+        "I2P_JUDGE_TAU_PATH",
+        str(OUTPUT_DIR / "judge_tau.json"),
+        cast=Path,
+        cfg_path=["critic", "tau_path"],
+    )
+    JUDGE_TAU_DEFAULT = _get(
+        "I2P_JUDGE_TAU_DEFAULT",
+        1.0,
+        cast=float,
+        cfg_path=["critic", "tau_default"],
+    )
+    TAU_METHODOLOGY = _get(
+        "I2P_TAU_METHODOLOGY",
+        1.0,
+        cast=float,
+        cfg_path=["critic", "tau_methodology"],
+    )
+    TAU_NOVELTY = _get(
+        "I2P_TAU_NOVELTY",
+        1.0,
+        cast=float,
+        cfg_path=["critic", "tau_novelty"],
+    )
+    TAU_STORYTELLER = _get(
+        "I2P_TAU_STORYTELLER",
+        1.0,
+        cast=float,
+        cfg_path=["critic", "tau_storyteller"],
+    )
+    CRITIC_COACH_ENABLE = _get(
+        "I2P_CRITIC_COACH_ENABLE",
+        True,
+        cast=bool,
+        cfg_path=["critic", "coach_enable"],
+    )
+    CRITIC_COACH_TEMPERATURE = _get(
+        "I2P_CRITIC_COACH_TEMPERATURE",
+        0.3,
+        cast=float,
+        cfg_path=["critic", "coach_temperature"],
+    )
+    CRITIC_COACH_MAX_TOKENS = _get(
+        "I2P_CRITIC_COACH_MAX_TOKENS",
+        4096,
+        cast=int,
+        cfg_path=["critic", "coach_max_tokens"],
     )

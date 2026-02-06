@@ -40,7 +40,7 @@ Return JSON with this schema:
             response = call_llm(
                 prompt,
                 temperature=PipelineConfig.LLM_TEMPERATURE_IDEA_PACKAGING_PARSE,
-                max_tokens=900,
+                max_tokens=4096,
                 timeout=120,
             )
             brief = parse_json_from_llm(response) or {}
@@ -151,7 +151,7 @@ Return JSON with the same schema as IdeaBrief:
             response = call_llm(
                 prompt,
                 temperature=PipelineConfig.LLM_TEMPERATURE_IDEA_PACKAGING_PATTERN_GUIDED,
-                max_tokens=1200,
+                max_tokens=4096,
                 timeout=180,
             )
             brief = parse_json_from_llm(response) or {}
@@ -192,7 +192,7 @@ Return JSON:
             response = call_llm(
                 prompt,
                 temperature=PipelineConfig.LLM_TEMPERATURE_IDEA_PACKAGING_JUDGE,
-                max_tokens=400,
+                max_tokens=4096,
                 timeout=120,
             )
             result = parse_json_from_llm(response) or {}

@@ -93,7 +93,7 @@ class StoryGenerator:
         response = call_llm(
             prompt,
             temperature=PipelineConfig.LLM_TEMPERATURE_STORY_GENERATOR,
-            max_tokens=1500,
+            max_tokens=4096,
             timeout=180,
         )
 
@@ -171,6 +171,38 @@ class StoryGenerator:
                 main_issue = "novelty"
             elif review['role'] == 'Methodology' and review['score'] < 7.0 and not main_issue:
                 main_issue = "stability"
+
+        # 结构化字段级反馈（新 Critic 输出）
+        structured_guidance = ""
+        field_feedback = review_feedback.get("field_feedback") or {}
+        if not field_feedback and isinstance(review_feedback.get("review_coach"), dict):
+            field_feedback = review_feedback["review_coach"].get("field_feedback", {})
+        suggested_edits = review_feedback.get("suggested_edits") or []
+        if not suggested_edits and isinstance(review_feedback.get("review_coach"), dict):
+            suggested_edits = review_feedback["review_coach"].get("suggested_edits", [])
+        priority = review_feedback.get("priority") or []
+        if not priority and isinstance(review_feedback.get("review_coach"), dict):
+            priority = review_feedback["review_coach"].get("priority", [])
+
+        if field_feedback or suggested_edits:
+            structured_guidance += "【Structured Feedback - Field Level Fixes】\n"
+            if priority:
+                structured_guidance += f"Priority: {', '.join(priority[:4])}\n"
+            for field, info in (field_feedback or {}).items():
+                issue = info.get("issue", "")
+                edit = info.get("edit_instruction", "")
+                effect = info.get("expected_effect", "")
+                if issue or edit:
+                    structured_guidance += f"- {field}: {issue} → {edit}"
+                    if effect:
+                        structured_guidance += f" (effect: {effect})"
+                    structured_guidance += "\n"
+            if suggested_edits:
+                structured_guidance += "Suggested Edits:\n"
+                for edit in suggested_edits[:5]:
+                    if isinstance(edit, dict):
+                        structured_guidance += f"- {edit.get('field')}: {edit.get('action')} → {edit.get('content')}\n"
+            structured_guidance += "\n"
 
         # 提取 Pattern 信息 (用于提供技术方案和包装策略)
         summary = pattern_info.get('summary', {})
@@ -292,6 +324,7 @@ Method: {previous_story.get('method_skeleton')}
 Claims: {json.dumps(previous_story.get('innovation_claims', []), ensure_ascii=False)}
 
 【Review Feedback】(Read carefully, preserve well-received parts, deeply revise criticized parts)
+{structured_guidance}
 {critique_summary}
 
 {fused_idea_guidance}
@@ -712,7 +745,7 @@ Output ONLY a JSON format (no other text):
             response = call_llm(
                 prompt,
                 temperature=PipelineConfig.LLM_TEMPERATURE_STORY_GENERATOR_REWRITE,
-                max_tokens=1000,
+                max_tokens=4096,
                 timeout=180,
             )
             cn_story = parse_json_from_llm(response)

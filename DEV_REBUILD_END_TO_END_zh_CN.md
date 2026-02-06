@@ -134,13 +134,13 @@ cp i2p_config.example.json i2p_config.json
 ### 3.3 必需密钥（最低要求）
 最少需要：
 
-- `SILICONFLOW_API_KEY`（当前代码里作为 LLM key，同时也是 embedding key 的 fallback）
+- `LLM_API_KEY`（作为 LLM key，embedding 在未设置 EMBEDDING_API_KEY 时会回退使用）
   - LLM：story generation / critic / refinement / verifier 等
   - Embedding：recall rerank、离线索引构建、novelty、taxonomy 构建等
 
 在 `.env`：
 ```bash
-SILICONFLOW_API_KEY=YOUR_KEY
+LLM_API_KEY=YOUR_KEY
 ```
 
 如果你使用单独的 embedding key：
@@ -149,21 +149,22 @@ EMBEDDING_API_KEY=YOUR_EMBEDDING_KEY
 ```
 
 ### 3.4 LLM endpoint 与模型
-当前 LLM 传输层使用 **OpenAI Chat Completions 兼容**协议。
+当前 LLM 传输层支持多 Provider（OpenAI-compatible chat / OpenAI Responses / Anthropic / Gemini）。
 
-在 `.env`：
+在 `.env`（示例：OpenAI-compatible chat）：
 ```bash
-LLM_API_URL=https://api.siliconflow.cn/v1/chat/completions
-LLM_MODEL=Pro/zai-org/GLM-4.7
+LLM_PROVIDER=openai_compatible_chat
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
 ```
 
-如果你使用 OpenAI-compatible 平台（例如 DeepSeek 或其他网关），只要它支持 chat completions 协议，设置对应 `LLM_API_URL`（指向 chat completions）+ `LLM_MODEL` 即可。
+如需指定完整 endpoint，可用 `LLM_API_URL` 覆盖。
 
 ### 3.5 Embedding endpoint 与模型
 在 `.env`：
 ```bash
-EMBEDDING_API_URL=https://api.siliconflow.cn/v1/embeddings
-EMBEDDING_MODEL=Qwen/Qwen3-Embedding-8B
+EMBEDDING_API_URL=https://api.openai.com/v1/embeddings
+EMBEDDING_MODEL=text-embedding-3-large
 ```
 
 核心规则：**embedding provider/url/model 改了，就应该重建/复用对应的索引目录**（否则可能出现 mismatch 或效果漂移）。
@@ -293,7 +294,7 @@ python Paper-KG-Pipeline/scripts/tools/generate_patterns.py
 - 这些输入**默认不在本仓库中提供**；你需要自行生成（legacy extraction），或者保留仓库预置的 `output/patterns_structured.json`。
 - 它使用了一组 legacy 的环境变量名：
   - `EMBED_API_URL` / `EMBED_MODEL`（不是 `EMBEDDING_API_URL` / `EMBEDDING_MODEL`）
-  - `SILICONFLOW_API_KEY` 作为鉴权 token
+  - `LLM_API_KEY` 作为鉴权 token
 
 如果你不想改脚本代码，可以用 env 做一次“桥接”：
 ```bash
@@ -315,7 +316,7 @@ python Paper-KG-Pipeline/scripts/tools/build_novelty_index.py
 ```
 
 输出位置：
-- 开启 `I2P_INDEX_DIR_MODE=auto_profile` 时：`Paper-KG-Pipeline/output/novelty_index__<PROFILE_ID>/...`
+- 开启 `I2P_INDEX_DIR_MODE=auto_profile` 时：`Paper-KG-Pipeline/output/novelty_index__<MODEL>/...`（模型名会做 sanitize）
 - manual 模式：`Paper-KG-Pipeline/output/novelty_index`
 
 依赖：
@@ -331,7 +332,7 @@ python Paper-KG-Pipeline/scripts/tools/build_recall_index.py
 ```
 
 输出位置：
-- 开启 `auto_profile` 时：`Paper-KG-Pipeline/output/recall_index__<PROFILE_ID>/...`
+- 开启 `auto_profile` 时：`Paper-KG-Pipeline/output/recall_index__<MODEL>/...`（模型名会做 sanitize）
 
 依赖：
 - `Paper-KG-Pipeline/output/nodes_idea.json`

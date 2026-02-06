@@ -193,7 +193,7 @@ def call_llm(prompt: str, system_prompt: str = "", temperature: float = 0.3, max
         "model": MODEL,
         "messages": messages,
         "temperature": temperature,
-        "max_tokens": 2000
+        "max_tokens": 4096
     }
     
     for attempt in range(max_retries):

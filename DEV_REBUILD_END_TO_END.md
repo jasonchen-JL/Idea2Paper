@@ -135,13 +135,13 @@ Do not commit `.env`.
 ### 3.3 Required secrets
 At minimum you need:
 
-- `SILICONFLOW_API_KEY` (used as the LLM key + embedding key fallback in current code)
+- `LLM_API_KEY` (used as the LLM key; embedding falls back to it if EMBEDDING_API_KEY is not set)
   - LLM: story generation, critic, refinement, verifier, etc.
   - Embedding: recall rerank, offline index build, novelty, etc.
 
 In `.env`:
 ```bash
-SILICONFLOW_API_KEY=YOUR_KEY
+LLM_API_KEY=YOUR_KEY
 ```
 
 If you use a separate embedding key:
@@ -150,21 +150,22 @@ EMBEDDING_API_KEY=YOUR_EMBEDDING_KEY
 ```
 
 ### 3.4 LLM endpoint & model
-Current LLM transport expects an **OpenAI Chat Completions compatible** endpoint.
+Current LLM transport supports multiple providers (OpenAI-compatible chat, OpenAI Responses, Anthropic, Gemini).
 
-In `.env`:
+In `.env` (example: OpenAI-compatible chat):
 ```bash
-LLM_API_URL=https://api.siliconflow.cn/v1/chat/completions
-LLM_MODEL=Pro/zai-org/GLM-4.7
+LLM_PROVIDER=openai_compatible_chat
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
 ```
 
-If your provider is OpenAI-compatible (DeepSeek / other gateways), you can point `LLM_API_URL` to that gateway’s chat completions endpoint and set `LLM_MODEL` accordingly.
+You can override with `LLM_API_URL` for a full endpoint if needed.
 
 ### 3.5 Embedding endpoint & model
 In `.env`:
 ```bash
-EMBEDDING_API_URL=https://api.siliconflow.cn/v1/embeddings
-EMBEDDING_MODEL=Qwen/Qwen3-Embedding-8B
+EMBEDDING_API_URL=https://api.openai.com/v1/embeddings
+EMBEDDING_MODEL=text-embedding-3-large
 ```
 
 Key rule: **embedding model/provider/url changes require reusing/rebuilding the correct indexes**.
@@ -295,7 +296,7 @@ Important constraints (from the script itself):
 - These inputs are **not shipped** in this repo by default. You must generate them yourself (legacy extraction) or keep the prebuilt `output/patterns_structured.json`.
 - It uses some legacy env var names:
   - `EMBED_API_URL` / `EMBED_MODEL` (not `EMBEDDING_API_URL` / `EMBEDDING_MODEL`)
-  - `SILICONFLOW_API_KEY` as the auth token
+  - `LLM_API_KEY` as the auth token
 
 If you want to run it without editing the script, you can bridge env vars like:
 ```bash
@@ -317,7 +318,7 @@ python Paper-KG-Pipeline/scripts/tools/build_novelty_index.py
 ```
 
 Where it writes:
-- `Paper-KG-Pipeline/output/novelty_index__<PROFILE_ID>/...` when `I2P_INDEX_DIR_MODE=auto_profile`
+- `Paper-KG-Pipeline/output/novelty_index__<MODEL>/...` when `I2P_INDEX_DIR_MODE=auto_profile` (model name sanitized)
 - or `Paper-KG-Pipeline/output/novelty_index` in manual mode
 
 What it depends on:
@@ -333,7 +334,7 @@ python Paper-KG-Pipeline/scripts/tools/build_recall_index.py
 ```
 
 Where it writes:
-- `Paper-KG-Pipeline/output/recall_index__<PROFILE_ID>/...` when `auto_profile` is enabled
+- `Paper-KG-Pipeline/output/recall_index__<MODEL>/...` when `auto_profile` is enabled (model name sanitized)
 
 What it depends on:
 - `Paper-KG-Pipeline/output/nodes_idea.json`

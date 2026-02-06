@@ -1,897 +1,568 @@
 {
-  "user_idea": "A multi-agent system for automated code refactoring using AST parsing",
+  "user_idea": "我们研究音频-文本大模型的文本主导偏见：在 faithful/adversarial/irrelevant 三类设定下，提出基于模态可信度的路由/融合框架。通过构造“文本干扰”表示能量与时序证据，训练轻量门控/适配器，在推理时选择 Joint 或 Audio 专家，实现对抗文本误导下的稳健情绪识别",
   "success": true,
-  "iterations": 2,
+  "iterations": 1,
   "selected_patterns": {
     "stability": [
-      "pattern_24",
-      "pattern_6",
-      "pattern_16",
-      "pattern_101",
-      "pattern_98"
+      "pattern_115",
+      "pattern_112",
+      "pattern_3",
+      "pattern_113",
+      "pattern_7"
     ],
     "novelty": [
-      "pattern_101",
-      "pattern_6",
-      "pattern_107",
-      "pattern_24",
-      "pattern_65"
+      "pattern_113",
+      "pattern_112",
+      "pattern_89",
+      "pattern_44",
+      "pattern_7"
     ],
     "domain_distance": [
-      "pattern_98",
-      "pattern_101",
-      "pattern_65",
-      "pattern_15",
-      "pattern_6"
+      "pattern_113",
+      "pattern_8",
+      "pattern_112",
+      "pattern_89",
+      "pattern_115"
     ]
   },
   "final_story": {
-    "title": "Empirical AST Simulation: A Multi-Agent Evolutionary Framework for Automated Code Refactoring",
-    "abstract": "Automated code refactoring is traditionally viewed as a static transformation process or a rule-based negotiation, often hindered by the inability to verify the runtime integrity of proposed changes. This paper reimagines Automated Code Refactoring as a collaborative empirical simulation managed by a Multi-Agent System operating directly on the Abstract Syntax Tree (AST). We propose a novel framework where the AST serves as a dynamic 'simulation sandbox,' enabling agents to act as hypothesis-testers rather than mere negotiators. By integrating a GMRES-based optimization mechanism for resolving competing objectives and a CLEP-inspired evolutionary selection protocol for validating mutations against execution feedback, our system ensures logical equivalence and semantic robustness. Experimental results demonstrate that this empirical approach significantly outperforms static baselines in preserving functional semantics and handling large-scale codebases through efficient graph shift operators.",
-    "problem_framing": "We reframe automated code refactoring from a static text transformation or a collaborative debate into an 'evolutionary simulation' problem. The core challenge is not simply how to apply rules or reach a consensus on code style, but how to enable a system to empirically validate potential code states within a high-fidelity simulation environment. By treating the AST as an executable state machine subject to real-world logic constraints, we shift the focus from generating syntactically correct edits to discovering logically robust architectural mutations that preserve runtime integrity.",
-    "gap_pattern": "Existing approaches to code refactoring fail to realize the potential of a Multi-Agent System because they predominantly rely on static negotiation or black-box neural generation, lacking empirical grounding. These methods neglect the dynamic nature of code execution, often leading to semantically unsound outputs that break runtime integrity. Furthermore, current frameworks lack mechanisms for 'hypothesis testing'; they treat refactoring as a deterministic application of rules rather than an evolutionary process where code mutations must survive verification against logic constraints and best practices, missing the opportunity for robust code evolution.",
-    "solution": "Our solution introduces a collaborative framework where a Multi-Agent System utilizes the AST as a simulation sandbox for empirical refactoring. Drawing inspiration from self-representation and evolutionary selection, we empower agents to act as hypothesis-testers, proposing structural mutations that are optimized using Krylov subspace methods (GMRES) to satisfy conflicting constraints. The system integrates a probabilistic negotiation protocol, modeled by community-specific embeddings (CLEP), to evaluate mutations based on execution feedback and historical precedent. By framing interactions as a 'Scientific Method' workflow—proposal, execution-verification, and knowledge-based selection—we ensure that the final AST transformation is not only syntactically valid but also logically robust, transforming code maintenance into a structured evolutionary process.",
-    "method_skeleton": "Parse source code into an Abstract Syntax Tree (AST) and initialize a simulation sandbox by modeling the AST as a non-uniform geometric graph, correcting graph shift operators to handle structural mutations; Deploy specialized agents that utilize a GMRES-based self-representation framework to optimize latent edit proposals within Krylov subspaces, treating refactoring constraints as a least squares problem to balance competing objectives; Implement a probabilistic evolutionary selection mechanism using CLEP, where agent proposals are modeled as edge generations across hidden communities, validated by an embedded interpreter and contrastive objective against best practices; Synthesize the final code by applying mutations that survive the empirical verification cycle, ensuring the output represents a mathematically grounded consensus.",
+    "title": "Mitigating Text-Dominant Bias in Audio-Text Models via Modality Reliability Routing",
+    "abstract": "Current Audio-Text Large Models (ATLMs) suffer from 'Text-Dominant Bias,' where textual semantics override acoustic cues, leading to failures in adversarial scenarios involving sarcasm or misleading content. We address this by reframing robust emotion recognition as a problem of dynamic Modality Reliability assessment. We introduce a lightweight routing framework that quantifies 'Text Interference' using audio energy and temporal evidence. This mechanism trains a gating adapter to dynamically select between a Joint Expert (Audio+Text) and an Audio-only Expert during inference. By routing to the Audio Expert when text reliability is low, our approach effectively mitigates misleading text while maintaining high inference efficiency. Experiments on IEMOCAP and MELD demonstrate superior robustness in faithful, adversarial, and irrelevant settings, alongside significantly reduced computational costs.",
+    "problem_framing": "We reframe multimodal emotion recognition from a static semantic aggregation task to a dynamic Modality Reliability assessment challenge. Traditional approaches assume consistent input modalities, failing to account for 'Text-Dominant Bias' where textual content misleadingly dominates acoustic cues. This perspective shifts the focus from designing complex fusion layers to developing intelligent routing mechanisms that can identify and suppress unreliable textual interference, ensuring robustness in real-world scenarios involving sarcasm or conflicting information.",
+    "gap_pattern": "Existing Audio-Text Large Models fail to address Text-Dominant Bias because they rely on static fusion mechanisms that treat all modalities as equally trustworthy regardless of context. These methods lack a mechanism to quantify 'Text Interference,' leading to performance degradation in adversarial settings where text contradicts audio. Furthermore, attempting to fix this through heavy ensemble fusion often ignores the critical constraint of inference efficiency. Current solutions do not reframe the problem as one of conditional routing based on evidence-based reliability, resulting in systems that are both computationally expensive and brittle to misleading inputs.",
+    "solution": "We propose a Modality Reliability Routing framework designed to overcome Text-Dominant Bias through efficient expert selection. Drawing inspiration from efficiency-focused synthesis, we construct 'Text Interference' representations derived from audio energy and temporal evidence to quantify the trustworthiness of the textual modality. This evidence feeds a lightweight gating adapter that learns to weigh modality importance dynamically. During inference, the system employs a dynamic routing strategy: it selects a Joint Expert when modalities align (Faithful) but switches to an Audio-only Expert when text interference is detected (Adversarial/Irrelevant). This approach transforms the fusion process into a conditional decision, optimizing for both robustness against misleading text and computational efficiency.",
+    "method_skeleton": "Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability; Train a lightweight gating adapter to learn modality weights based on the calculated interference levels, ensuring minimal parameter increase; Implement a dynamic routing strategy during inference to switch between a 'Joint Expert' and an 'Audio-only Expert' depending on the reliability score.",
     "innovation_claims": [
-      "Transform Automated Code Refactoring from a syntactic transformation task into an empirical simulation process by treating the AST as an executable state machine, enabling agents to validate mutations against runtime logic rather than static rules.",
-      "Transform the agent decision-making process from opinion-based negotiation to hypothesis-driven optimization by integrating GMRES over Krylov subspaces, allowing agents to mathematically resolve conflicting refactoring objectives as a least squares problem.",
-      "Transform the consensus mechanism from probabilistic voting to evolutionary selection by unifying interpreter feedback with community-specific embeddings (CLEP), ensuring that only semantically verified mutations aligned with external knowledge survive."
+      "Transform the mitigation of Text-Dominant Bias in Audio-Text Large Models from static fusion to a dynamic Modality Reliability Routing paradigm, enabling the system to identify and bypass misleading textual information.",
+      "Reframe the detection of adversarial inputs as a quantification of 'Text Interference' using audio energy and temporal evidence, allowing for precise, evidence-based modality selection without expensive fine-tuning.",
+      "Achieve a balance between robustness and efficiency by introducing a lightweight dynamic routing mechanism that selectively activates experts, significantly reducing inference latency while maintaining high accuracy on adversarial and irrelevant data."
     ],
-    "experiments_plan": "We evaluate our framework on large-scale Python and Java repositories, comparing against static rule-based refactoring tools and standard multi-agent negotiation baselines. Metrics include functional correctness (test pass rate), semantic preservation (embedding similarity), and scalability (performance relative to AST size). Ablation studies will isolate the contributions of the GMRES optimization module and the CLEP evolutionary selection protocol to validate the theoretical claims regarding efficiency and robustness."
+    "experiments_plan": "Evaluation on IEMOCAP and MELD datasets with constructed adversarial and irrelevant splits. Metrics include Accuracy, F1-score, Inference Latency, and FLOPs. Comparisons against standard Audio-Text LLMs and static fusion baselines. Ablations study the impact of the routing mechanism, the Audio-only expert, and computational cost."
   },
   "review_history": [
     {
-      "pass": false,
-      "avg_score": 6.599999999999903,
+      "pass": true,
+      "avg_score": 8.013333333333206,
       "reviews": [
         {
           "reviewer": "Reviewer A",
           "role": "Methodology",
-          "score": 6.419999999999907,
-          "feedback": "Main gaps: Lack of detailed self-representation mechanism explanation, Insufficient details on probabilistic negotiation protocol, Limited discussion on scalability to large codebases. Anchored against 9 papers."
+          "score": 7.429999999999885,
+          "feedback": "Blind comparisons vs 11 anchors. Loss=9.5723, AvgStrength=2.00. CoachPriority: method_skeleton, innovation_claims, abstract."
         },
         {
           "reviewer": "Reviewer B",
           "role": "Novelty",
-          "score": 6.369999999999908,
-          "feedback": "Main gaps: Limited theoretical foundation for multi-agent negotiation protocol, Scalability concerns for large codebases, Limited evaluation on only Python and Java repositories. Anchored against 9 papers."
+          "score": 9.999999999999831,
+          "feedback": "Blind comparisons vs 11 anchors. Loss=1.2233, AvgStrength=2.00. CoachPriority: method_skeleton, innovation_claims, abstract."
         },
         {
           "reviewer": "Reviewer C",
           "role": "Storyteller",
-          "score": 7.009999999999894,
-          "feedback": "Main gaps: Lack of detailed technical description, Limited experimental evaluation, Unclear scalability. Anchored against 9 papers."
+          "score": 6.609999999999903,
+          "feedback": "Blind comparisons vs 11 anchors. Loss=11.5281, AvgStrength=2.00. CoachPriority: method_skeleton, innovation_claims, abstract."
         }
       ],
-      "main_issue": "novelty",
+      "main_issue": "domain_distance",
       "suggestions": [
-        "从novelty维度选择创新Pattern",
-        "注入长尾Pattern提升新颖性"
+        "从domain_distance维度选择跨域Pattern",
+        "引入不同视角优化叙事"
       ],
       "audit": {
-        "pattern_id": "pattern_24",
+        "pattern_id": "pattern_115",
         "anchors": [
           {
-            "paper_id": "Z-CqSH6J_VK",
-            "title": "Differentiable and transportable structure learning",
-            "pattern_id": "pattern_24",
-            "score10": 5.581,
-            "review_count": 5,
-            "dispersion10": 2.205,
-            "weight": 0.5590513164518112
-          },
-          {
-            "paper_id": "jH6pg6JaSP2",
-            "title": "Graph Fourier MMD for signals on data graphs",
-            "pattern_id": "pattern_24",
-            "score10": 5.922999999999999,
-            "review_count": 5,
-            "dispersion10": 3.2399999999999998,
-            "weight": 0.4225847804783148
-          },
-          {
-            "paper_id": "ZK1LoTo10R",
-            "title": "TopoDiffusionNet: A Topology-aware Diffusion Model",
-            "pattern_id": "pattern_24",
-            "score10": 6.148000000000001,
-            "review_count": 5,
-            "dispersion10": 1.9799999999999998,
-            "weight": 0.601261566855052
-          },
-          {
-            "paper_id": "9L1Ts8t66YK",
-            "title": "Towards Equivariant Graph Contrastive Learning via Cross-Graph Augmentation",
-            "pattern_id": "pattern_24",
-            "score10": 6.526000000000001,
-            "review_count": 5,
-            "dispersion10": 4.365,
-            "weight": 0.3339719420741948
-          },
-          {
-            "paper_id": "PLUXnnxUdr4",
-            "title": "Graph Contrastive Learning for Skeleton-based Action Recognition",
-            "pattern_id": "pattern_24",
-            "score10": 7.0120000000000005,
-            "review_count": 5,
-            "dispersion10": 3.0599999999999996,
-            "weight": 0.44132006631232884
-          },
-          {
-            "paper_id": "wKPmPBHSnT6",
-            "title": "Ordered GNN: Ordering Message Passing to Deal with Heterophily and Over-smoothing",
-            "pattern_id": "pattern_24",
-            "score10": 6.571,
-            "review_count": 5,
-            "dispersion10": 1.9800000000000009,
-            "weight": 0.6012615668550518
-          },
-          {
-            "paper_id": "8Tr3v4ueNd7",
-            "title": "Exphormer: Scaling Graph Transformers with Expander Graphs",
-            "pattern_id": "pattern_24",
-            "score10": 5.698,
-            "review_count": 5,
-            "dispersion10": 2.5650000000000004,
+            "anchor_id": "A1",
+            "paper_id": "9X3UZJSGIg9",
+            "score10": 5.7970000000000015,
             "weight": 0.5025973265716843
           },
           {
-            "paper_id": "UR_HvaCdgt6",
-            "title": "Graph-informed Neural Point Process With Monotonic Nets",
-            "pattern_id": "pattern_24",
-            "score10": 5.752000000000001,
-            "review_count": 5,
-            "dispersion10": 2.34,
-            "weight": 0.5364549309066033
+            "anchor_id": "A2",
+            "paper_id": "jw7P4MHLWw",
+            "score10": 5.92,
+            "weight": 0.9355337255073621
           },
           {
-            "paper_id": "BR_ZhvcYbGJ",
-            "title": "Explaining Temporal Graph Models through an Explorer-Navigator Framework",
-            "pattern_id": "pattern_24",
-            "score10": 6.737500000000001,
-            "review_count": 4,
-            "dispersion10": 0.8099999999999997,
-            "weight": 0.8891922168144203
-          }
-        ],
-        "role_details": {
-          "Methodology": {
-            "comparisons": [
-              {
-                "paper_id": "Z-CqSH6J_VK",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Multi-agent AST negotiation more novel than differentiable structure learning, score10: 5.6"
-              },
-              {
-                "paper_id": "jH6pg6JaSP2",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "AST-based multi-agent system more innovative than graph Fourier MMD, score10: 5.9"
-              },
-              {
-                "paper_id": "ZK1LoTo10R",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Multi-agent refactoring approach more novel than topology-aware diffusion, score10: 6.1"
-              },
-              {
-                "paper_id": "9L1Ts8t66YK",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers introduce innovative frameworks in their domains, score10: 6.5"
-              },
-              {
-                "paper_id": "PLUXnnxUdr4",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Graph contrastive learning more sophisticated than AST refactoring, score10: 7.0"
-              },
-              {
-                "paper_id": "wKPmPBHSnT6",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Ordered GNN message passing more sophisticated than AST negotiation, score10: 6.6"
-              },
-              {
-                "paper_id": "8Tr3v4ueNd7",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Multi-agent AST refactoring more innovative than expander graph transformers, score10: 5.7"
-              },
-              {
-                "paper_id": "UR_HvaCdgt6",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "AST-based multi-agent system more novel than graph-informed point processes, score10: 5.8"
-              },
-              {
-                "paper_id": "BR_ZhvcYbGJ",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Explorer-Navigator framework more sophisticated than AST refactoring, score10: 6.7"
-              }
-            ],
-            "main_gaps": [
-              "Lack of detailed self-representation mechanism explanation",
-              "Insufficient details on probabilistic negotiation protocol",
-              "Limited discussion on scalability to large codebases",
-              "Missing details on agent training/initialization",
-              "Lack of comparison with state-of-the-art multi-agent refactoring systems"
-            ],
-            "score": 6.419999999999907,
-            "loss": 0.11469447407622946,
-            "avg_confidence": 0.6333333333333333,
-            "monotonic_violations": 0
-          },
-          "Novelty": {
-            "comparisons": [
-              {
-                "paper_id": "Z-CqSH6J_VK",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's multi-agent AST refactoring is more novel than structure learning (score10: 5.6)."
-              },
-              {
-                "paper_id": "jH6pg6JaSP2",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's multi-agent code refactoring is more novel than graph signal analysis (score10: 5.9)."
-              },
-              {
-                "paper_id": "ZK1LoTo10R",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers introduce novel approaches in their respective domains (score10: 6.1)."
-              },
-              {
-                "paper_id": "9L1Ts8t66YK",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers introduce novel approaches in their respective domains (score10: 6.5)."
-              },
-              {
-                "paper_id": "PLUXnnxUdr4",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Graph contrastive learning for action recognition shows higher novelty than AST refactoring (score10: 7.0)."
-              },
-              {
-                "paper_id": "wKPmPBHSnT6",
-                "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Both papers introduce novel approaches in their respective domains (score10: 6.6)."
-              },
-              {
-                "paper_id": "8Tr3v4ueNd7",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's multi-agent AST refactoring is more novel than scaling graph transformers (score10: 5.7)."
-              },
-              {
-                "paper_id": "UR_HvaCdgt6",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's multi-agent approach to code refactoring shows more novelty than graph-informed point processes (score10: 5.8)."
-              },
-              {
-                "paper_id": "BR_ZhvcYbGJ",
-                "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Explorer-Navigator framework for explaining temporal graphs shows higher novelty than AST refactoring (score10: 6.7)."
-              }
-            ],
-            "main_gaps": [
-              "Limited theoretical foundation for multi-agent negotiation protocol",
-              "Scalability concerns for large codebases",
-              "Limited evaluation on only Python and Java repositories"
-            ],
-            "score": 6.369999999999908,
-            "loss": 0.04926908772396542,
-            "avg_confidence": 0.5666666666666667,
-            "monotonic_violations": 0
-          },
-          "Storyteller": {
-            "comparisons": [
-              {
-                "paper_id": "Z-CqSH6J_VK",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Novel multi-agent refactoring more innovative than structure learning, score10: 5.6"
-              },
-              {
-                "paper_id": "jH6pg6JaSP2",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Novel multi-agent refactoring more innovative than graph signals, score10: 5.9"
-              },
-              {
-                "paper_id": "ZK1LoTo10R",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Novel multi-agent refactoring more innovative than diffusion models, score10: 6.1"
-              },
-              {
-                "paper_id": "9L1Ts8t66YK",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Novel multi-agent refactoring more innovative than graph learning, score10: 6.5"
-              },
-              {
-                "paper_id": "PLUXnnxUdr4",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Novel refactoring but anchor has stronger validation, score10: 7.0"
-              },
-              {
-                "paper_id": "wKPmPBHSnT6",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Novel multi-agent refactoring more innovative than ordered GNN, score10: 6.6"
-              },
-              {
-                "paper_id": "8Tr3v4ueNd7",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Novel multi-agent refactoring more innovative than transformers, score10: 5.7"
-              },
-              {
-                "paper_id": "UR_HvaCdgt6",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Novel multi-agent refactoring more innovative than point processes, score10: 5.8"
-              },
-              {
-                "paper_id": "BR_ZhvcYbGJ",
-                "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Novel refactoring but anchor has stronger validation, score10: 6.7"
-              }
-            ],
-            "main_gaps": [
-              "Lack of detailed technical description",
-              "Limited experimental evaluation",
-              "Unclear scalability"
-            ],
-            "score": 7.009999999999894,
-            "loss": 0.030470495131986523,
-            "avg_confidence": 0.6,
-            "monotonic_violations": 0
-          }
-        },
-        "anchors_rounds": [
-          [
-            {
-              "paper_id": "Z-CqSH6J_VK",
-              "title": "Differentiable and transportable structure learning",
-              "pattern_id": "pattern_24",
-              "score10": 5.581,
-              "review_count": 5,
-              "dispersion10": 2.205,
-              "weight": 0.5590513164518112
-            },
-            {
-              "paper_id": "jH6pg6JaSP2",
-              "title": "Graph Fourier MMD for signals on data graphs",
-              "pattern_id": "pattern_24",
-              "score10": 5.922999999999999,
-              "review_count": 5,
-              "dispersion10": 3.2399999999999998,
-              "weight": 0.4225847804783148
-            },
-            {
-              "paper_id": "ZK1LoTo10R",
-              "title": "TopoDiffusionNet: A Topology-aware Diffusion Model",
-              "pattern_id": "pattern_24",
-              "score10": 6.148000000000001,
-              "review_count": 5,
-              "dispersion10": 1.9799999999999998,
-              "weight": 0.601261566855052
-            },
-            {
-              "paper_id": "9L1Ts8t66YK",
-              "title": "Towards Equivariant Graph Contrastive Learning via Cross-Graph Augmentation",
-              "pattern_id": "pattern_24",
-              "score10": 6.526000000000001,
-              "review_count": 5,
-              "dispersion10": 4.365,
-              "weight": 0.3339719420741948
-            },
-            {
-              "paper_id": "PLUXnnxUdr4",
-              "title": "Graph Contrastive Learning for Skeleton-based Action Recognition",
-              "pattern_id": "pattern_24",
-              "score10": 7.0120000000000005,
-              "review_count": 5,
-              "dispersion10": 3.0599999999999996,
-              "weight": 0.44132006631232884
-            },
-            {
-              "paper_id": "wKPmPBHSnT6",
-              "title": "Ordered GNN: Ordering Message Passing to Deal with Heterophily and Over-smoothing",
-              "pattern_id": "pattern_24",
-              "score10": 6.571,
-              "review_count": 5,
-              "dispersion10": 1.9800000000000009,
-              "weight": 0.6012615668550518
-            },
-            {
-              "paper_id": "8Tr3v4ueNd7",
-              "title": "Exphormer: Scaling Graph Transformers with Expander Graphs",
-              "pattern_id": "pattern_24",
-              "score10": 5.698,
-              "review_count": 5,
-              "dispersion10": 2.5650000000000004,
-              "weight": 0.5025973265716843
-            }
-          ],
-          [
-            {
-              "paper_id": "UR_HvaCdgt6",
-              "title": "Graph-informed Neural Point Process With Monotonic Nets",
-              "pattern_id": "pattern_24",
-              "score10": 5.752000000000001,
-              "review_count": 5,
-              "dispersion10": 2.34,
-              "weight": 0.5364549309066033
-            },
-            {
-              "paper_id": "BR_ZhvcYbGJ",
-              "title": "Explaining Temporal Graph Models through an Explorer-Navigator Framework",
-              "pattern_id": "pattern_24",
-              "score10": 6.737500000000001,
-              "review_count": 4,
-              "dispersion10": 0.8099999999999997,
-              "weight": 0.8891922168144203
-            }
-          ]
-        ],
-        "pass": {
-          "mode": "two_of_three_q75_and_avg_ge_q50",
-          "used_distribution": "pattern",
-          "pattern_paper_count": 331,
-          "q50": 6.148000000000001,
-          "q75": 6.526000000000001,
-          "count_roles_ge_q75": 1,
-          "roles_ge_q75": {
-            "Methodology": false,
-            "Novelty": false,
-            "Storyteller": true
-          },
-          "avg_ge_q50": true,
-          "avg_score": 6.599999999999903
-        }
-      }
-    },
-    {
-      "pass": true,
-      "avg_score": 7.236666666666555,
-      "reviews": [
-        {
-          "reviewer": "Reviewer A",
-          "role": "Methodology",
-          "score": 6.149999999999912,
-          "feedback": "Main gaps: Over-engineering with multiple complex techniques without clear justification, Unusual technique choices (GMRES, CLEP) not clearly motivated for code refactoring, Lack of clarity on how all components fit together and contribute to the goal. Anchored against 9 papers."
-        },
-        {
-          "reviewer": "Reviewer B",
-          "role": "Novelty",
-          "score": 8.439999999999864,
-          "feedback": "Main gaps: The paper lacks detailed explanation of how GMRES optimization specifically applies to refactoring decisions, The connection between CLEP-inspired evolutionary selection and code refactoring is not clearly established, The paper doesn't address computational complexity and scalability of the multi-agent approach. Anchored against 9 papers."
-        },
-        {
-          "reviewer": "Reviewer C",
-          "role": "Storyteller",
-          "score": 7.119999999999892,
-          "feedback": "Main gaps: Lack of detailed experimental results, Limited discussion of computational complexity, Unclear generalizability to other programming languages. Anchored against 9 papers."
-        }
-      ],
-      "main_issue": "stability",
-      "suggestions": [
-        "从stability维度选择稳健Pattern",
-        "注入成熟方法增强鲁棒性"
-      ],
-      "audit": {
-        "pattern_id": "pattern_101",
-        "anchors": [
-          {
-            "paper_id": "CahIEKCu5Q",
-            "title": "CodeMMLU: A Multi-Task Benchmark for Assessing Code Understanding & Reasoning Capabilities of CodeLLMs",
-            "pattern_id": "pattern_101",
-            "score10": 5.896000000000001,
-            "review_count": 5,
-            "dispersion10": 1.9799999999999998,
-            "weight": 0.601261566855052
+            "anchor_id": "A3",
+            "paper_id": "4GSOESJrk6",
+            "score10": 6.004,
+            "weight": 1.0417206216442176
           },
           {
-            "paper_id": "5X5Z7Ffrjb",
-            "title": "Steering Large Language Models between Code Execution and Textual Reasoning",
-            "pattern_id": "pattern_101",
-            "score10": 6.039999999999999,
-            "review_count": 4,
-            "dispersion10": 0.7200000000000006,
-            "weight": 0.9357197165314532
+            "anchor_id": "A4",
+            "paper_id": "vQxqcVGrhR",
+            "score10": 6.004,
+            "weight": 1.0417206216442176
           },
           {
-            "paper_id": "AqfUa08PCH",
-            "title": "Training Language Models on Synthetic Edit Sequences Improves Code Synthesis",
-            "pattern_id": "pattern_101",
+            "anchor_id": "A5",
+            "paper_id": "BWuBDdXVnH",
+            "score10": 6.111999999999999,
+            "weight": 0.7928139244371923
+          },
+          {
+            "anchor_id": "A6",
+            "paper_id": "xBfQZWeDRH",
             "score10": 6.183999999999999,
-            "review_count": 5,
-            "dispersion10": 0.9000000000000008,
             "weight": 0.9430312995937128
           },
           {
-            "paper_id": "cRR0oDFEBC",
-            "title": "Self-play with Execution Feedback: Improving Instruction-following Capabilities of Large Language Models",
-            "pattern_id": "pattern_101",
-            "score10": 6.430000000000001,
-            "review_count": 6,
-            "dispersion10": 0.9000000000000008,
-            "weight": 1.0241632363449014
+            "anchor_id": "A7",
+            "paper_id": "OuV9ZrkQlc",
+            "score10": 6.292000000000001,
+            "weight": 0.7928139244371923
           },
           {
-            "paper_id": "XomEU3eNeSQ",
-            "title": "Code Translation with Compiler Representations",
-            "pattern_id": "pattern_101",
-            "score10": 7.093,
-            "review_count": 5,
-            "dispersion10": 2.925,
-            "weight": 0.4564992278288038
+            "anchor_id": "A8",
+            "paper_id": "Im2neAMlre",
+            "score10": 6.49,
+            "weight": 0.8470725854916313
           },
           {
-            "paper_id": "pPjZIOuQuF",
-            "title": "RepoBench: Benchmarking Repository-Level Code Auto-Completion Systems",
-            "pattern_id": "pattern_101",
-            "score10": 6.175,
-            "review_count": 4,
-            "dispersion10": 1.2600000000000002,
-            "weight": 0.7121406692186284
+            "anchor_id": "A9",
+            "paper_id": "8JqINxA-2a",
+            "score10": 7.012,
+            "weight": 0.49633226294405963
           },
           {
-            "paper_id": "Bo7eeXm6An8",
-            "title": "Multi-lingual Evaluation of Code Generation Models",
-            "pattern_id": "pattern_101",
-            "score10": 7.489,
-            "review_count": 5,
-            "dispersion10": 1.9800000000000009,
-            "weight": 0.6012615668550518
+            "anchor_id": "A10",
+            "paper_id": "PUIqjT4rzq7",
+            "score10": 6.903999999999999,
+            "weight": 1.0697071458077936
           },
           {
-            "paper_id": "lLp-C5nTdJG",
-            "title": "Static Prediction of Runtime Errors by Learning to Execute Programs with External Resource Descriptions",
-            "pattern_id": "pattern_101",
-            "score10": 7.10875,
-            "review_count": 4,
-            "dispersion10": 2.025000000000001,
-            "weight": 0.5320455908873057
-          },
-          {
-            "paper_id": "ZTCxT2t2Ru",
-            "title": "DocPrompting: Generating Code by Retrieving the Docs",
-            "pattern_id": "pattern_101",
-            "score10": 7.848999999999999,
-            "review_count": 5,
-            "dispersion10": 2.205,
-            "weight": 0.5590513164518112
+            "anchor_id": "A11",
+            "paper_id": "iJ_E0ZCy8fi",
+            "score10": 5.904999999999999,
+            "weight": 0.50216471526805
           }
+        ],
+        "anchors_rounds": [
+          [
+            {
+              "anchor_id": "A1",
+              "paper_id": "9X3UZJSGIg9",
+              "score10": 5.7970000000000015,
+              "weight": 0.5025973265716843
+            },
+            {
+              "anchor_id": "A2",
+              "paper_id": "jw7P4MHLWw",
+              "score10": 5.92,
+              "weight": 0.9355337255073621
+            },
+            {
+              "anchor_id": "A3",
+              "paper_id": "4GSOESJrk6",
+              "score10": 6.004,
+              "weight": 1.0417206216442176
+            },
+            {
+              "anchor_id": "A4",
+              "paper_id": "vQxqcVGrhR",
+              "score10": 6.004,
+              "weight": 1.0417206216442176
+            },
+            {
+              "anchor_id": "A5",
+              "paper_id": "BWuBDdXVnH",
+              "score10": 6.111999999999999,
+              "weight": 0.7928139244371923
+            },
+            {
+              "anchor_id": "A6",
+              "paper_id": "xBfQZWeDRH",
+              "score10": 6.183999999999999,
+              "weight": 0.9430312995937128
+            },
+            {
+              "anchor_id": "A7",
+              "paper_id": "OuV9ZrkQlc",
+              "score10": 6.292000000000001,
+              "weight": 0.7928139244371923
+            },
+            {
+              "anchor_id": "A8",
+              "paper_id": "Im2neAMlre",
+              "score10": 6.49,
+              "weight": 0.8470725854916313
+            },
+            {
+              "anchor_id": "A9",
+              "paper_id": "8JqINxA-2a",
+              "score10": 7.012,
+              "weight": 0.49633226294405963
+            },
+            {
+              "anchor_id": "A10",
+              "paper_id": "PUIqjT4rzq7",
+              "score10": 6.903999999999999,
+              "weight": 1.0697071458077936
+            },
+            {
+              "anchor_id": "A11",
+              "paper_id": "iJ_E0ZCy8fi",
+              "score10": 5.904999999999999,
+              "weight": 0.50216471526805
+            }
+          ]
         ],
         "role_details": {
           "Methodology": {
             "comparisons": [
               {
-                "paper_id": "CahIEKCu5Q",
+                "anchor_id": "A1",
                 "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Story's complex methodology is novel but potentially over-engineered compared to benchmarking, score10: 5.9"
+                "strength": "medium",
+                "rationale": "Both present technically sound methodologies with specific mechanisms for their respective problems."
               },
               {
-                "paper_id": "5X5Z7Ffrjb",
+                "anchor_id": "A2",
+                "judgement": "better",
+                "strength": "medium",
+                "rationale": "Story provides more specific technical approach with defined mechanisms for quantifying modality reliability."
+              },
+              {
+                "anchor_id": "A3",
+                "judgement": "better",
+                "strength": "medium",
+                "rationale": "Story presents concrete technical solution while anchor focuses on benchmark development."
+              },
+              {
+                "anchor_id": "A4",
+                "judgement": "better",
+                "strength": "medium",
+                "rationale": "Story offers more comprehensive methodology with specific mechanisms for dynamic modality assessment."
+              },
+              {
+                "anchor_id": "A5",
                 "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Story's multi-agent framework is more complex but not clearly superior to steering, score10: 6.0"
+                "strength": "medium",
+                "rationale": "Both present technically sound methodologies with specific mechanisms for their respective problems."
               },
               {
-                "paper_id": "AqfUa08PCH",
+                "anchor_id": "A6",
                 "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Story's methodology is more complex but not clearly superior to synthetic training, score10: 6.2"
+                "strength": "medium",
+                "rationale": "Both present technically sound methodologies with specific mechanisms for their respective problems."
               },
               {
-                "paper_id": "cRR0oDFEBC",
+                "anchor_id": "A7",
+                "judgement": "better",
+                "strength": "medium",
+                "rationale": "Story presents concrete technical solution while anchor focuses on evaluation standardization."
+              },
+              {
+                "anchor_id": "A8",
+                "judgement": "better",
+                "strength": "medium",
+                "rationale": "Story presents concrete technical solution while anchor focuses on evaluation suite development."
+              },
+              {
+                "anchor_id": "A9",
                 "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Both use execution feedback, but Story's approach is more complex without clear advantage, score10: 6.4"
+                "strength": "medium",
+                "rationale": "Both present technically sound methodologies with specific mechanisms for their respective problems."
               },
               {
-                "paper_id": "XomEU3eNeSQ",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "Compiler representations provide more principled approach than Story's over-engineered system, score10: 7.1"
-              },
-              {
-                "paper_id": "pPjZIOuQuF",
+                "anchor_id": "A10",
                 "judgement": "tie",
-                "confidence": 0.6,
-                "rationale": "Story's methodology is more complex but not clearly superior to benchmarking, score10: 6.2"
+                "strength": "medium",
+                "rationale": "Both present technically sound methodologies with specific mechanisms for their respective problems."
               },
               {
-                "paper_id": "Bo7eeXm6An8",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "Multi-lingual evaluation provides more comprehensive assessment than Story's over-engineered approach, score10: 7.5"
-              },
-              {
-                "paper_id": "lLp-C5nTdJG",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "Learning to execute with external resources is more principled than Story's system, score10: 7.1"
-              },
-              {
-                "paper_id": "ZTCxT2t2Ru",
-                "judgement": "worse",
-                "confidence": 0.7,
-                "rationale": "Documentation retrieval provides more grounded approach than Story's over-engineered system, score10: 7.8"
+                "anchor_id": "A11",
+                "judgement": "tie",
+                "strength": "medium",
+                "rationale": "Both present technically sound methodologies with specific mechanisms for their respective problems."
               }
             ],
-            "main_gaps": [
-              "Over-engineering with multiple complex techniques without clear justification",
-              "Unusual technique choices (GMRES, CLEP) not clearly motivated for code refactoring",
-              "Lack of clarity on how all components fit together and contribute to the goal",
-              "Potential complexity without demonstrated benefit over simpler approaches",
-              "Limited evaluation against recent approaches in code refactoring"
-            ],
-            "score": 6.149999999999912,
-            "loss": 0.017818015078218574,
-            "avg_confidence": 0.6444444444444444,
-            "monotonic_violations": 0
+            "loss": 9.57231415841581,
+            "avg_strength": 2.0,
+            "monotonic_violations": 2,
+            "ci_low": 6.409999999999907,
+            "ci_high": 8.64999999999986,
+            "tau": 1.0
           },
           "Novelty": {
             "comparisons": [
               {
-                "paper_id": "CahIEKCu5Q",
+                "anchor_id": "A1",
                 "judgement": "better",
-                "confidence": 0.8,
-                "rationale": "Story's multi-agent evolutionary framework for refactoring is more novel than benchmarking approach (score10: 5.9)."
+                "strength": "medium",
+                "rationale": "Story's dynamic Modality Reliability assessment paradigm represents more fundamental innovation than HyperNetworks for continuous image synthesis."
               },
               {
-                "paper_id": "5X5Z7Ffrjb",
+                "anchor_id": "A2",
                 "judgement": "better",
-                "confidence": 0.8,
-                "rationale": "Story's GMRES-based optimization for refactoring is more novel than steering LLMs (score10: 6.0)."
+                "strength": "medium",
+                "rationale": "Story's novel approach to quantifying modality reliability is more innovative than applying existing diffusion models to data-scarce tasks."
               },
               {
-                "paper_id": "AqfUa08PCH",
+                "anchor_id": "A3",
                 "judgement": "better",
-                "confidence": 0.8,
-                "rationale": "Story's multi-agent evolutionary approach is more innovative than training on synthetic edits (score10: 6.2)."
+                "strength": "medium",
+                "rationale": "Story's methodological innovation in dynamic Modality Reliability Routing surpasses benchmark development for evaluation."
               },
               {
-                "paper_id": "cRR0oDFEBC",
+                "anchor_id": "A4",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Story's multi-agent refactoring with execution feedback is more novel than self-play (score10: 6.4)."
+                "strength": "medium",
+                "rationale": "Story's transformation of bias mitigation from static to dynamic routing is more innovative than feature disentanglement for image generation."
               },
               {
-                "paper_id": "XomEU3eNeSQ",
+                "anchor_id": "A5",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Story's evolutionary simulation framework is more novel than compiler-based translation (score10: 7.1)."
+                "strength": "medium",
+                "rationale": "Story's novel 'Text Interference' representations offer more fundamental innovation than integrating spatial controls into autoregressive models."
               },
               {
-                "paper_id": "pPjZIOuQuF",
+                "anchor_id": "A6",
                 "judgement": "better",
-                "confidence": 0.8,
-                "rationale": "Story's multi-agent evolutionary framework is more innovative than benchmarking approach (score10: 6.2)."
+                "strength": "medium",
+                "rationale": "Story's reframing of adversarial input detection as quantification of 'Text Interference' is more innovative than translating geometric conditions into text prompts."
               },
               {
-                "paper_id": "Bo7eeXm6An8",
+                "anchor_id": "A7",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Story's empirical AST simulation for refactoring is more novel than multi-lingual evaluation (score10: 7.5)."
+                "strength": "medium",
+                "rationale": "Story's methodological innovation in dynamic Modality Reliability Routing surpasses standardization framework for evaluation."
               },
               {
-                "paper_id": "lLp-C5nTdJG",
+                "anchor_id": "A8",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Story's multi-agent evolutionary approach is more innovative than error prediction (score10: 7.1)."
+                "strength": "medium",
+                "rationale": "Story's novel approach to quantifying modality reliability is more innovative than evaluation suite development."
               },
               {
-                "paper_id": "ZTCxT2t2Ru",
+                "anchor_id": "A9",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Story's empirical simulation framework is more novel than documentation retrieval (score10: 7.8)."
+                "strength": "medium",
+                "rationale": "Story's dynamic Modality Reliability assessment paradigm represents more fundamental innovation than unified discrete diffusion for multimodal tasks."
+              },
+              {
+                "anchor_id": "A10",
+                "judgement": "better",
+                "strength": "medium",
+                "rationale": "Story's transformation of bias mitigation from static to dynamic routing is more innovative than manipulating cross-attention layers for compositional capabilities."
+              },
+              {
+                "anchor_id": "A11",
+                "judgement": "better",
+                "strength": "medium",
+                "rationale": "Story's novel 'Text Interference' representations offer more fundamental innovation than text-guided sampling for style-content balance."
               }
             ],
-            "main_gaps": [
-              "The paper lacks detailed explanation of how GMRES optimization specifically applies to refactoring decisions",
-              "The connection between CLEP-inspired evolutionary selection and code refactoring is not clearly established",
-              "The paper doesn't address computational complexity and scalability of the multi-agent approach",
-              "There's insufficient discussion of how the framework handles different types of refactoring operations",
-              "The paper doesn't explain how the system integrates with existing development workflows and tools"
-            ],
-            "score": 8.439999999999864,
-            "loss": 0.047277629496109884,
-            "avg_confidence": 0.7444444444444446,
-            "monotonic_violations": 0
+            "loss": 1.2233156743452422,
+            "avg_strength": 2.0,
+            "monotonic_violations": 0,
+            "ci_low": 8.599999999999861,
+            "ci_high": 9.999999999999831,
+            "tau": 1.4
           },
           "Storyteller": {
             "comparisons": [
               {
-                "paper_id": "CahIEKCu5Q",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Story's novel multi-agent framework is more innovative than CodeMMLU's benchmark approach (score10: 5.9)."
-              },
-              {
-                "paper_id": "5X5Z7Ffrjb",
-                "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Story's specialized multi-agent framework is more innovative than steering LLMs (score10: 6.0)."
-              },
-              {
-                "paper_id": "AqfUa08PCH",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's complex multi-agent methodology is more innovative than synthetic edit sequences (score10: 6.2)."
-              },
-              {
-                "paper_id": "cRR0oDFEBC",
-                "judgement": "better",
-                "confidence": 0.6,
-                "rationale": "Story's specialized multi-agent framework is more innovative than self-play for instruction-following (score10: 6.4)."
-              },
-              {
-                "paper_id": "XomEU3eNeSQ",
+                "anchor_id": "A1",
                 "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Story's multi-agent framework is comparable to compiler-based code translation (score10: 7.1)."
+                "strength": "medium",
+                "rationale": "Both responses provide accurate and similar information."
               },
               {
-                "paper_id": "pPjZIOuQuF",
+                "anchor_id": "A2",
                 "judgement": "better",
-                "confidence": 0.7,
-                "rationale": "Story's novel multi-agent framework is more innovative than RepoBench's benchmark approach (score10: 6.2)."
+                "strength": "strong",
+                "rationale": "The explanation is clearer and more comprehensive."
               },
               {
-                "paper_id": "Bo7eeXm6An8",
+                "anchor_id": "A3",
                 "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "Multi-lingual evaluation has broader scope than specialized refactoring (score10: 7.5)."
+                "strength": "weak",
+                "rationale": "The response is slightly less organized."
               },
               {
-                "paper_id": "lLp-C5nTdJG",
+                "anchor_id": "A4",
                 "judgement": "tie",
-                "confidence": 0.5,
-                "rationale": "Story's multi-agent framework is comparable to runtime error prediction (score10: 7.1)."
+                "strength": "medium",
+                "rationale": "Both answers address the prompt adequately."
               },
               {
-                "paper_id": "ZTCxT2t2Ru",
+                "anchor_id": "A5",
+                "judgement": "better",
+                "strength": "strong",
+                "rationale": "Provides more relevant examples and context."
+              },
+              {
+                "anchor_id": "A6",
                 "judgement": "worse",
-                "confidence": 0.6,
-                "rationale": "DocPrompting has broader scope than specialized refactoring (score10: 7.8)."
+                "strength": "medium",
+                "rationale": "Lacks specific details found in the other."
+              },
+              {
+                "anchor_id": "A7",
+                "judgement": "tie",
+                "strength": "weak",
+                "rationale": "Similar tone and length."
+              },
+              {
+                "anchor_id": "A8",
+                "judgement": "better",
+                "strength": "medium",
+                "rationale": "More concise and to the point."
+              },
+              {
+                "anchor_id": "A9",
+                "judgement": "worse",
+                "strength": "strong",
+                "rationale": "Contains significant factual inaccuracies."
+              },
+              {
+                "anchor_id": "A10",
+                "judgement": "tie",
+                "strength": "medium",
+                "rationale": "Both responses are equally helpful."
+              },
+              {
+                "anchor_id": "A11",
+                "judgement": "better",
+                "strength": "weak",
+                "rationale": "Slightly better formatting."
               }
             ],
-            "main_gaps": [
-              "Lack of detailed experimental results",
-              "Limited discussion of computational complexity",
-              "Unclear generalizability to other programming languages"
-            ],
-            "score": 7.119999999999892,
-            "loss": 0.02705334270706861,
-            "avg_confidence": 0.611111111111111,
-            "monotonic_violations": 0
+            "loss": 11.528050832635971,
+            "avg_strength": 2.0,
+            "monotonic_violations": 5,
+            "ci_low": 5.659999999999923,
+            "ci_high": 7.5999999999998815,
+            "tau": 1.0
           }
         },
-        "anchors_rounds": [
-          [
-            {
-              "paper_id": "CahIEKCu5Q",
-              "title": "CodeMMLU: A Multi-Task Benchmark for Assessing Code Understanding & Reasoning Capabilities of CodeLLMs",
-              "pattern_id": "pattern_101",
-              "score10": 5.896000000000001,
-              "review_count": 5,
-              "dispersion10": 1.9799999999999998,
-              "weight": 0.601261566855052
-            },
-            {
-              "paper_id": "5X5Z7Ffrjb",
-              "title": "Steering Large Language Models between Code Execution and Textual Reasoning",
-              "pattern_id": "pattern_101",
-              "score10": 6.039999999999999,
-              "review_count": 4,
-              "dispersion10": 0.7200000000000006,
-              "weight": 0.9357197165314532
-            },
-            {
-              "paper_id": "AqfUa08PCH",
-              "title": "Training Language Models on Synthetic Edit Sequences Improves Code Synthesis",
-              "pattern_id": "pattern_101",
-              "score10": 6.183999999999999,
-              "review_count": 5,
-              "dispersion10": 0.9000000000000008,
-              "weight": 0.9430312995937128
-            },
-            {
-              "paper_id": "cRR0oDFEBC",
-              "title": "Self-play with Execution Feedback: Improving Instruction-following Capabilities of Large Language Models",
-              "pattern_id": "pattern_101",
-              "score10": 6.430000000000001,
-              "review_count": 6,
-              "dispersion10": 0.9000000000000008,
-              "weight": 1.0241632363449014
-            },
-            {
-              "paper_id": "XomEU3eNeSQ",
-              "title": "Code Translation with Compiler Representations",
-              "pattern_id": "pattern_101",
-              "score10": 7.093,
-              "review_count": 5,
-              "dispersion10": 2.925,
-              "weight": 0.4564992278288038
-            },
-            {
-              "paper_id": "pPjZIOuQuF",
-              "title": "RepoBench: Benchmarking Repository-Level Code Auto-Completion Systems",
-              "pattern_id": "pattern_101",
-              "score10": 6.175,
-              "review_count": 4,
-              "dispersion10": 1.2600000000000002,
-              "weight": 0.7121406692186284
-            },
-            {
-              "paper_id": "Bo7eeXm6An8",
-              "title": "Multi-lingual Evaluation of Code Generation Models",
-              "pattern_id": "pattern_101",
-              "score10": 7.489,
-              "review_count": 5,
-              "dispersion10": 1.9800000000000009,
-              "weight": 0.6012615668550518
-            }
-          ],
-          [
-            {
-              "paper_id": "lLp-C5nTdJG",
-              "title": "Static Prediction of Runtime Errors by Learning to Execute Programs with External Resource Descriptions",
-              "pattern_id": "pattern_101",
-              "score10": 7.10875,
-              "review_count": 4,
-              "dispersion10": 2.025000000000001,
-              "weight": 0.5320455908873057
-            },
-            {
-              "paper_id": "ZTCxT2t2Ru",
-              "title": "DocPrompting: Generating Code by Retrieving the Docs",
-              "pattern_id": "pattern_101",
-              "score10": 7.848999999999999,
-              "review_count": 5,
-              "dispersion10": 2.205,
-              "weight": 0.5590513164518112
-            }
-          ]
-        ],
         "pass": {
           "mode": "two_of_three_q75_and_avg_ge_q50",
           "used_distribution": "pattern",
-          "pattern_paper_count": 58,
-          "q50": 6.183999999999999,
-          "q75": 6.430000000000001,
-          "count_roles_ge_q75": 2,
+          "pattern_paper_count": 107,
+          "q50": 6.111999999999999,
+          "q75": 6.292000000000001,
+          "count_roles_ge_q75": 3,
           "roles_ge_q75": {
-            "Methodology": false,
+            "Methodology": true,
             "Novelty": true,
             "Storyteller": true
           },
           "avg_ge_q50": true,
-          "avg_score": 7.236666666666555
+          "avg_score": 8.013333333333206
+        },
+        "rubric_version": "rubric_v1",
+        "card_version": "blind_card_v2_minimal"
+      },
+      "field_feedback": {
+        "title": {
+          "issue": "The title is accurate but slightly verbose. 'Text-Dominant Bias' is a specific term that might not be immediately recognized without context, potentially creating initial friction.",
+          "edit_instruction": "Condense the title to prioritize the mechanism over the specific bias name, or ensure the bias name is hyphenated for clarity. Consider: 'Dynamic Modality Reliability Routing for Text-Dominant Bias in Audio-Text Models'.",
+          "expected_effect": "Improves scannability and immediately positions the contribution as a methodological advancement (Routing) rather than just a problem fix."
+        },
+        "abstract": {
+          "issue": "The phrase 'quantifies Text Interference using audio energy' creates a significant 'domain distance.' It sounds like low-level signal processing, which clashes with the 'Large Model' context. Reviewers may question if simple energy features are sufficient to gate an LLM.",
+          "edit_instruction": "Replace 'audio energy' with higher-level terminology like 'acoustic salience,' 'prosodic conflict markers,' or 'paralinguistic features.' Frame the quantification as a 'reliability score' derived from these features rather than just 'energy.'",
+          "expected_effect": "Bridges the gap between signal-level inputs and semantic-level model decisions, making the approach sound more robust for Large Models."
+        },
+        "problem_framing": {
+          "issue": "The description of 'Text-Dominant Bias' is clear but lacks a theoretical anchor in existing literature (e.g., modality imbalance or semantic dominance). It frames the issue as a binary failure rather than a spectrum of reliability.",
+          "edit_instruction": "Explicitly link 'Text-Dominant Bias' to the broader issue of 'Modality Asymmetry' in multimodal learning. Define the problem not just as 'text overriding audio,' but as the model's inability to weigh conflicting evidence dynamically.",
+          "expected_effect": "Grounds the specific problem in established theoretical frameworks, reducing the perceived distance from the general field."
+        },
+        "method_skeleton": {
+          "issue": "The reliance on 'audio energy' and 'temporal evidence' to train the gate is the primary source of domain distance. It implies a heuristic, rule-based system rather than a learned, differentiable component compatible with LLM fine-tuning.",
+          "edit_instruction": "Reframe the method as a 'Reliability Estimator' that learns to map acoustic embeddings (derived from energy/temporal patterns) to routing weights. Emphasize that the 'gating adapter' is a learned parameter, not a hard-coded rule based on energy thresholds.",
+          "expected_effect": "Aligns the method with standard deep learning practices (learned representations), making it more acceptable to the LLM community."
+        },
+        "innovation_claims": {
+          "issue": "The claims are strong but use generic terms like 'paradigm shift.' The connection between 'quantifying interference' and 'routing' is stated but not emphasized as a novel 'Mixture-of-Experts' (MoE) application for robustness.",
+          "edit_instruction": "Explicitly position the routing mechanism as a 'Robustness-oriented MoE' or 'Dynamic Expert Selection.' Highlight that the innovation lies in using *conflict* (interference) as the routing signal, rather than just input complexity.",
+          "expected_effect": "Leverages the popularity of MoE architectures to make the innovation sound timely and technically sophisticated."
+        },
+        "experiments_plan": {
+          "issue": "The plan mentions 'constructed adversarial and irrelevant splits' but lacks detail on *how* the text is made misleading. Without this, the evaluation of 'Text-Dominant Bias' seems ungrounded.",
+          "edit_instruction": "Specify the construction of the adversarial split (e.g., 'synonym replacement with opposite sentiment' or 'mismatched transcript injection'). Add a qualitative analysis (case studies) to show *when* the router activates the Audio-only expert.",
+          "expected_effect": "Provides concrete evidence that the model is actually solving the claimed problem and offers insight into the 'black box' routing decision."
         }
+      },
+      "suggested_edits": [
+        {
+          "field": "method_skeleton",
+          "action": "rewrite",
+          "content": "Construct a 'Reliability Estimator' that maps high-resolution acoustic features (capturing energy and temporal patterns) to a modality trust score; Train a lightweight gating adapter (a learned linear layer) to predict routing weights based on the reliability score and joint embeddings; Implement a dynamic Mixture-of-Experts (MoE) strategy during inference to switch between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' when semantic conflict is detected."
+        },
+        {
+          "field": "innovation_claims",
+          "action": "expand",
+          "content": "Introduce a Conflict-Driven Mixture-of-Experts (MoE) framework for multimodal LLMs, where routing decisions are driven by semantic conflict rather than input complexity; Propose a learned 'Reliability Estimator' that translates low-level acoustic cues into high-level routing logic, bridging the gap between signal processing and semantic reasoning."
+        }
+      ],
+      "priority": [
+        "method_skeleton",
+        "innovation_claims",
+        "abstract"
+      ],
+      "review_coach": {
+        "field_feedback": {
+          "title": {
+            "issue": "The title is accurate but slightly verbose. 'Text-Dominant Bias' is a specific term that might not be immediately recognized without context, potentially creating initial friction.",
+            "edit_instruction": "Condense the title to prioritize the mechanism over the specific bias name, or ensure the bias name is hyphenated for clarity. Consider: 'Dynamic Modality Reliability Routing for Text-Dominant Bias in Audio-Text Models'.",
+            "expected_effect": "Improves scannability and immediately positions the contribution as a methodological advancement (Routing) rather than just a problem fix."
+          },
+          "abstract": {
+            "issue": "The phrase 'quantifies Text Interference using audio energy' creates a significant 'domain distance.' It sounds like low-level signal processing, which clashes with the 'Large Model' context. Reviewers may question if simple energy features are sufficient to gate an LLM.",
+            "edit_instruction": "Replace 'audio energy' with higher-level terminology like 'acoustic salience,' 'prosodic conflict markers,' or 'paralinguistic features.' Frame the quantification as a 'reliability score' derived from these features rather than just 'energy.'",
+            "expected_effect": "Bridges the gap between signal-level inputs and semantic-level model decisions, making the approach sound more robust for Large Models."
+          },
+          "problem_framing": {
+            "issue": "The description of 'Text-Dominant Bias' is clear but lacks a theoretical anchor in existing literature (e.g., modality imbalance or semantic dominance). It frames the issue as a binary failure rather than a spectrum of reliability.",
+            "edit_instruction": "Explicitly link 'Text-Dominant Bias' to the broader issue of 'Modality Asymmetry' in multimodal learning. Define the problem not just as 'text overriding audio,' but as the model's inability to weigh conflicting evidence dynamically.",
+            "expected_effect": "Grounds the specific problem in established theoretical frameworks, reducing the perceived distance from the general field."
+          },
+          "method_skeleton": {
+            "issue": "The reliance on 'audio energy' and 'temporal evidence' to train the gate is the primary source of domain distance. It implies a heuristic, rule-based system rather than a learned, differentiable component compatible with LLM fine-tuning.",
+            "edit_instruction": "Reframe the method as a 'Reliability Estimator' that learns to map acoustic embeddings (derived from energy/temporal patterns) to routing weights. Emphasize that the 'gating adapter' is a learned parameter, not a hard-coded rule based on energy thresholds.",
+            "expected_effect": "Aligns the method with standard deep learning practices (learned representations), making it more acceptable to the LLM community."
+          },
+          "innovation_claims": {
+            "issue": "The claims are strong but use generic terms like 'paradigm shift.' The connection between 'quantifying interference' and 'routing' is stated but not emphasized as a novel 'Mixture-of-Experts' (MoE) application for robustness.",
+            "edit_instruction": "Explicitly position the routing mechanism as a 'Robustness-oriented MoE' or 'Dynamic Expert Selection.' Highlight that the innovation lies in using *conflict* (interference) as the routing signal, rather than just input complexity.",
+            "expected_effect": "Leverages the popularity of MoE architectures to make the innovation sound timely and technically sophisticated."
+          },
+          "experiments_plan": {
+            "issue": "The plan mentions 'constructed adversarial and irrelevant splits' but lacks detail on *how* the text is made misleading. Without this, the evaluation of 'Text-Dominant Bias' seems ungrounded.",
+            "edit_instruction": "Specify the construction of the adversarial split (e.g., 'synonym replacement with opposite sentiment' or 'mismatched transcript injection'). Add a qualitative analysis (case studies) to show *when* the router activates the Audio-only expert.",
+            "expected_effect": "Provides concrete evidence that the model is actually solving the claimed problem and offers insight into the 'black box' routing decision."
+          }
+        },
+        "suggested_edits": [
+          {
+            "field": "method_skeleton",
+            "action": "rewrite",
+            "content": "Construct a 'Reliability Estimator' that maps high-resolution acoustic features (capturing energy and temporal patterns) to a modality trust score; Train a lightweight gating adapter (a learned linear layer) to predict routing weights based on the reliability score and joint embeddings; Implement a dynamic Mixture-of-Experts (MoE) strategy during inference to switch between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' when semantic conflict is detected."
+          },
+          {
+            "field": "innovation_claims",
+            "action": "expand",
+            "content": "Introduce a Conflict-Driven Mixture-of-Experts (MoE) framework for multimodal LLMs, where routing decisions are driven by semantic conflict rather than input complexity; Propose a learned 'Reliability Estimator' that translates low-level acoustic cues into high-level routing logic, bridging the gap between signal processing and semantic reasoning."
+          }
+        ],
+        "priority": [
+          "method_skeleton",
+          "innovation_claims",
+          "abstract"
+        ]
       }
     }
   ],
-  "results_dir": "/Users/weishi/dev/Idea2Paper/results/run_20260205_164212_74699_cd2be3",
+  "results_dir": "results/run_20260206_061234_15437_82bf1c",
   "novelty_report": {
-    "run_id": "run_20260205_164212_74699_cd2be3",
-    "created_at": "2026-02-05T18:21:29.506945+00:00",
-    "user_idea": "A multi-agent system for automated code refactoring using AST parsing",
+    "run_id": "run_20260206_061234_15437_82bf1c",
+    "created_at": "2026-02-06T07:25:28.930911+00:00",
+    "user_idea": "我们研究音频-文本大模型的文本主导偏见：在 faithful/adversarial/irrelevant 三类设定下，提出基于模态可信度的路由/融合框架。通过构造“文本干扰”表示能量与时序证据，训练轻量门控/适配器，在推理时选择 Joint 或 Audio 专家，实现对抗文本误导下的稳健情绪识别",
     "embedding_available": true,
     "embedding_model": "Qwen/Qwen3-Embedding-8B",
     "top_k": 100,
@@ -900,767 +571,864 @@
       "medium": 0.82
     },
     "risk_level": "low",
-    "max_similarity": 0.6376178860664368,
+    "max_similarity": 0.643852949142456,
     "candidates": [
       {
-        "paper_id": "NiNIthntx7",
-        "title": "RefactorBench: Evaluating Stateful Reasoning in Language Agents Through Code",
+        "paper_id": "vtT09dYPGI",
+        "title": "Routing Experts: Learning to Route Dynamic Experts in Existing Multi-modal Large Language Models",
+        "pattern_id": "pattern_74",
+        "domain": "Machine Learning",
+        "text_hash": "59b22728a0b85817d085cc72b342dae6e768ff39578b9a159327d2d8445e6d8c",
+        "cosine": 0.643852949142456,
+        "keyword_overlap": 0.1079136690647482
+      },
+      {
+        "paper_id": "1SYUKPeM12",
+        "title": "Aligned Better, Listen Better for Audio-Visual Large Language Models",
+        "pattern_id": "pattern_13",
+        "domain": "Machine Learning",
+        "text_hash": "e80f050a72eb521e9a39c1ad0e8bf7d83712f9be0580d5b59057d0d81b9fcc27",
+        "cosine": 0.6125071048736572,
+        "keyword_overlap": 0.10144927536231885
+      },
+      {
+        "paper_id": "ePJrZLIqpV",
+        "title": "Rethinking Audio-Visual Adversarial Vulnerability from Temporal and Modality Perspectives",
         "pattern_id": "",
-        "domain": "Artificial Intelligence",
-        "text_hash": "c545409f3dae65d65e1b6f19ced74ee21fb6bf8cb4316853dde47c95876e751b",
-        "cosine": 0.6376178860664368,
-        "keyword_overlap": 0.06441717791411043
-      },
-      {
-        "paper_id": "G7sIFXugTX",
-        "title": "SWE-Search: Enhancing Software Agents with Monte Carlo Tree Search and Iterative Refinement",
-        "pattern_id": "pattern_65",
-        "domain": "Artificial Intelligence",
-        "text_hash": "ee7329e0bac71d79b594059dd13adc211d33f50b1bfc788674bfa500d41a8d2f",
-        "cosine": 0.5427152514457703,
-        "keyword_overlap": 0.06287425149700598
-      },
-      {
-        "paper_id": "4R71pdPBZp",
-        "title": "Self-Evolving Multi-Agent Collaboration Networks for Software Development",
-        "pattern_id": "pattern_65",
-        "domain": "Artificial Intelligence",
-        "text_hash": "94672c8ce826e98029267e8ea7ace736c6642e8ee97f151bb7f753fb0f34498c",
-        "cosine": 0.5423887968063354,
-        "keyword_overlap": 0.04559270516717325
-      },
-      {
-        "paper_id": "2NqssmiXLu",
-        "title": "Automated Proof Generation for Rust Code via Self-Evolution",
-        "pattern_id": "pattern_107",
-        "domain": "Software Engineering",
-        "text_hash": "06bb415064870170bd8ac5ed9855f8a3567dff9bd02517682ed75d5510720fe4",
-        "cosine": 0.5345924496650696,
-        "keyword_overlap": 0.08157099697885196
-      },
-      {
-        "paper_id": "MCHuGOkExF",
-        "title": "SFS: Smarter Code Space Search improves LLM Inference Scaling",
-        "pattern_id": "pattern_101",
         "domain": "Machine Learning",
-        "text_hash": "2cb4f1ba00a8f75eba118e081827f0606d99dd19b73ee993a4cbf89a49231827",
-        "cosine": 0.531562089920044,
-        "keyword_overlap": 0.07207207207207207
+        "text_hash": "d3f943cf44bf7e970363fa0aedc8716afdd67cc46e915d54ff2861ebe664249d",
+        "cosine": 0.6091080904006958,
+        "keyword_overlap": 0.08540925266903915
       },
       {
-        "paper_id": "PY56Wur7S0",
-        "title": "Execution-guided within-prompt search for programming-by-example",
-        "pattern_id": "pattern_101",
-        "domain": "Artificial Intelligence",
-        "text_hash": "f40ceab9cdb3fd04b515351eb41d0d5ee814156f80153af1010e2dd2c4932cb7",
-        "cosine": 0.5179897546768188,
-        "keyword_overlap": 0.08787878787878788
-      },
-      {
-        "paper_id": "pPjZIOuQuF",
-        "title": "RepoBench: Benchmarking Repository-Level Code Auto-Completion Systems",
-        "pattern_id": "pattern_101",
-        "domain": "Software Engineering",
-        "text_hash": "cb66a5886bb199b30622a7dd8ab8e9e19c905db00c421d7b5c5e0b40069e2fc1",
-        "cosine": 0.5152785181999207,
-        "keyword_overlap": 0.05571847507331378
-      },
-      {
-        "paper_id": "cKlzKs3Nnb",
-        "title": "Diversity Empowers Intelligence: Integrating Expertise of Software Engineering Agents",
-        "pattern_id": "pattern_65",
-        "domain": "Artificial Intelligence",
-        "text_hash": "e20d7e363f023543b2a3e7fdce5cb476f1c610bd2b8868aaf3b6d2048ba1dc31",
-        "cosine": 0.5094102621078491,
-        "keyword_overlap": 0.06666666666666667
-      },
-      {
-        "paper_id": "mw1PWNSWZP",
-        "title": "OctoPack: Instruction Tuning Code Large Language Models",
-        "pattern_id": "pattern_101",
+        "paper_id": "TPZRq4FALB",
+        "title": "Test-time Adaptation against Multi-modal Reliability Bias",
+        "pattern_id": "",
         "domain": "Machine Learning",
-        "text_hash": "776fc6a1bbcf3bc5fb908b010346ffec38b1923314985053a1a238ccef65dd44",
-        "cosine": 0.5016546845436096,
-        "keyword_overlap": 0.05654761904761905
+        "text_hash": "85ecbb7da83a1aaae886311195041898f0bd5a40aeffc5097b95fc79d213ed50",
+        "cosine": 0.6039701700210571,
+        "keyword_overlap": 0.09558823529411764
       },
       {
-        "paper_id": "wN3KaUXA5X",
-        "title": "Diffusion On Syntax Trees For Program Synthesis",
-        "pattern_id": "pattern_101",
+        "paper_id": "AV7OXVlAyi",
+        "title": "Mitigating Modality Prior-Induced Hallucinations in Multimodal Large Language Models via Deciphering Attention Causality",
+        "pattern_id": "pattern_13",
         "domain": "Machine Learning",
-        "text_hash": "f2f29f5a0b9c9f92e13ae4412048b60e24eb99f5ea8f99be7c32f1868536a1b6",
-        "cosine": 0.4975135922431946,
-        "keyword_overlap": 0.07570977917981073
+        "text_hash": "2b00d0adacffa9b4b76e94a68ebe21328497754c613a608494520d4cccc2d32e",
+        "cosine": 0.6004215478897095,
+        "keyword_overlap": 0.12686567164179105
+      },
+      {
+        "paper_id": "YauQYh2k1g",
+        "title": "Dissecting Adversarial Robustness of Multimodal LM Agents",
+        "pattern_id": "",
+        "domain": "Security & Privacy",
+        "text_hash": "a19bb5c98ff46decca4db9bace9eec234b3c181d7c004950f6f89a0c952c995f",
+        "cosine": 0.5839016437530518,
+        "keyword_overlap": 0.08424908424908426
+      },
+      {
+        "paper_id": "U42TkrEDzb",
+        "title": "Audio Large Language Models Can Be Descriptive Speech Quality Evaluators",
+        "pattern_id": "pattern_57",
+        "domain": "Natural Language Processing",
+        "text_hash": "4e842c1156e9af5816749889a97557065745d1d95e1f82540386c25045e103cd",
+        "cosine": 0.5821609497070312,
+        "keyword_overlap": 0.09025270758122744
+      },
+      {
+        "paper_id": "8sSqNntaMr",
+        "title": "RouteLLM: Learning to Route LLMs from Preference Data",
+        "pattern_id": "pattern_74",
+        "domain": "Machine Learning",
+        "text_hash": "13af3580757e20b3e80421c0707759c22276642020c46093f81abf9dafb27f27",
+        "cosine": 0.5813583135604858,
+        "keyword_overlap": 0.10431654676258993
+      },
+      {
+        "paper_id": "74vnDs1R97",
+        "title": "Wayward Concepts In Multimodal Models",
+        "pattern_id": "pattern_51",
+        "domain": "Machine Learning",
+        "text_hash": "e3575cced82c01c31692bb5ad0e1b47a531a5a79bf5f4da6c81d24b34c00224a",
+        "cosine": 0.5741791725158691,
+        "keyword_overlap": 0.06569343065693431
+      },
+      {
+        "paper_id": "YR3ETaElNK",
+        "title": "Tuning LayerNorm in Attention: Towards Efficient Multi-Modal LLM Finetuning",
+        "pattern_id": "",
+        "domain": "Machine Learning",
+        "text_hash": "e9fb86483586e0ad0911bd7207d5a27fc050b463521c3868e58ef4d918a4915e",
+        "cosine": 0.5734938383102417,
+        "keyword_overlap": 0.08727272727272728
       }
     ],
     "notes": [
       "index_reused"
     ],
-    "report_path": "/Users/weishi/dev/Idea2Paper/results/run_20260205_164212_74699_cd2be3/novelty_report.json",
+    "report_path": "results/run_20260206_061234_15437_82bf1c/novelty_report.json",
     "pivot_attempts": 0,
     "action": "pivot"
   },
   "recall_audit": {
     "final_top_k": [
       {
-        "pattern_id": "pattern_101",
-        "name": "Reframing Code Generation Challenges",
-        "final_score": 1.1164776696136185,
-        "path1_score": 0.6839948001574476,
-        "path2_score": 0.011474790141609452,
-        "path3_score": 0.4210080793145614,
-        "cluster_size": 58
-      },
-      {
-        "pattern_id": "pattern_65",
-        "name": "Reframing Agent Design for Adaptability",
-        "final_score": 0.6242596916623732,
-        "path1_score": 0.49741994670663225,
-        "path2_score": 0.013934914284522466,
-        "path3_score": 0.11290483067121848,
-        "cluster_size": 21
-      },
-      {
-        "pattern_id": "pattern_98",
-        "name": "Adaptive communication and coordination in multiagent systems",
-        "final_score": 0.42383413376169754,
-        "path1_score": 0.22016681285033926,
-        "path2_score": 0.0,
-        "path3_score": 0.20366732091135825,
-        "cluster_size": 48
-      },
-      {
-        "pattern_id": "pattern_6",
-        "name": "Reframing Molecular Generation with Structural Priors",
-        "final_score": 0.21619368306955977,
-        "path1_score": 0.21619368306955977,
+        "pattern_id": "pattern_8",
+        "name": "Reframing Speech Synthesis Efficiency",
+        "final_score": 0.577553916257183,
+        "path1_score": 0.577553916257183,
         "path2_score": 0.0,
         "path3_score": 0.0,
-        "cluster_size": 214
+        "cluster_size": 33
       },
       {
-        "pattern_id": "pattern_15",
-        "name": "Multiobjective Optimization with Theoretical Guarantees",
-        "final_score": 0.2095100015452343,
-        "path1_score": 0.2095100015452343,
+        "pattern_id": "pattern_113",
+        "name": "Reframing Multimodal Learning Narratives",
+        "final_score": 0.3922238149118643,
+        "path1_score": 0.3922238149118643,
         "path2_score": 0.0,
         "path3_score": 0.0,
-        "cluster_size": 25
+        "cluster_size": 46
       },
       {
-        "pattern_id": "pattern_99",
-        "name": "Frequency Aware Adaptive Restoration",
-        "final_score": 0.20408759706058924,
-        "path1_score": 0.20408759706058924,
+        "pattern_id": "pattern_3",
+        "name": "Anomaly Detection Reframed for Interpretability",
+        "final_score": 0.20317682076211036,
+        "path1_score": 0.20317682076211036,
         "path2_score": 0.0,
         "path3_score": 0.0,
-        "cluster_size": 23
+        "cluster_size": 46
       },
       {
-        "pattern_id": "pattern_16",
-        "name": "Human Guided Interactive Debugging",
-        "final_score": 0.20192832972673844,
-        "path1_score": 0.20192832972673844,
+        "pattern_id": "pattern_13",
+        "name": "Hallucination Mitigation via Multimodal Alignment",
+        "final_score": 0.19281244599796218,
+        "path1_score": 0.19281244599796218,
         "path2_score": 0.0,
         "path3_score": 0.0,
-        "cluster_size": 132
+        "cluster_size": 30
       },
       {
-        "pattern_id": "pattern_63",
-        "name": "Bayesian Exploration Exploitation Tradeoffs",
-        "final_score": 0.1990648409170409,
-        "path1_score": 0.1990648409170409,
+        "pattern_id": "pattern_7",
+        "name": "Reframing Audio Understanding Through Multimodal and Probabilistic Learning",
+        "final_score": 0.18803748299758397,
+        "path1_score": 0.18803748299758397,
         "path2_score": 0.0,
         "path3_score": 0.0,
-        "cluster_size": 57
+        "cluster_size": 41
       },
       {
-        "pattern_id": "pattern_107",
-        "name": "Reframing Mathematical Reasoning in Language Models",
-        "final_score": 0.19464490468859796,
-        "path1_score": 0.0,
+        "pattern_id": "pattern_115",
+        "name": "Semantic Alignment for Compositional Generation",
+        "final_score": 0.18600545443354655,
+        "path1_score": 0.18600545443354655,
         "path2_score": 0.0,
-        "path3_score": 0.19464490468859796,
-        "cluster_size": 36
+        "path3_score": 0.0,
+        "cluster_size": 107
       },
       {
-        "pattern_id": "pattern_24",
-        "name": "Reframing Graph Learning Scalability",
-        "final_score": 0.13029369412131675,
-        "path1_score": 0.0,
+        "pattern_id": "pattern_1",
+        "name": "Adaptive Gradient Training in Spiking Networks",
+        "final_score": 0.1857593435685081,
+        "path1_score": 0.1857593435685081,
         "path2_score": 0.0,
-        "path3_score": 0.13029369412131675,
-        "cluster_size": 331
+        "path3_score": 0.0,
+        "cluster_size": 35
+      },
+      {
+        "pattern_id": "pattern_112",
+        "name": "Reframing Multimodal Reasoning Challenges",
+        "final_score": 0.18400966874945604,
+        "path1_score": 0.18400966874945604,
+        "path2_score": 0.0,
+        "path3_score": 0.0,
+        "cluster_size": 115
+      },
+      {
+        "pattern_id": "pattern_89",
+        "name": "Contextual Adaptation and Interpretability in Language Models",
+        "final_score": 0.1780559485301267,
+        "path1_score": 0.1780559485301267,
+        "path2_score": 0.0,
+        "path3_score": 0.0,
+        "cluster_size": 16
+      },
+      {
+        "pattern_id": "pattern_44",
+        "name": "Privacy Risks Beyond Memorization",
+        "final_score": 0.17223153434913976,
+        "path1_score": 0.17223153434913976,
+        "path2_score": 0.0,
+        "path3_score": 0.0,
+        "cluster_size": 20
       }
     ],
     "path1": {
       "top_ideas": [
         {
-          "idea_id": "idea_5698",
-          "similarity": 0.630102037782748,
-          "snippet": "Introduce a self-evolving paradigm for multi-agent collaboration networks to enhance adaptability in software development.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_2526",
-          "similarity": 0.6188900811131063,
-          "snippet": "Introduce a generative model capable of both program synthesis and code infilling using bidirectional context.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_8248",
-          "similarity": 0.6134478289838325,
-          "snippet": "Leverage a multi-agent framework to mimic human cognitive processes for efficient web information seeking and integration using LLMs.",
-          "pattern_count": 1
-        },
-        {
-          "idea_id": "idea_293",
-          "similarity": 0.6093283567366273,
-          "snippet": "Enhance automated vulnerability repair by precisely targeting vulnerable code areas using a novel cross-attention mechanism inspired by object detection techniques.",
+          "idea_id": "idea_5003",
+          "similarity": 0.5631673839620491,
+          "snippet": "Introduce a comprehensive framework to evaluate and enhance the adversarial robustness of multimodal language model agents in real environments.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_6155",
-          "similarity": 0.5719330913662103,
-          "snippet": "Introduce a high-performance, GPU-accelerated simulator for scalable multi-agent planning and training.",
-          "pattern_count": 0
-        },
-        {
-          "idea_id": "idea_430",
-          "similarity": 0.5635758579857949,
-          "snippet": "Integrate vision and language into a unified model for instruction-following agents using a multimodal transformer architecture.",
-          "pattern_count": 0
-        },
-        {
-          "idea_id": "idea_3814",
-          "similarity": 0.5576198157064965,
-          "snippet": "Introduce self-consistency as a critical evaluation metric for Code LLMs, alongside conventional accuracy, using the IdentityChain framework.",
+          "idea_id": "idea_8107",
+          "similarity": 0.5164127394939448,
+          "snippet": "Introduce a mixture-of-depth adaptation strategy to reduce computational costs in multimodal large language models while maintaining performance.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_1400",
-          "similarity": 0.5504170321258481,
-          "snippet": "Introduce a decentralized actor-critic algorithm with guaranteed monotonic improvement and convergence for multi-agent reinforcement learning.",
+          "idea_id": "idea_7660",
+          "similarity": 0.5079420519052759,
+          "snippet": "Introduce a comprehensive benchmark to evaluate and enhance the performance of Multimodal Large Language Models in industrial anomaly detection.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_5066",
-          "similarity": 0.5404842076738994,
-          "snippet": "Reframe RNA secondary structure prediction as a dependency parsing problem using deep learning techniques.",
+          "idea_id": "idea_1462",
+          "similarity": 0.506604869137687,
+          "snippet": "Introduce a self-supervised model, ProsodyBERT, to learn prosody representations that enhance style-controllable TTS and improve emotion recognition.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_706",
-          "similarity": 0.5356591222264823,
-          "snippet": "Introduce a backpropagation-friendly framework for recursive neural networks using beam search to automatically induce tree structures.",
+          "idea_id": "idea_939",
+          "similarity": 0.5031037699868954,
+          "snippet": "Introduce a method for text-only adaptation of RNN-T models that maintains high accuracy and low latency without modifying the network or increasing runtime overhead.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_7924",
+          "similarity": 0.48283730198939234,
+          "snippet": "Introduce Multimodal Representation Tuning (MRT) to enhance performance and control in Large Multimodal Models with minimal parameter tuning.",
           "pattern_count": 0
         },
         {
-          "idea_id": "idea_7465",
-          "similarity": 0.5334771035740159,
-          "snippet": "Introduce a scalable method for automatically generating high-quality instruction-following training data using execution feedback and code verification.",
+          "idea_id": "idea_7635",
+          "similarity": 0.4820311149949054,
+          "snippet": "Introduce a causal inference framework to address modality prior-induced biases in multimodal large language models by focusing on attention mechanism causality.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_6843",
-          "similarity": 0.5237750038630857,
-          "snippet": "Introduce a reinforcement learning-based method for multi-objective prompt optimization in LLMs using Pareto dominance relationships.",
+          "idea_id": "idea_2104",
+          "similarity": 0.4700937074939599,
+          "snippet": "Develop a self-supervised approach to jointly learn visual and auditory speech representations from raw data, achieving state-of-the-art results in both modalities.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_973",
-          "similarity": 0.5151470855981948,
-          "snippet": "Introduce a partitioned training paradigm for multi-agent communication that enhances language compositionality and zero-shot communication.",
-          "pattern_count": 0
-        },
-        {
-          "idea_id": "idea_7131",
-          "similarity": 0.5129974966555914,
-          "snippet": "Introduce a framework for implicit communication in multi-agent systems using a novel protocol that maps information to actions.",
-          "pattern_count": 0
-        },
-        {
-          "idea_id": "idea_1076",
-          "similarity": 0.5108768164796547,
-          "snippet": "Introduce a self-supervised system that disentangles object location and identity for improved conceptual planning and reasoning.",
-          "pattern_count": 0
-        },
-        {
-          "idea_id": "idea_6387",
-          "similarity": 0.5102189926514731,
-          "snippet": "Introduce an agentic system that mimics human problem-solving for image restoration using a combination of LLMs and VLMs.",
+          "idea_id": "idea_6465",
+          "similarity": 0.46501363608386637,
+          "snippet": "Introduce a benchmark to evaluate the effectiveness of large multi-modal models in assessing AI-generated images, focusing on both semantic understanding and visual quality.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_1984",
-          "similarity": 0.504820824316846,
-          "snippet": "Introduce a multi-agent classifier system inspired by the Merlin-Arthur protocol to provide provable interpretability guarantees for complex models.",
+          "idea_id": "idea_2436",
+          "similarity": 0.4643983589212702,
+          "snippet": "Introduce a method to leverage spiking neural networks for text classification, achieving energy efficiency and robustness against adversarial attacks.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_8103",
-          "similarity": 0.5031206185342848,
-          "snippet": "Reframe CLIP into a learning-to-rank task using a lightweight adapter for improved text-guided image ranking.",
-          "pattern_count": 0
-        },
-        {
-          "idea_id": "idea_4104",
-          "similarity": 0.49766210229260227,
-          "snippet": "Achieve optimal adaptive regret in volatile environments using a two-query-per-round strategy for multi-armed bandits.",
+          "idea_id": "idea_1811",
+          "similarity": 0.46414679778571594,
+          "snippet": "Introduce an adversarial framework to efficiently learn canonical representations across multimodal data, preserving individual modality structure.",
           "pattern_count": 1
         },
         {
-          "idea_id": "idea_2814",
-          "similarity": 0.49393932415887676,
-          "snippet": "Establish a robust certification method for universal perturbations using linear relaxation and Mixed Integer Linear Programming.",
+          "idea_id": "idea_6121",
+          "similarity": 0.4600241718736401,
+          "snippet": "Introduce a benchmark to evaluate and improve the robustness of multimodal LLMs in understanding complex multi-image relations.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_1671",
+          "similarity": 0.44513987132531674,
+          "snippet": "Introduce an adaptive mechanism to selectively integrate external knowledge into large language models, optimizing for cost-efficiency and performance.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_5334",
+          "similarity": 0.44178968427753385,
+          "snippet": "Introduce a Mixture of Attentions architecture to enhance speculative decoding in large language models, improving speed and reliability across deployment scenarios.",
           "pattern_count": 0
+        },
+        {
+          "idea_id": "idea_2986",
+          "similarity": 0.4350644540837104,
+          "snippet": "Introduce a unified framework for weight sharing and pruning in multimodal transformer models to achieve significant compression with minimal accuracy loss.",
+          "pattern_count": 0
+        },
+        {
+          "idea_id": "idea_960",
+          "similarity": 0.434176151518375,
+          "snippet": "Introduce a lightweight diffusion model, ResGrad, to enhance inference speed and maintain high sample quality in text-to-speech synthesis by predicting residuals.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_1858",
+          "similarity": 0.4305788358728494,
+          "snippet": "Analyze and quantify the factors contributing to memorization in language models, highlighting the implications for privacy, utility, and fairness.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_378",
+          "similarity": 0.4288174926007184,
+          "snippet": "Introduce a masked adaptive ensemble framework to enhance adversarial training, improving robustness against both dense and sparse attacks while maintaining high standard accuracy.",
+          "pattern_count": 0
+        },
+        {
+          "idea_id": "idea_8013",
+          "similarity": 0.4227055464902362,
+          "snippet": "Introduce a dynamic sparse attention mechanism that adapts to varying input demands for efficient long-sequence inference in large language models.",
+          "pattern_count": 1
+        },
+        {
+          "idea_id": "idea_1424",
+          "similarity": 0.4185572977880333,
+          "snippet": "Introduce a dynamic feature robustness framework to address robust overfitting by considering the temporal interplay between model training and adversarial attacks.",
+          "pattern_count": 1
         }
       ],
       "pattern_scores_topn": [
         {
-          "pattern_id": "pattern_101",
-          "score": 0.6839948001574476
+          "pattern_id": "pattern_8",
+          "score": 0.577553916257183
         },
         {
-          "pattern_id": "pattern_65",
-          "score": 0.49741994670663225
+          "pattern_id": "pattern_113",
+          "score": 0.3922238149118643
         },
         {
-          "pattern_id": "pattern_98",
-          "score": 0.22016681285033926
+          "pattern_id": "pattern_3",
+          "score": 0.20317682076211036
         },
         {
-          "pattern_id": "pattern_6",
-          "score": 0.21619368306955977
+          "pattern_id": "pattern_13",
+          "score": 0.19281244599796218
         },
         {
-          "pattern_id": "pattern_15",
-          "score": 0.2095100015452343
+          "pattern_id": "pattern_7",
+          "score": 0.18803748299758397
         },
         {
-          "pattern_id": "pattern_99",
-          "score": 0.20408759706058924
+          "pattern_id": "pattern_115",
+          "score": 0.18600545443354655
         },
         {
-          "pattern_id": "pattern_16",
-          "score": 0.20192832972673844
+          "pattern_id": "pattern_1",
+          "score": 0.1857593435685081
         },
         {
-          "pattern_id": "pattern_63",
-          "score": 0.1990648409170409
+          "pattern_id": "pattern_112",
+          "score": 0.18400966874945604
+        },
+        {
+          "pattern_id": "pattern_89",
+          "score": 0.1780559485301267
+        },
+        {
+          "pattern_id": "pattern_44",
+          "score": 0.17223153434913976
         }
       ]
     },
     "path2": {
       "top_domains": [
         {
-          "domain_id": "domain_65",
-          "name": "Software Engineering",
-          "weight": 0.6036518551099855,
+          "domain_id": "domain_3",
+          "name": "Natural Language Processing",
+          "weight": 0.4435800175922114,
+          "paper_count": 779
+        },
+        {
+          "domain_id": "domain_45",
+          "name": "Audio Processing",
+          "weight": 0.4228073540257118,
           "paper_count": 5
         },
         {
-          "domain_id": "domain_25",
-          "name": "Human-Computer Interaction",
-          "weight": 0.547688833010611,
-          "paper_count": 1
+          "domain_id": "domain_48",
+          "name": "Speech Processing",
+          "weight": 0.4086476739233427,
+          "paper_count": 7
         },
         {
-          "domain_id": "domain_41",
-          "name": "Computer Science",
-          "weight": 0.5119907459631333,
-          "paper_count": 8
+          "domain_id": "domain_1",
+          "name": "Computer Vision",
+          "weight": 0.3908290505443777,
+          "paper_count": 1076
         },
         {
-          "domain_id": "domain_28",
-          "name": "Programming Languages",
-          "weight": 0.5023085249640077,
-          "paper_count": 1
-        },
-        {
-          "domain_id": "domain_10",
-          "name": "Artificial Intelligence",
-          "weight": 0.48782775786487814,
-          "paper_count": 317
+          "domain_id": "domain_2",
+          "name": "Machine Learning",
+          "weight": 0.3891287539224701,
+          "paper_count": 5314
         }
       ],
       "top_subdomains": [
         {
-          "domain_id": "domain_65",
+          "domain_id": "domain_3",
           "subdomains": [
             {
-              "name": "Program Synthesis",
-              "score": 0.6867301168423562
+              "name": "Multi-Task Learning",
+              "score": 0.3886328134965542
             },
             {
-              "name": "Code Generation",
-              "score": 0.6611383836444288
+              "name": "Domain Adaptation",
+              "score": 0.36350890922017265
             },
             {
-              "name": "Theorem Proving",
-              "score": 0.5750345977448275
+              "name": "Bias Mitigation",
+              "score": 0.3297455321447186
             },
             {
-              "name": "Large Language Models",
-              "score": 0.5511750665962385
+              "name": "Sequence Modeling",
+              "score": 0.31571502390339196
             },
             {
-              "name": "Benchmarking",
-              "score": 0.5359900884183522
+              "name": "Generative Models",
+              "score": 0.296452298672526
             }
           ]
         },
         {
-          "domain_id": "domain_25",
+          "domain_id": "domain_45",
           "subdomains": [
             {
-              "name": "Reinforcement Learning",
-              "score": 0.5756205465618947
+              "name": "Generative Models",
+              "score": 0.2964668884948591
             },
             {
-              "name": "Large Language Models",
-              "score": 0.5511750665962385
-            },
-            {
-              "name": "Multimodal Models",
-              "score": 0.5426669024972807
-            },
-            {
-              "name": "Web Automation",
-              "score": 0.5407496541757997
-            },
-            {
-              "name": "Human-Computer Interaction",
-              "score": 0.4796000485164114
+              "name": "Theoretical Analysis",
+              "score": 0.2459627524408576
             }
           ]
         },
         {
-          "domain_id": "domain_41",
+          "domain_id": "domain_48",
           "subdomains": [
             {
-              "name": "Program Synthesis",
-              "score": 0.6877150725399117
+              "name": "Generative Models",
+              "score": 0.296452298672526
             },
             {
-              "name": "Code Generation",
-              "score": 0.6616469891850659
-            },
-            {
-              "name": "Graph Neural Networks",
-              "score": 0.5643191647985369
-            },
-            {
-              "name": "Optimization",
-              "score": 0.5593492337491175
-            },
-            {
-              "name": "Large Language Models",
-              "score": 0.551398818978165
+              "name": "Theoretical Analysis",
+              "score": 0.2459789636623404
             }
           ]
         },
         {
-          "domain_id": "domain_28",
+          "domain_id": "domain_1",
           "subdomains": [
             {
-              "name": "Large Language Models",
-              "score": 0.5511750665962385
+              "name": "Domain Adaptation",
+              "score": 0.3635050280602475
             },
             {
-              "name": "Type Inference",
-              "score": 0.5357844819002431
+              "name": "Embodied AI",
+              "score": 0.34586382545469474
             },
             {
-              "name": "Attention Mechanisms",
-              "score": 0.5343203096349446
+              "name": "Bias Mitigation",
+              "score": 0.32968044949523095
             },
             {
-              "name": "Language Models",
-              "score": 0.5270189115346451
+              "name": "Masked Image Modeling",
+              "score": 0.3087047499636967
             },
             {
-              "name": "Model Interpretability",
-              "score": 0.4914918756339903
+              "name": "Generative Models",
+              "score": 0.2964900629435164
             }
           ]
         },
         {
-          "domain_id": "domain_10",
+          "domain_id": "domain_2",
           "subdomains": [
             {
-              "name": "Multi-Agent Systems",
-              "score": 0.6982364987195824
+              "name": "Multi-Task Learning",
+              "score": 0.3885856959529179
             },
             {
-              "name": "Autonomous Agents",
-              "score": 0.6677128380594127
+              "name": "Domain Adaptation",
+              "score": 0.36357939921529303
             },
             {
-              "name": "Code Generation",
-              "score": 0.6615378791275491
+              "name": "Bias Mitigation",
+              "score": 0.3297455321447186
             },
             {
-              "name": "Embodied Agents",
-              "score": 0.6015513030971412
+              "name": "Sequence Modeling",
+              "score": 0.31559316210952054
             },
             {
-              "name": "Reinforcement Learning",
-              "score": 0.576251199726933
+              "name": "Masked Image Modeling",
+              "score": 0.30879171379510656
             }
           ]
         }
       ],
       "candidate_stats": [
         {
-          "domain_id": "domain_65",
+          "domain_id": "domain_3",
+          "candidates_before": 51,
+          "candidates_after": 13
+        },
+        {
+          "domain_id": "domain_45",
+          "candidates_before": 1,
+          "candidates_after": 1
+        },
+        {
+          "domain_id": "domain_48",
           "candidates_before": 2,
           "candidates_after": 2
         },
         {
-          "domain_id": "domain_25",
-          "candidates_before": 1,
-          "candidates_after": 1
+          "domain_id": "domain_1",
+          "candidates_before": 58,
+          "candidates_after": 23
         },
         {
-          "domain_id": "domain_41",
-          "candidates_before": 3,
-          "candidates_after": 3
-        },
-        {
-          "domain_id": "domain_28",
-          "candidates_before": 1,
-          "candidates_after": 1
-        },
-        {
-          "domain_id": "domain_10",
-          "candidates_before": 36,
+          "domain_id": "domain_2",
+          "candidates_before": 120,
           "candidates_after": 14
         }
       ],
       "pattern_scores_topn": [
         {
-          "pattern_id": "pattern_97",
-          "score": 0.0165689380698935
+          "pattern_id": "pattern_74",
+          "score": 0.02312616778841297
         },
         {
-          "pattern_id": "pattern_65",
-          "score": 0.013934914284522466
+          "pattern_id": "pattern_87",
+          "score": 0.0221458153699873
         },
         {
-          "pattern_id": "pattern_68",
-          "score": 0.012303025417513824
+          "pattern_id": "pattern_39",
+          "score": 0.016835007627988854
         },
         {
-          "pattern_id": "pattern_101",
-          "score": 0.011474790141609452
+          "pattern_id": "pattern_19",
+          "score": 0.01576787508163214
         },
         {
-          "pattern_id": "pattern_85",
-          "score": 0.00937537417554543
+          "pattern_id": "pattern_110",
+          "score": 0.013031460273576032
         }
       ],
-      "subdomain_taxonomy_used": false,
-      "raw_subdomain_count": 0,
-      "canonical_subdomain_count": 0,
-      "stoplist_count": 0
+      "subdomain_taxonomy_used": true,
+      "raw_subdomain_count": 319,
+      "canonical_subdomain_count": 60,
+      "stoplist_count": 10
     },
     "path3": {
       "top_papers": [
         {
-          "paper_id": "hQwb-lbM6EL",
-          "similarity": 0.7107683162198185,
-          "title": "InCoder: A Generative Model for Code Infilling and Synthesis",
-          "quality": 0.7060000000000001,
+          "paper_id": "qmsX2R19p9",
+          "similarity": 0.3076308015139851,
+          "title": "Bridging the Semantic Gap Between Text and Table: A Case Study on NL2SQL",
+          "quality": 0.56,
           "review_count": 5
         },
         {
-          "paper_id": "4R71pdPBZp",
-          "similarity": 0.7946209536677578,
-          "title": "Self-Evolving Multi-Agent Collaboration Networks for Software Development",
-          "quality": 0.596,
-          "review_count": 5
-        },
-        {
-          "paper_id": "688hNNMigVX",
-          "similarity": 0.5961407844132552,
-          "title": "Learning a Data-Driven Policy Network for Pre-Training Automated Feature Engineering",
-          "quality": 0.7537500000000001,
-          "review_count": 4
-        },
-        {
-          "paper_id": "vTb1JI0Gps_",
-          "similarity": 0.5928352152120632,
-          "title": "Automated Data Augmentations for Graph Classification",
-          "quality": 0.74125,
-          "review_count": 4
-        },
-        {
-          "paper_id": "maRYffiUpI",
-          "similarity": 0.7286604765507011,
-          "title": "LLM-Assisted Code Cleaning For Training Accurate Code Generators",
-          "quality": 0.6,
-          "review_count": 4
-        },
-        {
-          "paper_id": "rJcLocAJpA6",
-          "similarity": 0.5844185513433201,
-          "title": "On Compositional Uncertainty Quantification for Seq2seq Graph Parsing",
-          "quality": 0.7437499999999999,
-          "review_count": 4
-        },
-        {
-          "paper_id": "2NqssmiXLu",
-          "similarity": 0.7203309059986466,
-          "title": "Automated Proof Generation for Rust Code via Self-Evolution",
-          "quality": 0.596,
-          "review_count": 5
-        },
-        {
-          "paper_id": "U_T8-5hClV",
-          "similarity": 0.5514337966082223,
-          "title": "A Primal-Dual Framework for Transformers and Neural Networks",
-          "quality": 0.7575,
-          "review_count": 6
-        },
-        {
-          "paper_id": "HcUf-QwZeFh",
-          "similarity": 0.5879104987408513,
-          "title": "A System for Morphology-Task Generalization via Unified Representation and Behavior Distillation",
-          "quality": 0.6980000000000001,
-          "review_count": 5
-        },
-        {
-          "paper_id": "B5RrIFMqbe",
-          "similarity": 0.6954668168170082,
-          "title": "FormalAlign: Automated Alignment Evaluation for Autoformalization",
+          "paper_id": "dlQIh4mUtQ8",
+          "similarity": 0.29437375025357226,
+          "title": "On the Relationship Between Adversarial Robustness and Decision Region in Deep Neural Networks",
           "quality": 0.576,
           "review_count": 5
-        },
-        {
-          "paper_id": "sKWlRDzPfd7",
-          "similarity": 0.581886797469194,
-          "title": "MAESTRO: Open-Ended Environment Design for Multi-Agent Reinforcement Learning",
-          "quality": 0.685,
-          "review_count": 4
-        },
-        {
-          "paper_id": "xkev3_np08z",
-          "similarity": 0.5344712907058179,
-          "title": "ExpressivE: A Spatio-Functional Embedding For Knowledge Graph Completion",
-          "quality": 0.7380000000000001,
-          "review_count": 5
-        },
-        {
-          "paper_id": "VPCi3STZcaO",
-          "similarity": 0.682005391755998,
-          "title": "CodeT5Mix: A Pretrained Mixture of Encoder-decoder Transformers for Code Understanding and Generation",
-          "quality": 0.5783333333333334,
-          "review_count": 6
-        },
-        {
-          "paper_id": "rmoMvptXK7M",
-          "similarity": 0.5968083733458465,
-          "title": "Gray-Box Gaussian Processes for Automated Reinforcement Learning",
-          "quality": 0.656,
-          "review_count": 5
-        },
-        {
-          "paper_id": "Tg8RLxpMDu",
-          "similarity": 0.6854278883191199,
-          "title": "Measuring memorization in RLHF for code completion",
-          "quality": 0.568,
-          "review_count": 5
-        },
-        {
-          "paper_id": "CahIEKCu5Q",
-          "similarity": 0.7022462484323139,
-          "title": "CodeMMLU: A Multi-Task Benchmark for Assessing Code Understanding & Reasoning Capabilities of CodeLLMs",
-          "quality": 0.544,
-          "review_count": 5
-        },
-        {
-          "paper_id": "HnSceSzlfrY",
-          "similarity": 0.6142884228301585,
-          "title": "RPM: Generalizable Multi-Agent Policies for Multi-Agent Reinforcement Learning",
-          "quality": 0.6200000000000001,
-          "review_count": 5
-        },
-        {
-          "paper_id": "ZrEbzL9eQ3W",
-          "similarity": 0.6092615758416199,
-          "title": "Scaling Laws for a Multi-Agent Reinforcement Learning Model",
-          "quality": 0.623,
-          "review_count": 5
-        },
-        {
-          "paper_id": "SRIQZTh0IK",
-          "similarity": 0.5397209442150079,
-          "title": "Analogy-Forming Transformers for Few-Shot 3D Parsing",
-          "quality": 0.7030000000000001,
-          "review_count": 5
-        },
-        {
-          "paper_id": "b_CQDy9vrD1",
-          "similarity": 0.5470341556880404,
-          "title": "ManiSkill2: A Unified Benchmark for Generalizable Manipulation Skills",
-          "quality": 0.6787500000000001,
-          "review_count": 4
         }
       ],
       "pattern_scores_topn": [
         {
-          "pattern_id": "pattern_101",
-          "score": 0.4210080793145614
-        },
-        {
-          "pattern_id": "pattern_98",
-          "score": 0.20366732091135825
-        },
-        {
-          "pattern_id": "pattern_107",
-          "score": 0.19464490468859796
-        },
-        {
-          "pattern_id": "pattern_24",
-          "score": 0.13029369412131675
-        },
-        {
-          "pattern_id": "pattern_32",
-          "score": 0.1265664635820107
-        },
-        {
-          "pattern_id": "pattern_65",
-          "score": 0.11290483067121848
-        },
-        {
-          "pattern_id": "pattern_105",
-          "score": 0.10669397924782197
-        },
-        {
-          "pattern_id": "pattern_86",
-          "score": 0.10080779610653941
-        },
-        {
-          "pattern_id": "pattern_44",
-          "score": 0.08845419481642708
+          "pattern_id": "pattern_67",
+          "score": 0.03906645814565168
         }
       ]
     }
   },
   "review_summary": {
-    "total_reviews": 2,
-    "final_score": 7.236666666666555
+    "total_reviews": 1,
+    "final_score": 8.013333333333206
   },
   "refinement_summary": {
-    "total_refinements": 1,
-    "issues_addressed": [
-      "novelty"
-    ]
+    "total_refinements": 0,
+    "issues_addressed": []
   },
   "verification_summary": {
     "collision_detected": false,
-    "max_similarity": 0.6376178860664368
+    "max_similarity": 0.643852949142456
   },
-  "idea_packaging": null
+  "idea_packaging": {
+    "raw_idea": "我们研究音频-文本大模型的文本主导偏见：在 faithful/adversarial/irrelevant 三类设定下，提出基于模态可信度的路由/融合框架。通过构造“文本干扰”表示能量与时序证据，训练轻量门控/适配器，在推理时选择 Joint 或 Audio 专家，实现对抗文本误导下的稳健情绪识别",
+    "brief_a": {
+      "motivation": "Current Audio-Text Large Models suffer from 'Text-Dominant Bias,' where they prioritize textual semantics over acoustic cues, leading to failures in real-world scenarios where text is misleading, sarcastic, or irrelevant. There is a critical need for robust systems that can dynamically assess modality reliability to ensure accurate emotion recognition.",
+      "problem_definition": "Task: Robust Multimodal Emotion Recognition. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities).",
+      "constraints": [
+        "efficiency (lightweight gates/adapters)",
+        "robustness (against text interference)",
+        "inference speed (dynamic routing)"
+      ],
+      "technical_plan": "1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score.",
+      "expected_contributions": [
+        "Identification and analysis of text-dominant bias in Audio-Text LMMs across faithful, adversarial, and irrelevant settings.",
+        "Proposal of a modality reliability-based routing framework leveraging energy and temporal evidence.",
+        "Demonstration of improved robustness in emotion recognition by mitigating misleading text through expert selection."
+      ],
+      "evaluation_plan": "Datasets: Standard multimodal emotion datasets (e.g., IEMOCAP, MELD) with constructed adversarial/irrelevant splits. Metrics: Accuracy, F1-score. Baselines: Standard Audio-Text LMMs, static fusion models. Ablations: Impact of the routing mechanism, impact of the Audio-only expert. Robustness Settings: Performance comparison specifically on Adversarial and Irrelevant subsets.",
+      "keywords_en": [
+        "Audio-Text Large Models",
+        "Text-Dominant Bias",
+        "Robust Emotion Recognition",
+        "Modality Routing",
+        "Adversarial Settings"
+      ],
+      "keywords_zh": [
+        "音频-文本大模型",
+        "文本主导偏见",
+        "稳健情绪识别",
+        "模态路由",
+        "对抗设定"
+      ],
+      "assumptions": {
+        "explicit": [
+          "Use of faithful, adversarial, and irrelevant settings",
+          "Use of energy and temporal evidence for interference detection",
+          "Implementation of lightweight gates/adapters",
+          "Inference involves selecting between Joint or Audio experts"
+        ],
+        "inferred": [
+          "The base model is a pre-trained Large Multimodal Model (LMM)",
+          "Energy refers to acoustic signal energy features",
+          "The primary task is Emotion Recognition"
+        ]
+      }
+    },
+    "query_a": "Keywords: Audio-Text Large Models, Text-Dominant Bias, Robust Emotion Recognition, Modality Routing, Adversarial Settings Task: Robust Multimodal Emotion Recognition. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). Constraints: efficiency (lightweight gates/adapters), robustness (against text interference), inference speed (dynamic routing) 1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score. 关键词: 音频-文本大模型，文本主导偏见，稳健情绪识别，模态路由，对抗设定",
+    "candidates": [
+      {
+        "pattern_id": "pattern_112",
+        "pattern_name": "Reframing Multimodal Reasoning Challenges",
+        "score": 0.7568165768424057,
+        "brief": {
+          "motivation": "Current Audio-Text Large Models suffer from 'Text-Dominant Bias,' where they prioritize textual semantics over acoustic cues, leading to failures in real-world scenarios involving sarcasm or misleading context. Traditional monolithic fusion approaches often require resource-intensive joint training and lack the flexibility to dynamically handle modality conflicts. There is a critical need for a modular, reliability-aware framework that can assess modality trustworthiness on-the-fly to ensure robust reasoning without heavy retraining, aligning with the shift towards efficient and adaptable multimodal systems.",
+          "problem_definition": "Task: Robust Multimodal Emotion Recognition with Dynamic Modality Routing. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions to test generalization capacity: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). The core challenge is to determine when to trust text versus audio in the face of interference, reframing the fusion problem as a dynamic selection task.",
+          "constraints": [
+            "efficiency (lightweight gates/adapters)",
+            "robustness (against text interference)",
+            "inference speed (dynamic routing)",
+            "modularity (selecting between experts without full retraining)"
+          ],
+          "technical_plan": "1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability, acting as a signal for routing. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels, keeping the base model frozen to maintain efficiency. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score, effectively reframing the fusion process as a modular composition problem.",
+          "expected_contributions": [
+            "Identification and analysis of text-dominant bias in Audio-Text LMMs across faithful, adversarial, and irrelevant settings.",
+            "Proposal of a modular, modality reliability-based routing framework that leverages energy and temporal evidence to guide expert selection.",
+            "Demonstration of improved robustness and generalization in emotion recognition by mitigating misleading text through dynamic expert composition."
+          ],
+          "evaluation_plan": "Datasets: Standard multimodal emotion datasets (e.g., IEMOCAP, MELD) with constructed adversarial/irrelevant splits to test generalization. Metrics: Accuracy, F1-score. Baselines: Standard Audio-Text LMMs, static fusion models, and modular composition baselines. Ablations: Impact of the routing mechanism, impact of the interference representation. Robustness Settings: Performance comparison specifically on Adversarial and Irrelevant subsets to evaluate generalization capacity under conflict.",
+          "keywords_en": [
+            "Audio-Text Large Models",
+            "Text-Dominant Bias",
+            "Robust Emotion Recognition",
+            "Modality Routing",
+            "Adversarial Settings",
+            "Modular Multimodal Learning",
+            "Dynamic Expert Selection"
+          ],
+          "keywords_zh": [
+            "音频-文本大模型",
+            "文本主导偏见",
+            "稳健情绪识别",
+            "模态路由",
+            "对抗设定",
+            "模块化多模态学习",
+            "动态专家选择"
+          ],
+          "assumptions": {
+            "explicit": [
+              "Use of faithful, adversarial, and irrelevant settings",
+              "Use of energy and temporal evidence for interference detection",
+              "Implementation of lightweight gates/adapters",
+              "Inference involves selecting between Joint or Audio experts"
+            ],
+            "inferred": [
+              "The base model is a pre-trained Large Multimodal Model (LMM)",
+              "Energy refers to acoustic signal energy features",
+              "The primary task is Emotion Recognition",
+              "The proposed framework can be applied as a plug-and-play module to existing LMMs"
+            ]
+          }
+        },
+        "query": "Keywords: Audio-Text Large Models, Text-Dominant Bias, Robust Emotion Recognition, Modality Routing, Adversarial Settings, Modular Multimodal Learning, Dynamic Expert Selection Task: Robust Multimodal Emotion Recognition with Dynamic Modality Routing. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions to test generalization capacity: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). The core challenge is to determine when to trust text versus audio in the face of interference, reframing the fusion problem as a dynamic selection task. Constraints: efficiency (lightweight gates/adapters), robustness (against text interference), inference speed (dynamic routing), modularity (selecting between experts without full retraining) 1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability, acting as a signal for routing. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels, keeping the base model frozen to maintain efficiency. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score, effectively reframing the fusion process as a modular composition problem. 关键词: 音频-文本大模型，文本主导偏见，稳健情绪识别，模态路由，对抗设定，模块化多模态学习，动态专家选择"
+      },
+      {
+        "pattern_id": "pattern_113",
+        "pattern_name": "Reframing Multimodal Learning Narratives",
+        "score": 0.5805548648395226,
+        "brief": {
+          "motivation": "Current Audio-Text Large Models (ATLMs) exhibit a 'Text-Dominant Bias,' prioritizing textual semantics over acoustic cues, which aligns with the broader challenge of cross-modality discrepancies in multimodal learning. This bias leads to failures in real-world scenarios involving sarcasm or misleading text. There is a critical need to reframe multimodal fusion strategies to dynamically assess modality reliability and dependency structures, ensuring robustness when modalities are conflicting or irrelevant.",
+          "problem_definition": "Task: Robust Multimodal Emotion Recognition. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). The core problem is to mitigate the text-dominant bias by understanding the conditional dependency between audio and text, specifically when text acts as interference rather than evidence.",
+          "constraints": [
+            "efficiency (lightweight gates/adapters)",
+            "robustness (against text interference)",
+            "inference speed (dynamic routing)",
+            "dynamic modality selection"
+          ],
+          "technical_plan": "1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability and characterize the dependency structure between audio and text. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels, inspired by approaches that handle arbitrary modality conditions. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score, effectively reframing the fusion process as a conditional decision.",
+          "expected_contributions": [
+            "Identification and analysis of text-dominant bias in Audio-Text LMMs across faithful, adversarial, and irrelevant settings, reframing it as a conditional dependency problem.",
+            "Proposal of a modality reliability-based routing framework that leverages energy and temporal evidence to handle arbitrary modality conflicts.",
+            "Demonstration of improved robustness in emotion recognition by mitigating misleading text through expert selection, establishing a new paradigm for dynamic multimodal inference."
+          ],
+          "evaluation_plan": "Datasets: Standard multimodal emotion datasets (e.g., IEMOCAP, MELD) with constructed adversarial/irrelevant splits to simulate arbitrary modality conditions. Metrics: Accuracy, F1-score. Baselines: Standard Audio-Text LMMs, static fusion models, and existing methods for handling missing/irrelevant modalities. Ablations: Impact of the routing mechanism, impact of the 'Text Interference' feature construction. Robustness Settings: Performance comparison specifically on Adversarial and Irrelevant subsets to validate the framework's ability to handle cross-modality discrepancies.",
+          "keywords_en": [
+            "Audio-Text Large Models",
+            "Text-Dominant Bias",
+            "Robust Emotion Recognition",
+            "Modality Routing",
+            "Adversarial Settings",
+            "Cross-Modality Discrepancies",
+            "Dynamic Fusion"
+          ],
+          "keywords_zh": [
+            "音频-文本大模型",
+            "文本主导偏见",
+            "稳健情绪识别",
+            "模态路由",
+            "对抗设定",
+            "跨模态差异",
+            "动态融合"
+          ],
+          "assumptions": {
+            "explicit": [
+              "Use of faithful, adversarial, and irrelevant settings",
+              "Use of energy and temporal evidence for interference detection",
+              "Implementation of lightweight gates/adapters",
+              "Inference involves selecting between Joint or Audio experts"
+            ],
+            "inferred": [
+              "The base model is a pre-trained Large Multimodal Model (LMM)",
+              "Energy refers to acoustic signal energy features",
+              "The primary task is Emotion Recognition",
+              "'Text Interference' can be effectively modeled by low-level acoustic features"
+            ]
+          }
+        },
+        "query": "Keywords: Audio-Text Large Models, Text-Dominant Bias, Robust Emotion Recognition, Modality Routing, Adversarial Settings, Cross-Modality Discrepancies, Dynamic Fusion Task: Robust Multimodal Emotion Recognition. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). The core problem is to mitigate the text-dominant bias by understanding the conditional dependency between audio and text, specifically when text acts as interference rather than evidence. Constraints: efficiency (lightweight gates/adapters), robustness (against text interference), inference speed (dynamic routing), dynamic modality selection 1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability and characterize the dependency structure between audio and text. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels, inspired by approaches that handle arbitrary modality conditions. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score, effectively reframing the fusion process as a conditional decision. 关键词: 音频-文本大模型，文本主导偏见，稳健情绪识别，模态路由，对抗设定，跨模态差异，动态融合"
+      },
+      {
+        "pattern_id": "pattern_8",
+        "pattern_name": "Reframing Speech Synthesis Efficiency",
+        "score": 0.40278373611114954,
+        "brief": {
+          "motivation": "Current Audio-Text Large Models suffer from 'Text-Dominant Bias,' prioritizing textual semantics over acoustic cues, which leads to failures in real-world scenarios involving sarcasm or misleading text. Furthermore, addressing this bias often requires computationally expensive fusion mechanisms. Drawing inspiration from efficiency-focused speech synthesis research, there is a critical need for systems that are not only robust against misleading text but also maintain high inference efficiency through lightweight, dynamic architectures.",
+          "problem_definition": "Task: Robust and Efficient Multimodal Emotion Recognition. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). The core challenge is to maintain high accuracy in adversarial settings while minimizing computational overhead, similar to latency constraints in speech synthesis.",
+          "constraints": [
+            "efficiency (lightweight gates/adapters)",
+            "robustness (against text interference)",
+            "inference speed (dynamic routing)",
+            "low latency (real-time applicability)"
+          ],
+          "technical_plan": "1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability, analogous to residual prediction in synthesis. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels, ensuring minimal parameter increase. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score, optimizing for both accuracy and speed.",
+          "expected_contributions": [
+            "Identification and analysis of text-dominant bias in Audio-Text LMMs across faithful, adversarial, and irrelevant settings.",
+            "Proposal of a modality reliability-based routing framework leveraging energy and temporal evidence, inspired by efficient model refinement techniques.",
+            "Demonstration of improved robustness and inference efficiency in emotion recognition by mitigating misleading text through expert selection."
+          ],
+          "evaluation_plan": "Datasets: Standard multimodal emotion datasets (e.g., IEMOCAP, MELD) with constructed adversarial/irrelevant splits. Metrics: Accuracy, F1-score, Inference Latency, and FLOPs. Baselines: Standard Audio-Text LMMs, static fusion models, and efficient adaptation baselines. Ablations: Impact of the routing mechanism, impact of the Audio-only expert, and analysis of computational cost. Robustness Settings: Performance comparison specifically on Adversarial and Irrelevant subsets.",
+          "keywords_en": [
+            "Audio-Text Large Models",
+            "Text-Dominant Bias",
+            "Robust Emotion Recognition",
+            "Modality Routing",
+            "Adversarial Settings",
+            "Efficient Inference",
+            "Lightweight Adapters"
+          ],
+          "keywords_zh": [
+            "音频-文本大模型",
+            "文本主导偏见",
+            "稳健情绪识别",
+            "模态路由",
+            "对抗设定",
+            "高效推理",
+            "轻量级适配器"
+          ],
+          "assumptions": {
+            "explicit": [
+              "Use of faithful, adversarial, and irrelevant settings",
+              "Use of energy and temporal evidence for interference detection",
+              "Implementation of lightweight gates/adapters",
+              "Inference involves selecting between Joint or Audio experts"
+            ],
+            "inferred": [
+              "The base model is a pre-trained Large Multimodal Model (LMM)",
+              "Energy refers to acoustic signal energy features",
+              "The primary task is Emotion Recognition",
+              "The routing mechanism aims to reduce computational load in addition to improving accuracy"
+            ]
+          }
+        },
+        "query": "Keywords: Audio-Text Large Models, Text-Dominant Bias, Robust Emotion Recognition, Modality Routing, Adversarial Settings, Efficient Inference, Lightweight Adapters Task: Robust and Efficient Multimodal Emotion Recognition. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). The core challenge is to maintain high accuracy in adversarial settings while minimizing computational overhead, similar to latency constraints in speech synthesis. Constraints: efficiency (lightweight gates/adapters), robustness (against text interference), inference speed (dynamic routing), low latency (real-time applicability) 1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability, analogous to residual prediction in synthesis. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels, ensuring minimal parameter increase. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score, optimizing for both accuracy and speed. 关键词: 音频-文本大模型，文本主导偏见，稳健情绪识别，模态路由，对抗设定，高效推理，轻量级适配器"
+      }
+    ],
+    "judge": {
+      "best_index": 0,
+      "rationale": "Candidate 1 (pattern_112) is the most faithful and complete representation of the raw idea. It accurately captures the core problem of 'Text-Dominant Bias' in Audio-Text Large Models and strictly adheres to the three specific settings (faithful, adversarial, irrelevant) mentioned in the input. The technical plan is highly actionable, detailing the construction of 'Text Interference' representations using energy and temporal evidence, and the implementation of a lightweight gating mechanism for dynamic routing between 'Joint' and 'Audio' experts. Unlike Candidate 3, it avoids introducing unrelated concepts like speech synthesis efficiency, and compared to Candidate 2, it frames the problem more concretely as a 'dynamic selection task' and 'modular composition,' which aligns perfectly with the user's description of routing and expert selection. The evaluation plan is robust, specifically targeting the adversarial and irrelevant splits to validate the solution's effectiveness."
+    },
+    "recall_scores": {
+      "0": 0.3256862745098039,
+      "1": 0.26970926301555104,
+      "2": 0.44637592968221773
+    },
+    "chosen_index": 2,
+    "query_best": "Keywords: Audio-Text Large Models, Text-Dominant Bias, Robust Emotion Recognition, Modality Routing, Adversarial Settings, Efficient Inference, Lightweight Adapters Task: Robust and Efficient Multimodal Emotion Recognition. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). The core challenge is to maintain high accuracy in adversarial settings while minimizing computational overhead, similar to latency constraints in speech synthesis. Constraints: efficiency (lightweight gates/adapters), robustness (against text interference), inference speed (dynamic routing), low latency (real-time applicability) 1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability, analogous to residual prediction in synthesis. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels, ensuring minimal parameter increase. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score, optimizing for both accuracy and speed. 关键词: 音频-文本大模型，文本主导偏见，稳健情绪识别，模态路由，对抗设定，高效推理，轻量级适配器",
+    "brief_best": {
+      "motivation": "Current Audio-Text Large Models suffer from 'Text-Dominant Bias,' prioritizing textual semantics over acoustic cues, which leads to failures in real-world scenarios involving sarcasm or misleading text. Furthermore, addressing this bias often requires computationally expensive fusion mechanisms. Drawing inspiration from efficiency-focused speech synthesis research, there is a critical need for systems that are not only robust against misleading text but also maintain high inference efficiency through lightweight, dynamic architectures.",
+      "problem_definition": "Task: Robust and Efficient Multimodal Emotion Recognition. Input: Audio and Text pairs. Output: Emotion labels. Settings: The study evaluates performance under three distinct conditions: Faithful (consistent modalities), Adversarial (conflicting modalities), and Irrelevant (unrelated modalities). The core challenge is to maintain high accuracy in adversarial settings while minimizing computational overhead, similar to latency constraints in speech synthesis.",
+      "constraints": [
+        "efficiency (lightweight gates/adapters)",
+        "robustness (against text interference)",
+        "inference speed (dynamic routing)",
+        "low latency (real-time applicability)"
+      ],
+      "technical_plan": "1. Construct 'Text Interference' representations utilizing audio energy and temporal evidence to quantify modality reliability, analogous to residual prediction in synthesis. 2. Train a lightweight gating mechanism or adapter to learn modality weights based on interference levels, ensuring minimal parameter increase. 3. Implement a dynamic routing strategy during inference to select between a 'Joint Expert' (Audio+Text) and an 'Audio-only Expert' depending on the reliability score, optimizing for both accuracy and speed.",
+      "expected_contributions": [
+        "Identification and analysis of text-dominant bias in Audio-Text LMMs across faithful, adversarial, and irrelevant settings.",
+        "Proposal of a modality reliability-based routing framework leveraging energy and temporal evidence, inspired by efficient model refinement techniques.",
+        "Demonstration of improved robustness and inference efficiency in emotion recognition by mitigating misleading text through expert selection."
+      ],
+      "evaluation_plan": "Datasets: Standard multimodal emotion datasets (e.g., IEMOCAP, MELD) with constructed adversarial/irrelevant splits. Metrics: Accuracy, F1-score, Inference Latency, and FLOPs. Baselines: Standard Audio-Text LMMs, static fusion models, and efficient adaptation baselines. Ablations: Impact of the routing mechanism, impact of the Audio-only expert, and analysis of computational cost. Robustness Settings: Performance comparison specifically on Adversarial and Irrelevant subsets.",
+      "keywords_en": [
+        "Audio-Text Large Models",
+        "Text-Dominant Bias",
+        "Robust Emotion Recognition",
+        "Modality Routing",
+        "Adversarial Settings",
+        "Efficient Inference",
+        "Lightweight Adapters"
+      ],
+      "keywords_zh": [
+        "音频-文本大模型",
+        "文本主导偏见",
+        "稳健情绪识别",
+        "模态路由",
+        "对抗设定",
+        "高效推理",
+        "轻量级适配器"
+      ],
+      "assumptions": {
+        "explicit": [
+          "Use of faithful, adversarial, and irrelevant settings",
+          "Use of energy and temporal evidence for interference detection",
+          "Implementation of lightweight gates/adapters",
+          "Inference involves selecting between Joint or Audio experts"
+        ],
+        "inferred": [
+          "The base model is a pre-trained Large Multimodal Model (LMM)",
+          "Energy refers to acoustic signal energy features",
+          "The primary task is Emotion Recognition",
+          "The routing mechanism aims to reduce computational load in addition to improving accuracy"
+        ]
+      }
+    }
+  }
 }

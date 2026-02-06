@@ -320,7 +320,7 @@ class KnowledgeGraphBuilderV3:
             # 调用LLM
             print(f"  处理 {idx+1}/{len(self.pattern_nodes)}: {pattern_node['name']} (cluster_id={cluster_id}, size={pattern_node['size']})")
 
-            llm_response = call_llm(prompt, temperature=0.3, max_tokens=1500)
+            llm_response = call_llm(prompt, temperature=0.3, max_tokens=4096)
 
             if llm_response:
                 # 解析LLM响应

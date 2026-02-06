@@ -4,36 +4,38 @@ import time
 import warnings
 from typing import Dict, Any, Optional
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
 # 抑制 urllib3 的 OpenSSL 警告
 warnings.filterwarnings("ignore", category=UserWarning, module='urllib3')
 
-from idea2paper.config import LLM_API_KEY, LLM_API_URL, LLM_MODEL
+from idea2paper.config import (
+    LLM_API_KEY,
+    LLM_API_URL,
+    LLM_BASE_URL,
+    LLM_MODEL,
+    LLM_PROVIDER,
+    LLM_ANTHROPIC_VERSION,
+    LLM_EXTRA_HEADERS,
+    LLM_EXTRA_BODY,
+)
 from idea2paper.infra.run_context import get_logger
+from idea2paper.infra.llm_providers import (
+    openai_compatible,
+    openai_responses,
+    anthropic,
+    gemini,
+)
+from idea2paper.infra.llm_providers.common import parse_extra, redact_mapping
 
-def _create_session_with_retries():
-    """创建带有重试机制的 requests Session"""
-    session = requests.Session()
+def _parse_extra_config(name: str, value, logger):
+    data, error = parse_extra(value)
+    if error:
+        msg = f"⚠️  {name} parse failed: {error}"
+        print(msg)
+        if logger:
+            logger.log_event("llm_extra_invalid", {"name": name, "error": error})
+    return data
 
-    # 定义重试策略
-    retry_strategy = Retry(
-        total=3,  # 总共重试 3 次
-        backoff_factor=2,  # 指数退避: 1s, 2s, 4s
-        status_forcelist=[429, 500, 502, 503, 504],  # 在这些状态码上重试
-        allowed_methods=["POST", "GET"]
-    )
-
-    # 为 HTTP 和 HTTPS 适配器应用重试策略
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-
-    return session
-
-def call_llm(prompt: str, temperature: float = 0.7, max_tokens: int = 2000, timeout: int = 120) -> str:
+def call_llm(prompt: str, temperature: float = 0.7, max_tokens: int = 4096, timeout: int = 120) -> str:
     """
     调用 LLM API（支持重试和延长超时）
 
@@ -52,8 +54,9 @@ def call_llm(prompt: str, temperature: float = 0.7, max_tokens: int = 2000, time
         if logger:
             logger.log_llm_call(
                 request={
+                    "provider": LLM_PROVIDER,
                     "model": LLM_MODEL,
-                    "url": LLM_API_URL,
+                    "url": LLM_API_URL or LLM_BASE_URL,
                     "temperature": temperature,
                     "max_tokens": max_tokens,
                     "timeout": timeout,
@@ -69,131 +72,116 @@ def call_llm(prompt: str, temperature: float = 0.7, max_tokens: int = 2000, time
             )
         return simulated_text
 
-    headers = {
-        "Authorization": f"Bearer {LLM_API_KEY}",
-        "Content-Type": "application/json"
-    }
+    extra_headers = _parse_extra_config("LLM_EXTRA_HEADERS_JSON", LLM_EXTRA_HEADERS, logger)
+    extra_body = _parse_extra_config("LLM_EXTRA_BODY_JSON", LLM_EXTRA_BODY, logger)
+    provider = (LLM_PROVIDER or "openai_compatible_chat").strip().lower()
 
-    data = {
-        "model": LLM_MODEL,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": temperature,
-        "max_tokens": max_tokens
-    }
-
-    max_retries = 3
-    retry_delay = 2
-
-    for attempt in range(max_retries):
-        try:
-            session = _create_session_with_retries()
-
-            if attempt > 0:
-                print(f"   ⏳ 重试 LLM 调用 (尝试 {attempt + 1}/{max_retries})...")
-                time.sleep(retry_delay)
-
-            response = session.post(
-                LLM_API_URL,
-                headers=headers,
-                json=data,
-                timeout=timeout
+    try:
+        if provider in ("openai_compatible_chat", "openai_compatible"):
+            result = openai_compatible.call_openai_compatible_chat(
+                prompt,
+                model=LLM_MODEL,
+                api_key=LLM_API_KEY,
+                base_url=LLM_BASE_URL,
+                api_url=LLM_API_URL,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                timeout=timeout,
+                extra_headers=extra_headers,
+                extra_body=extra_body,
             )
-            response.raise_for_status()
-            session.close()
-            content = response.json()["choices"][0]["message"]["content"]
-            if logger:
-                logger.log_llm_call(
-                    request={
-                        "model": LLM_MODEL,
-                        "url": LLM_API_URL,
-                        "temperature": temperature,
-                        "max_tokens": max_tokens,
-                        "timeout": timeout,
-                        "prompt": prompt,
-                        "simulated": False
-                    },
-                    response={
-                        "ok": True,
-                        "text": content,
-                        "latency_ms": int((time.time() - start_ts) * 1000)
-                    }
-                )
-            return content
+        elif provider in ("openai_responses", "responses"):
+            result = openai_responses.call_openai_responses(
+                prompt,
+                model=LLM_MODEL,
+                api_key=LLM_API_KEY,
+                base_url=LLM_BASE_URL,
+                api_url=LLM_API_URL,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                timeout=timeout,
+                extra_headers=extra_headers,
+                extra_body=extra_body,
+            )
+        elif provider == "anthropic":
+            result = anthropic.call_anthropic(
+                prompt,
+                model=LLM_MODEL,
+                api_key=LLM_API_KEY,
+                base_url=LLM_BASE_URL,
+                api_url=LLM_API_URL,
+                anthropic_version=LLM_ANTHROPIC_VERSION,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                timeout=timeout,
+                extra_headers=extra_headers,
+                extra_body=extra_body,
+            )
+        elif provider == "gemini":
+            result = gemini.call_gemini(
+                prompt,
+                model=LLM_MODEL,
+                api_key=LLM_API_KEY,
+                base_url=LLM_BASE_URL,
+                api_url=LLM_API_URL,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                timeout=timeout,
+                extra_headers=extra_headers,
+                extra_body=extra_body,
+            )
+        else:
+            raise ValueError(f"unknown LLM_PROVIDER: {LLM_PROVIDER}")
+    except Exception as e:
+        if logger:
+            logger.log_llm_call(
+                request={
+                    "provider": LLM_PROVIDER,
+                    "model": LLM_MODEL,
+                    "url": LLM_API_URL or LLM_BASE_URL,
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                    "timeout": timeout,
+                    "prompt": prompt,
+                    "simulated": False,
+                    "extra_headers": redact_mapping(extra_headers),
+                    "extra_body": redact_mapping(extra_body),
+                },
+                response={
+                    "ok": False,
+                    "text": "",
+                    "latency_ms": int((time.time() - start_ts) * 1000),
+                    "error": str(e)
+                }
+            )
+        print(f"❌ LLM 调用失败: {e}")
+        return ""
 
-        except requests.exceptions.Timeout as e:
-            print(f"   ⚠️  超时异常 (尝试 {attempt + 1}/{max_retries}): 读取超时")
-            if attempt < max_retries - 1:
-                print(f"   ⏳ {retry_delay} 秒后重试...")
-            else:
-                print(f"❌ LLM 调用失败（超时）: {e}")
-                if logger:
-                    logger.log_llm_call(
-                        request={
-                            "model": LLM_MODEL,
-                            "url": LLM_API_URL,
-                            "temperature": temperature,
-                            "max_tokens": max_tokens,
-                            "timeout": timeout,
-                            "prompt": prompt,
-                            "simulated": False
-                        },
-                        response={
-                            "ok": False,
-                            "text": "",
-                            "latency_ms": int((time.time() - start_ts) * 1000),
-                            "error": "timeout"
-                        }
-                    )
-                return ""
+    if logger:
+        logger.log_llm_call(
+            request={
+                "provider": LLM_PROVIDER,
+                "model": LLM_MODEL,
+                "url": result.get("url") or (LLM_API_URL or LLM_BASE_URL),
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "timeout": timeout,
+                "prompt": prompt,
+                "simulated": False,
+                "extra_headers": redact_mapping(extra_headers),
+                "extra_body": redact_mapping(extra_body),
+            },
+            response={
+                "ok": bool(result.get("ok")),
+                "text": result.get("text", ""),
+                "latency_ms": int((time.time() - start_ts) * 1000),
+                "error": result.get("error", "")
+            }
+        )
 
-        except requests.exceptions.ConnectionError as e:
-            print(f"   ⚠️  连接异常 (尝试 {attempt + 1}/{max_retries}): {str(e)[:60]}")
-            if attempt < max_retries - 1:
-                print(f"   ⏳ {retry_delay} 秒后重试...")
-            else:
-                print(f"❌ LLM 调用失败（连接错误）: {e}")
-                if logger:
-                    logger.log_llm_call(
-                        request={
-                            "model": LLM_MODEL,
-                            "url": LLM_API_URL,
-                            "temperature": temperature,
-                            "max_tokens": max_tokens,
-                            "timeout": timeout,
-                            "prompt": prompt,
-                            "simulated": False
-                        },
-                        response={
-                            "ok": False,
-                            "text": "",
-                            "latency_ms": int((time.time() - start_ts) * 1000),
-                            "error": "connection_error"
-                        }
-                    )
-                return ""
-
-        except Exception as e:
-            print(f"❌ LLM 调用失败: {e}")
-            if logger:
-                logger.log_llm_call(
-                    request={
-                        "model": LLM_MODEL,
-                        "url": LLM_API_URL,
-                        "temperature": temperature,
-                        "max_tokens": max_tokens,
-                        "timeout": timeout,
-                        "prompt": prompt,
-                        "simulated": False
-                    },
-                    response={
-                        "ok": False,
-                        "text": "",
-                        "latency_ms": int((time.time() - start_ts) * 1000),
-                        "error": str(e)
-                    }
-                )
-            return ""
-
+    if result.get("ok"):
+        return result.get("text", "")
+    print(f"❌ LLM 调用失败: {result.get('error')}")
     return ""
 
 def clean_json_text(text: str) -> str:

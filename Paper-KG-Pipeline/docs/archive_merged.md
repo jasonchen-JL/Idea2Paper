@@ -1894,7 +1894,7 @@ Storyteller: 7.0/10 ✅
 **解决**:
 ```python
 # 1. 降低 LLM 温度
-response = call_llm(prompt, temperature=0.6, max_tokens=1500)
+response = call_llm(prompt, temperature=0.6, max_tokens=4096)
 
 # 2. 增强 Prompt 约束
 tricks_instruction = "【极重要：技术重构指令】\n"
@@ -2395,7 +2395,7 @@ def _enhance_patterns_with_llm(self, clusters: List[Dict]):
         prompt = self._build_llm_prompt_for_pattern(pattern_node, exemplars)
 
         # 调用LLM生成归纳性总结（每个类型1句话）
-        llm_response = call_llm(prompt, temperature=0.3, max_tokens=1500)
+        llm_response = call_llm(prompt, temperature=0.3, max_tokens=4096)
 
         # 添加到pattern_node['llm_enhanced_summary']
         if llm_response:
@@ -2568,7 +2568,7 @@ output/
   - ✅ 每个cluster的所有论文信息都被LLM综合分析
   - ✅ 每个类型生成1句长而详细的归纳性描述
 - **方案**:
-  - 使用 SiliconFlow API (Qwen2.5-7B-Instruct)
+  - 使用通用 LLM API (示例模型：Qwen2.5-7B-Instruct)
   - 基于前20个exemplars生成归纳性Prompt
   - 生成4个维度的总结：representative_ideas, common_problems, solution_approaches, story
 
@@ -2604,7 +2604,7 @@ output/
 ✅ **LLM增强**: Pattern节点具备双层描述（具体示例 + 归纳总结）
 
 ### **技术特性 (V3.1)**
-✅ **LLM集成**: 使用 SiliconFlow API (Qwen2.5-7B-Instruct) 生成Pattern归纳性总结
+✅ **LLM集成**: 使用通用 LLM API (Qwen2.5-7B-Instruct) 生成Pattern归纳性总结
 ✅ **Prompt工程**: 结构化Prompt设计，确保生成4个维度的JSON响应
 ✅ **容错机制**: 自动JSON解析和修复逻辑，提高LLM调用成功率
 ✅ **双层描述**: 既保留具体示例（供对比学习），又提供全局总结（供快速理解）
@@ -3450,7 +3450,7 @@ scripts/
   - `HEAD_INJECTION_RANK_RANGE`: 头部注入的 Rank 范围
 
 - **环境变量**:
-  - `LLM_API_KEY`: SiliconFlow API Key
+  - `LLM_API_KEY`: LLM API Key
   - `LLM_MODEL`: 使用的模型名称
 
 ### 2. 工具模块 (`utils.py`)
@@ -3458,7 +3458,7 @@ scripts/
 提供底层支持功能。
 
 - **`call_llm(prompt, temperature, max_tokens)`**:
-  - 封装了对 SiliconFlow API 的调用。
+  - 封装了对多 Provider LLM API 的调用。
   - 包含错误处理和模拟输出（当未配置 API Key 时）。
 
 - **`parse_json_from_llm(response)`**:
@@ -3674,9 +3674,10 @@ User Idea
 确保已设置 LLM API 环境变量:
 
 ```bash
-export SILICONFLOW_API_KEY="sk-your-api-key-here"
-export LLM_API_URL="https://api.siliconflow.cn/v1/chat/completions"
-export LLM_MODEL="Qwen/Qwen2.5-7B-Instruct"
+export LLM_API_KEY="sk-your-api-key-here"
+export LLM_PROVIDER="openai_compatible_chat"
+export LLM_BASE_URL="https://api.openai.com/v1"
+export LLM_MODEL="gpt-4o-mini"
 ```
 
 ### 2. 运行 Pipeline
@@ -4117,10 +4118,11 @@ python scripts/build_edges.py
 ### 2. 配置 LLM API（推荐）
 
 ```bash
-# 配置 SiliconFlow API Key
-export SILICONFLOW_API_KEY="sk-your-api-key-here"
-export LLM_API_URL="https://api.siliconflow.cn/v1/chat/completions"
-export LLM_MODEL="Qwen/Qwen2.5-7B-Instruct"
+# 配置 LLM API Key
+export LLM_API_KEY="sk-your-api-key-here"
+export LLM_PROVIDER="openai_compatible_chat"
+export LLM_BASE_URL="https://api.openai.com/v1"
+export LLM_MODEL="gpt-4o-mini"
 ```
 
 **如果没有 API Key**：系统会使用模拟输出，但不会生成真实的 Story 内容。
@@ -10841,4 +10843,3 @@ If you received 【Conceptual Innovation from Idea Fusion】 above, this is THE 
 2. ✅ 显示融合概念标题和新颖性声明
 3. ✅ 显示反思建议的策略类型
 4. ✅ 终稿生成后才进入 Critic 评审
-

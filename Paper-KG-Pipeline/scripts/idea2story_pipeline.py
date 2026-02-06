@@ -63,6 +63,11 @@ try:
         validate_recall_index,
         acquire_lock,
     )
+    from idea2paper.infra.subdomain_taxonomy import (
+        validate_subdomain_taxonomy,
+        build_subdomain_taxonomy,
+        resolve_subdomain_taxonomy_paths,
+    )
     from idea2paper.infra.embeddings import EMBEDDING_MODEL
     from pipeline.run_logger import RunLogger
     from pipeline.run_context import set_logger, reset_logger
@@ -100,6 +105,11 @@ except ImportError:
         validate_novelty_index,
         validate_recall_index,
         acquire_lock,
+    )
+    from idea2paper.infra.subdomain_taxonomy import (
+        validate_subdomain_taxonomy,
+        build_subdomain_taxonomy,
+        resolve_subdomain_taxonomy_paths,
     )
     from idea2paper.infra.embeddings import EMBEDDING_MODEL
     from pipeline.run_logger import RunLogger
@@ -249,6 +259,44 @@ def ensure_required_indexes(logger=None):
                 _log_event(logger, "index_preflight_build_done", {"index": "recall", "status": status})
             else:
                 print("⚠️ Recall offline index missing/mismatch. Continuing with online batch fallback.")
+
+    # Subdomain taxonomy preflight (optional)
+    if PipelineConfig.SUBDOMAIN_TAXONOMY_ENABLE:
+        tax_path, patterns_path = resolve_subdomain_taxonomy_paths()
+        _log_event(logger, "subdomain_taxonomy_preflight_start", {
+            "taxonomy_path": str(tax_path),
+            "patterns_path": str(patterns_path),
+            "embedding_model": EMBEDDING_MODEL,
+            "embedding_api_url": EMBEDDING_API_URL,
+        })
+        if not patterns_path.exists():
+            _log_event(logger, "subdomain_taxonomy_missing_patterns", {
+                "patterns_path": str(patterns_path),
+            })
+            return
+        status = validate_subdomain_taxonomy(tax_path, patterns_path)
+        if status.get("ok"):
+            _log_event(logger, "subdomain_taxonomy_preflight_ok", {"status": status})
+        else:
+            _log_event(logger, "subdomain_taxonomy_preflight_failed", {"status": status})
+            if PipelineConfig.INDEX_ALLOW_BUILD:
+                lock_path = tax_path.parent / ".subdomain_taxonomy.build.lock"
+                _log_event(logger, "subdomain_taxonomy_build_start", {"taxonomy_path": str(tax_path)})
+                with acquire_lock(lock_path):
+                    build_subdomain_taxonomy(
+                        patterns_path=patterns_path,
+                        papers_path=OUTPUT_DIR / "nodes_paper.json",
+                        output_path=tax_path,
+                        embed_batch_size=PipelineConfig.RECALL_EMBED_BATCH_SIZE,
+                        embed_max_retries=PipelineConfig.RECALL_EMBED_MAX_RETRIES,
+                        embed_sleep_sec=PipelineConfig.RECALL_EMBED_SLEEP_SEC,
+                        embed_timeout=120,
+                        logger=logger,
+                    )
+                status = validate_subdomain_taxonomy(tax_path, patterns_path)
+                _log_event(logger, "subdomain_taxonomy_build_done", {"status": status})
+        if not status.get("ok"):
+            _log_event(logger, "subdomain_taxonomy_unavailable", {"status": status})
 
 # ===================== 主函数 =====================
 def main():

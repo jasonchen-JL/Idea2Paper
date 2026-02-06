@@ -18,6 +18,11 @@ from typing import List, Dict
 
 import numpy as np
 
+try:
+    from tqdm import tqdm
+except Exception:
+    tqdm = None
+
 SCRIPT_DIR = Path(__file__).resolve().parent
 SCRIPTS_DIR = SCRIPT_DIR.parent
 PROJECT_ROOT = SCRIPTS_DIR.parent
@@ -121,6 +126,17 @@ def _build_index(kind: str, items: List[Dict], id_key: str, text_fn, index_dir: 
     processed = 0
     batch_texts = []
     batch_meta = []
+    total_to_process = sum(1 for item in items if item.get(id_key) and item.get(id_key) not in done_ids)
+
+    pbar_context = None
+    if tqdm is not None:
+        pbar_context = tqdm(
+            total=total_to_process,
+            desc=f"Recall index ({kind})",
+            unit="item",
+            dynamic_ncols=True,
+            disable=not sys.stderr.isatty(),
+        )
 
     def flush_batch(texts, metas, part_idx):
         nonlocal skipped, processed
@@ -134,6 +150,8 @@ def _build_index(kind: str, items: List[Dict], id_key: str, text_fn, index_dir: 
             time.sleep(sleep_sec * (attempt + 1))
         if embeddings is None:
             skipped += len(metas)
+            if pbar_context is not None:
+                pbar_context.set_postfix(parts=part_idx, skipped=skipped)
             return part_idx
         mat = np.array(embeddings, dtype=np.float32)
         mat = _normalize_matrix(mat)
@@ -144,36 +162,44 @@ def _build_index(kind: str, items: List[Dict], id_key: str, text_fn, index_dir: 
             for m in metas:
                 f.write(json.dumps(m, ensure_ascii=False) + "\n")
         processed += len(metas)
+        if pbar_context is not None:
+            pbar_context.set_postfix(parts=part_idx, skipped=skipped)
         return part_idx
 
-    for item in items:
-        item_id = item.get(id_key)
-        if not item_id or item_id in done_ids:
-            continue
-        text = text_fn(item)
-        emb_text = truncate_for_embedding(text)
-        meta = {
-            id_key: item_id,
-            "text_hash": hashlib.sha256(emb_text.encode("utf-8")).hexdigest(),
-        }
-        if kind == "idea":
-            meta["snippet"] = text[:240]
-            meta["pattern_count"] = len(item.get("pattern_ids", []) or [])
-        else:
-            meta["title"] = item.get("title", "")
-            meta["pattern_id"] = item.get("pattern_id", "")
-            meta["domain"] = item.get("domain", "")
-            review_stats = item.get("review_stats") or {}
-            meta["review_count"] = int(review_stats.get("review_count", 0) or 0)
-        batch_texts.append(emb_text)
-        batch_meta.append(meta)
+    try:
+        for item in items:
+            item_id = item.get(id_key)
+            if not item_id or item_id in done_ids:
+                continue
+            text = text_fn(item)
+            emb_text = truncate_for_embedding(text)
+            meta = {
+                id_key: item_id,
+                "text_hash": hashlib.sha256(emb_text.encode("utf-8")).hexdigest(),
+            }
+            if kind == "idea":
+                meta["snippet"] = text[:240]
+                meta["pattern_count"] = len(item.get("pattern_ids", []) or [])
+            else:
+                meta["title"] = item.get("title", "")
+                meta["pattern_id"] = item.get("pattern_id", "")
+                meta["domain"] = item.get("domain", "")
+                review_stats = item.get("review_stats") or {}
+                meta["review_count"] = int(review_stats.get("review_count", 0) or 0)
+            batch_texts.append(emb_text)
+            batch_meta.append(meta)
+            if pbar_context is not None:
+                pbar_context.update(1)
 
-        if len(batch_texts) >= batch_size:
-            part_idx = flush_batch(batch_texts, batch_meta, part_idx)
-            batch_texts, batch_meta = [], []
-            time.sleep(sleep_sec)
+            if len(batch_texts) >= batch_size:
+                part_idx = flush_batch(batch_texts, batch_meta, part_idx)
+                batch_texts, batch_meta = [], []
+                time.sleep(sleep_sec)
 
-    part_idx = flush_batch(batch_texts, batch_meta, part_idx)
+        part_idx = flush_batch(batch_texts, batch_meta, part_idx)
+    finally:
+        if pbar_context is not None:
+            pbar_context.close()
     _merge_parts(index_dir, kind, emb_path)
 
     index_count = 0

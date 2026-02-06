@@ -7,13 +7,15 @@ from idea2paper.config import (
     EMBEDDING_API_KEY,
     EMBEDDING_API_URL,
     EMBEDDING_MODEL,
-    EMBEDDING_PROVIDER,
 )
 from idea2paper.infra.run_context import get_logger
 
 
+EMBEDDING_PROVIDER_FOR_LOG = "openai_compatible"
+
+
 def get_embedding(text: str, logger=None, timeout: int = 120) -> Optional[List[float]]:
-    """Get embedding for text using SiliconFlow embeddings API.
+    """Get embedding for text using OpenAI-compatible embeddings API.
 
     Returns None on failure (no exception thrown).
     """
@@ -25,7 +27,7 @@ def get_embedding(text: str, logger=None, timeout: int = 120) -> Optional[List[f
         if logger:
             logger.log_embedding_call(
                 request={
-                    "provider": EMBEDDING_PROVIDER,
+                    "provider": EMBEDDING_PROVIDER_FOR_LOG,
                     "url": EMBEDDING_API_URL,
                     "model": EMBEDDING_MODEL,
                     "input_preview": text,
@@ -35,7 +37,7 @@ def get_embedding(text: str, logger=None, timeout: int = 120) -> Optional[List[f
                 response={
                     "ok": False,
                     "latency_ms": int((time.time() - start_ts) * 1000),
-                    "error": "SILICONFLOW_API_KEY not configured"
+                    "error": "EMBEDDING_API_KEY not configured"
                 }
             )
         return None
@@ -57,7 +59,7 @@ def get_embedding(text: str, logger=None, timeout: int = 120) -> Optional[List[f
         if logger:
             logger.log_embedding_call(
                 request={
-                    "provider": EMBEDDING_PROVIDER,
+                    "provider": EMBEDDING_PROVIDER_FOR_LOG,
                     "url": EMBEDDING_API_URL,
                     "model": EMBEDDING_MODEL,
                     "input_preview": text,
@@ -74,7 +76,7 @@ def get_embedding(text: str, logger=None, timeout: int = 120) -> Optional[List[f
         if logger:
             logger.log_embedding_call(
                 request={
-                    "provider": EMBEDDING_PROVIDER,
+                    "provider": EMBEDDING_PROVIDER_FOR_LOG,
                     "url": EMBEDDING_API_URL,
                     "model": EMBEDDING_MODEL,
                     "input_preview": text,
@@ -114,7 +116,7 @@ def get_embeddings_batch(texts: List[str], logger=None, timeout: int = 120) -> O
         if logger:
             logger.log_embedding_call(
                 request={
-                    "provider": EMBEDDING_PROVIDER,
+                    "provider": EMBEDDING_PROVIDER_FOR_LOG,
                     "url": EMBEDDING_API_URL,
                     "model": EMBEDDING_MODEL,
                     "input_preview": _preview_texts(texts),
@@ -125,7 +127,7 @@ def get_embeddings_batch(texts: List[str], logger=None, timeout: int = 120) -> O
                 response={
                     "ok": False,
                     "latency_ms": int((time.time() - start_ts) * 1000),
-                    "error": "SILICONFLOW_API_KEY not configured"
+                    "error": "EMBEDDING_API_KEY not configured"
                 }
             )
         return None
@@ -149,7 +151,7 @@ def get_embeddings_batch(texts: List[str], logger=None, timeout: int = 120) -> O
         if logger:
             logger.log_embedding_call(
                 request={
-                    "provider": EMBEDDING_PROVIDER,
+                    "provider": EMBEDDING_PROVIDER_FOR_LOG,
                     "url": EMBEDDING_API_URL,
                     "model": EMBEDDING_MODEL,
                     "input_preview": _preview_texts(texts),
@@ -167,7 +169,7 @@ def get_embeddings_batch(texts: List[str], logger=None, timeout: int = 120) -> O
         if logger:
             logger.log_embedding_call(
                 request={
-                    "provider": EMBEDDING_PROVIDER,
+                    "provider": EMBEDDING_PROVIDER_FOR_LOG,
                     "url": EMBEDDING_API_URL,
                     "model": EMBEDDING_MODEL,
                     "input_preview": _preview_texts(texts),

@@ -225,7 +225,7 @@ Consider semantic and methodological distance, not just application domain.
             response = call_llm(
                 prompt,
                 temperature=PipelineConfig.LLM_TEMPERATURE_PATTERN_SELECTOR,
-                max_tokens=300,
+                max_tokens=4096,
                 timeout=180,
             )
             scores = parse_json_from_llm(response)

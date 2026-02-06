@@ -406,10 +406,11 @@ ASSIGNMENTS_FILE = DATA_DIR / "assignments.jsonl"
 CLUSTER_LIBRARY_FILE = DATA_DIR / "cluster_library_sorted.jsonl"
 PATTERN_DETAILS_FILE = DATA_DIR / "iclr_patterns_full.jsonl"
 
-# LLM API配置
-SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
-LLM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
+# LLM API配置（该构图脚本为 legacy 示例；如需启用 LLM 增强，请按当前 LLM 统一配置）
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_PROVIDER = "openai_compatible_chat"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ### 5.2 召回系统
@@ -474,9 +475,10 @@ class PipelineConfig:
     HEAD_INJECTION_CLUSTER_THRESHOLD = 15
 
 # LLM配置
-LLM_API_KEY = os.getenv("SILICONFLOW_API_KEY")
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
-LLM_MODEL = "Qwen/Qwen3-14B"
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_PROVIDER = "openai_compatible_chat"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ---
@@ -493,7 +495,10 @@ cd /Users/gaoge/code/mycode/Idea2Paper/Paper-KG-Pipeline
 pip install -r requirements.txt
 
 # 3. 设置环境变量
-export SILICONFLOW_API_KEY="your_api_key_here"
+export LLM_API_KEY="your_api_key_here"
+export LLM_PROVIDER="openai_compatible_chat"
+export LLM_BASE_URL="https://api.openai.com/v1"
+export LLM_MODEL="gpt-4o-mini"
 ```
 
 ### 6.2 一次性构建
@@ -822,10 +827,10 @@ grep "🎉 Critic 评审通过" output/log.json
 **Q: API key无效**
 ```bash
 # 检查环境变量
-echo $SILICONFLOW_API_KEY
+echo $LLM_API_KEY
 
 # 设置环境变量
-export SILICONFLOW_API_KEY="your_key_here"
+export LLM_API_KEY="your_key_here"
 ```
 
 **Q: 依赖缺失**
@@ -903,7 +908,7 @@ grep "兜底策略" output/log.json
 
 ## 16. 致谢
 
-感谢ICLR 2025论文数据集的支持,感谢SiliconFlow提供的LLM API服务。
+感谢 ICLR 2025 论文数据集的支持，以及所有 LLM API 服务提供方的支持。
 
 ---
 
@@ -1430,9 +1435,11 @@ def _build_llm_prompt_for_pattern(pattern_node, exemplars):
 ### 5.3 API配置
 
 ```python
-SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
-LLM_MODEL = "Qwen/Qwen2.5-7B-Instruct"
+# 构图脚本为 legacy 示例；此处展示统一 LLM 配置方式
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_PROVIDER = "openai_compatible_chat"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ---
@@ -1462,14 +1469,16 @@ GRAPH_FILE = OUTPUT_DIR / "knowledge_graph_v2.gpickle"
 
 ```python
 # API密钥(环境变量)
-SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
+LLM_API_KEY = os.getenv("LLM_API_KEY")
 
-# API端点
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
+# Provider 选择
+LLM_PROVIDER = "openai_compatible_chat"
+
+# Base URL（或直接使用 LLM_API_URL 覆盖）
+LLM_BASE_URL = "https://api.openai.com/v1"
 
 # 模型选择
-LLM_MODEL = "Qwen/Qwen2.5-7B-Instruct"  # 节点构建
-# 或 "Qwen/Qwen3-14B"  # Pipeline生成
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ### 6.3 边构建配置
@@ -1497,7 +1506,7 @@ pip install -r requirements.txt
 
 **环境变量设置**:
 ```bash
-export SILICONFLOW_API_KEY="your_api_key_here"
+export LLM_API_KEY="your_api_key_here"
 ```
 
 ### 7.2 构建节点
@@ -1606,7 +1615,7 @@ print(f"边数: {G.number_of_edges()}")
 错误: Connection timeout / API key invalid
 解决:
 1. 检查网络连接
-2. 验证SILICONFLOW_API_KEY环境变量
+2. 验证 LLM_API_KEY 环境变量
 3. 检查API额度
 ```
 
@@ -1698,7 +1707,7 @@ with ThreadPoolExecutor(max_workers=5) as executor:
 
 ### 技术特性
 
-✅ **LLM集成**: 使用SiliconFlow API增强Pattern描述
+✅ **LLM集成**: 使用通用 LLM Provider 增强 Pattern 描述
 ✅ **Prompt工程**: 结构化Prompt设计
 ✅ **容错机制**: 自动JSON解析和修复
 ✅ **双层描述**: 具体示例+全局总结
@@ -2228,13 +2237,13 @@ class RecallConfig:
 
 ```python
 # API端点
-EMBEDDING_API_URL = "https://api.siliconflow.cn/v1/embeddings"
+EMBEDDING_API_URL = "https://api.openai.com/v1/embeddings"
 
 # 模型选择
-EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-4B"
+EMBEDDING_MODEL = "text-embedding-3-large"
 
 # API密钥
-EMBEDDING_API_KEY = os.getenv("SILICONFLOW_API_KEY")
+EMBEDDING_API_KEY = os.getenv("EMBEDDING_API_KEY")
 ```
 
 ---
@@ -3306,9 +3315,10 @@ class PipelineConfig:
 ```python
 # scripts/pipeline/config.py
 
-LLM_API_KEY = os.getenv("SILICONFLOW_API_KEY")
-LLM_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
-LLM_MODEL = "Qwen/Qwen3-14B"  # 可选: Qwen2.5-7B-Instruct
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_PROVIDER = "openai_compatible_chat"
+LLM_BASE_URL = "https://api.openai.com/v1"
+LLM_MODEL = "gpt-4o-mini"
 ```
 
 ---

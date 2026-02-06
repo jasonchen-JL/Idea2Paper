@@ -94,15 +94,15 @@ reliable autonomous scientific discovery.
 pip install -r Paper-KG-Pipeline/requirements.txt
 ```
 > **Note:** The embedding model is configurable via `EMBEDDING_MODEL` / `EMBEDDING_API_URL` (env or `i2p_config.json`). If you switch models, rebuild novelty/recall indexes or use model-specific index directories to avoid mismatch.  
-> **Constraint:** the embedding model must output **4096-dimensional** vectors (same as `Qwen/Qwen3-Embedding-8B`).  
-> **Recommended (auto_profile):** set `I2P_INDEX_DIR_MODE=auto_profile` to auto-map each embedding config to its own index dirs: `Paper-KG-Pipeline/output/novelty_index__{provider}__{model}__{urlhash}` and `.../recall_index__...`.  
+> **Constraint:** the embedding dimension must match your index; if you switch models, rebuild indexes or use model-specific index dirs.  
+> **Recommended (auto_profile):** set `I2P_INDEX_DIR_MODE=auto_profile` to auto-map each embedding model to its own index dirs: `Paper-KG-Pipeline/output/novelty_index__{model}` and `.../recall_index__{model}`.  
 > Explicit `I2P_NOVELTY_INDEX_DIR` / `I2P_RECALL_INDEX_DIR` (env or `i2p_config.json`) override auto_profile.  
 > **Tip (speed/stability):** set `I2P_ANCHOR_DENSIFY_ENABLE=0` to skip Adaptive Densify; otherwise Phase 3 Critic can be much slower and may fail due to strict JSON validation.  
 > **Tip (debug):** if you repeatedly hit Critic JSON errors, set `I2P_CRITIC_STRICT_JSON=0` (or `critic.strict_json=false`) to disable strict mode and allow fallback.  
 > **Tip (LLM temperature):** per-stage temperatures are configurable via `I2P_LLM_TEMPERATURE_*` or `llm.temperature.*`; defaults preserve current behavior. Critic is usually low temp for stability, while story generation can be moderate.  
 > **Tip (Idea Packaging):** optional quality boost via pattern-guided idea packaging + double recall (default off). Enable with `I2P_IDEA_PACKAGING_ENABLE=1` or `idea.packaging_enable=true`.  
-> **Tip (Subdomain taxonomy):** optional quality boost for Path2 to reduce duplicated/long-tail subdomains. Build once offline via `Paper-KG-Pipeline/scripts/tools/build_subdomain_taxonomy.py`, then enable with `I2P_SUBDOMAIN_TAXONOMY_ENABLE=1` (and optional `I2P_SUBDOMAIN_TAXONOMY_PATH`).  
-> **Supported (no code changes):** OpenAI-compatible Embeddings APIs (`/v1/embeddings`) that accept `input` as a string or a list (e.g., SiliconFlow, OpenAI, and other OpenAI-compatible providers).  
+> **Tip (Subdomain taxonomy):** optional quality boost for Path2 to reduce duplicated/long-tail subdomains. When enabled, the pipeline auto-detects and (if `I2P_INDEX_ALLOW_BUILD=1`) auto-builds `subdomain_taxonomy.json` under `recall_index_dir` (recommended: leave `I2P_SUBDOMAIN_TAXONOMY_PATH` empty). First build uses batched embeddings; you can also build manually via `Paper-KG-Pipeline/scripts/tools/build_subdomain_taxonomy.py`.  
+> **Supported (no code changes):** OpenAI-compatible Embeddings APIs (`/v1/embeddings`) that accept `input` as a string or a list.  
 > **Not supported yet:** DashScope “native” embeddings endpoint (`/api/v1/services/embeddings/...`) requires an adapter.
 
 ### Dataset
@@ -113,15 +113,17 @@ If you need to use the prebuilt local index, please place the two folders in `pa
 ```text
 paper-KG-Pipeline/
 └── output/
-    ├── recall_index__siliconflow__Qwen_Qwen3-Embedding-8B__184936e8/
-    └── novelty_index__siliconflow__Qwen_Qwen3-Embedding-8B__184936e8/
+    ├── recall_index__{model}/
+    └── novelty_index__{model}/
 ```
-and make sure the embedding model is configured as **SiliconFlow `Qwen/Qwen3-Embedding-8B`**, otherwise errors may occur.
+and make sure the embedding model matches the index you downloaded, otherwise errors may occur.
+
+> **Migration note (auto_profile naming change):** if you previously used provider/urlhash-based dirs, you can either (A) rename the old folders to `recall_index__{model}` / `novelty_index__{model}`, or (B) keep old folder names and set `I2P_RECALL_INDEX_DIR` / `I2P_NOVELTY_INDEX_DIR` explicitly to those paths.
 
 
 ### Configuration
 
-1. Copy `.env.example` to `.env` and fill in `SILICONFLOW_API_KEY`.
+1. Copy `.env.example` to `.env` and fill in `LLM_API_KEY` (and optionally `LLM_PROVIDER`, `LLM_BASE_URL`).
 2. (Optional) Copy `i2p_config.example.json` to `i2p_config.json` to tweak settings.
 
 ### Usage
@@ -132,29 +134,39 @@ python Paper-KG-Pipeline/scripts/idea2story_pipeline.py "your research idea"
 
 ## 🌐 Frontend (Local Web UI)
 
-A modern React + TypeScript web interface for running the Idea2Story pipeline and visualizing results.
+> **Status:** The frontend is currently unstable. We recommend running the pipeline from the terminal for now. We will improve the frontend in future updates.
 
-### Quick Start
+Run a minimal local UI to launch the pipeline and view **only** high-level stage + final results (no raw logs on screen).
 
-Start the backend server:
+### Start
 
 ```bash
 python frontend/server/app.py --host 127.0.0.1 --port 8080
 ```
 
-Open your browser to `http://127.0.0.1:8080`
+Open in your browser:
 
-The frontend is pre-built and served automatically by the backend server. No Node.js installation required.
+```text
+http://127.0.0.1:8080/
+```
 
-### Features
+### What you can do in the UI
+- Run the same pipeline entrypoint (`idea2story_pipeline.py`) from a web page.
+- Configure `LLM_API_KEY`, `LLM_PROVIDER`, `LLM_BASE_URL`/`LLM_API_URL`, `LLM_MODEL` for the current run (not persisted by the server).
+- Toggle Novelty / Verification.
+- Download the current run logs as a zip.
 
-- Run Idea2Story pipeline from web interface
-- Configure API keys and model parameters
-- View real-time progress and results
-- Interactive knowledge graph visualization
-- Export results and logs as ZIP
+For more details, see `frontend/README.md`.
 
-For development mode and more details, see `frontend/README.md`.
+### Output
+
+```text
+output/
+├── final_story.json # Final generated paper story
+├── pipeline_result.json # Full pipeline results
+└── log.json # Detailed logs
+```
+Check `final_story.json` for the result and `pipeline_result.json` for the full process.
 
 
 ## 🤖 Anchored Multi‑Agent Review
