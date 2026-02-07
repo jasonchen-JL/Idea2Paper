@@ -222,6 +222,17 @@ If you find **Idea2Story** useful, please cite:
 }
 ```
 
+
+```bibtex
+@article{xu2026idea2paper,
+  title={Idea2Paper: What Should an End-to-End Research Agent Really Do?},
+  author={Xu, Tengyue and Qian, Zhuoyang and Liu, Gaoge and Zhang, Zhentao and Ling, Li and Wu, Biao and Zhang, Shuo and Lu, Ke and Shi, Wei and Wang, Ziqi and others},
+  year={2026}
+}
+
+```
+
+
 ---
 
 ## 📈 Star History
