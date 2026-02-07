@@ -69,12 +69,14 @@ export interface AppConfig {
   useMock: boolean;
   theme: 'light' | 'dark';
 
-  // SiliconFlow / LLM Keys
-  siliconFlowApiKey: string;
+  // LLM Keys
+  llmApiKey: string;
 
   // LLM Config
+  llmProvider: 'openai_compatible_chat' | 'openai_responses' | 'anthropic' | 'gemini';
   llmUrl: string;
   llmModel: string;
+  llmAnthropicVersion: string;
   llmTemperatures: {
     default: number;
     storyGenerator: number;

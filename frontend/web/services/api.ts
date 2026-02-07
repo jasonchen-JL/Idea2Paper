@@ -193,6 +193,52 @@ const RealStrategy = {
     });
 
     try {
+        const configOverrides: Record<string, string | number> = {
+            LLM_API_KEY: config.llmApiKey,
+            LLM_PROVIDER: config.llmProvider,
+            LLM_API_URL: config.llmUrl,
+            LLM_MODEL: config.llmModel,
+            EMBEDDING_API_URL: config.embeddingUrl,
+            EMBEDDING_MODEL: config.embeddingModel,
+            EMBEDDING_API_KEY: config.embeddingApiKey,
+
+            // Idea Packaging
+            I2P_IDEA_PACKAGING_ENABLE: config.ideaPackaging.enable ? '1' : '0',
+            I2P_IDEA_PACKAGING_TOPN_PATTERNS: config.ideaPackaging.topNPatterns,
+            I2P_IDEA_PACKAGING_MAX_EXEMPLAR_PAPERS: config.ideaPackaging.maxExemplarPapers,
+            I2P_IDEA_PACKAGING_CANDIDATE_K: config.ideaPackaging.candidateK,
+            I2P_IDEA_PACKAGING_SELECT_MODE: config.ideaPackaging.selectMode,
+
+            // Novelty
+            I2P_NOVELTY_ENABLE: config.novelty.enable ? '1' : '0',
+            I2P_NOVELTY_ACTION: config.novelty.action,
+            I2P_NOVELTY_MAX_PIVOTS: config.novelty.maxPivots,
+
+            // Verification
+            I2P_VERIFICATION_ENABLE: config.verification.enable ? '1' : '0',
+            I2P_COLLISION_THRESHOLD: config.verification.collisionThreshold,
+
+            // Temperatures
+            I2P_LLM_TEMPERATURE_DEFAULT: config.llmTemperatures.default,
+            I2P_LLM_TEMPERATURE_STORY_GENERATOR: config.llmTemperatures.storyGenerator,
+            I2P_LLM_TEMPERATURE_CRITIC_MAIN: config.llmTemperatures.criticMain,
+
+            // Critic
+            I2P_CRITIC_STRICT_JSON: config.critic.strictJson ? '1' : '0',
+            I2P_CRITIC_JSON_RETRIES: config.critic.jsonRetries,
+
+            // Logging
+            I2P_ENABLE_LOGGING: config.logging.enable ? '1' : '0',
+            I2P_LOG_MAX_TEXT_CHARS: config.logging.maxTextChars,
+
+            // Results
+            I2P_RESULTS_ENABLE: config.results.enable ? '1' : '0',
+        };
+
+        if (config.llmProvider === 'anthropic' && config.llmAnthropicVersion.trim() !== '') {
+            configOverrides.LLM_ANTHROPIC_VERSION = config.llmAnthropicVersion;
+        }
+
         // Start the pipeline
         const response = await fetch(runEndpoint, {
             method: 'POST',
@@ -202,45 +248,7 @@ const RealStrategy = {
             body: JSON.stringify({
                 idea,
                 config: {
-                   config_overrides: {
-                       SILICONFLOW_API_KEY: config.siliconFlowApiKey,
-                       LLM_API_URL: config.llmUrl,
-                       LLM_MODEL: config.llmModel,
-                       EMBEDDING_API_URL: config.embeddingUrl,
-                       EMBEDDING_MODEL: config.embeddingModel,
-
-                       // Idea Packaging
-                       I2P_IDEA_PACKAGING_ENABLE: config.ideaPackaging.enable ? '1' : '0',
-                       I2P_IDEA_PACKAGING_TOPN_PATTERNS: config.ideaPackaging.topNPatterns,
-                       I2P_IDEA_PACKAGING_MAX_EXEMPLAR_PAPERS: config.ideaPackaging.maxExemplarPapers,
-                       I2P_IDEA_PACKAGING_CANDIDATE_K: config.ideaPackaging.candidateK,
-                       I2P_IDEA_PACKAGING_SELECT_MODE: config.ideaPackaging.selectMode,
-
-                       // Novelty
-                       I2P_NOVELTY_ENABLE: config.novelty.enable ? '1' : '0',
-                       I2P_NOVELTY_ACTION: config.novelty.action,
-                       I2P_NOVELTY_MAX_PIVOTS: config.novelty.maxPivots,
-
-                       // Verification
-                       I2P_VERIFICATION_ENABLE: config.verification.enable ? '1' : '0',
-                       I2P_COLLISION_THRESHOLD: config.verification.collisionThreshold,
-
-                       // Temperatures
-                       I2P_LLM_TEMPERATURE_DEFAULT: config.llmTemperatures.default,
-                       I2P_LLM_TEMPERATURE_STORY_GENERATOR: config.llmTemperatures.storyGenerator,
-                       I2P_LLM_TEMPERATURE_CRITIC_MAIN: config.llmTemperatures.criticMain,
-
-                       // Critic
-                       I2P_CRITIC_STRICT_JSON: config.critic.strictJson ? '1' : '0',
-                       I2P_CRITIC_JSON_RETRIES: config.critic.jsonRetries,
-
-                       // Logging
-                       I2P_ENABLE_LOGGING: config.logging.enable ? '1' : '0',
-                       I2P_LOG_MAX_TEXT_CHARS: config.logging.maxTextChars,
-
-                       // Results
-                       I2P_RESULTS_ENABLE: config.results.enable ? '1' : '0',
-                   }
+                   config_overrides: configOverrides
                 }
             }),
             signal

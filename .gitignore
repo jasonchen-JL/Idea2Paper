@@ -1,28 +1,97 @@
+# Core runtime outputs
 log/
-.env
-i2p_config.json
 results/
 log_from_config/
+.env
+.env.local
+*.env
+i2p_config.json
+
+# System
 .DS_Store
+Thumbs.db
+
+# Python
 __pycache__/
 *.pyc
-# novelty index (generated, large files)
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.installed.cfg
+
+# Large generated indexes
 Paper-KG-Pipeline/output/novelty_index__*/
-# recall index (generated, large files)
 Paper-KG-Pipeline/output/recall_index__*/
+
+# Local notes
 Idea2Paper_系统问题分析与优化建议.md
 viewer相关.md
 
-# Frontend server logs
-frontend/server/logs/
+# IntelliJ local files (.idea/)
+.idea/shelf/
+.idea/workspace.xml
+.idea/httpRequests/
+.idea/queries/
+.idea/dataSources/
+.idea/dataSources.local.xml
 
-# Frontend web project
+# Paper-KG-Pipeline local build/temp files
+Paper-KG-Pipeline/build/
+Paper-KG-Pipeline/develop-eggs/
+Paper-KG-Pipeline/dist/
+Paper-KG-Pipeline/downloads/
+Paper-KG-Pipeline/eggs/
+Paper-KG-Pipeline/.eggs/
+Paper-KG-Pipeline/lib/
+Paper-KG-Pipeline/lib64/
+Paper-KG-Pipeline/parts/
+Paper-KG-Pipeline/sdist/
+Paper-KG-Pipeline/var/
+Paper-KG-Pipeline/wheels/
+Paper-KG-Pipeline/.env
+Paper-KG-Pipeline/.env.local
+Paper-KG-Pipeline/*.env
+Paper-KG-Pipeline/.idea/
+Paper-KG-Pipeline/.vscode/
+Paper-KG-Pipeline/**/*.log
+Paper-KG-Pipeline/**/*.tmp
+Paper-KG-Pipeline/**/*.bak
+Paper-KG-Pipeline/**/*.swp
+Paper-KG-Pipeline/**/*.swo
+Paper-KG-Pipeline/**/*~
+Paper-KG-Pipeline/README.md
+
+# Frontend server artifacts
+frontend/server/logs/
+frontend/server/__pycache__/
+frontend/server/.tmp/
+frontend/*.zip
+frontend/runs.json
+
+# Frontend web artifacts
 frontend/web/node_modules/
 frontend/web/.vite/
 frontend/web/.env
 frontend/web/.env.local
 frontend/web/.env.*.local
+frontend/web/logs/
+frontend/web/dist-ssr/
+frontend/web/*.local
+frontend/web/**/*.log
 frontend/web/npm-debug.log*
 frontend/web/yarn-debug.log*
 frontend/web/yarn-error.log*
 frontend/web/pnpm-debug.log*
+frontend/web/lerna-debug.log*
+frontend/web/.vscode/*
+!frontend/web/.vscode/extensions.json
+frontend/web/.idea
+frontend/web/.DS_Store
+frontend/web/*.suo
+frontend/web/*.ntvs*
+frontend/web/*.njsproj
+frontend/web/*.sln
+frontend/web/*.sw?

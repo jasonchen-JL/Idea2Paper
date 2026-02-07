@@ -3,80 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="darkreader-lock" />
     <title>Idea2Paper - Research Agent Framework</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-            animation: {
-              'spin-slow': 'spin 3s linear infinite',
-            }
-          }
-        }
-      }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
       body { font-family: 'Inter', sans-serif; }
-      /* Custom scrollbar for better aesthetics */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-      .dark ::-webkit-scrollbar-track {
-        background: #0f172a;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 4px;
-      }
-      .dark ::-webkit-scrollbar-thumb {
-        background: #334155;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-      }
-
-      /* Print styles for PDF export */
-      @media print {
-        body {
-          background: white !important;
-          color: black !important;
-        }
-        /* Hide navigation and non-essential elements */
-        nav, button, .no-print {
-          display: none !important;
-        }
-        /* Show only paper content */
-        .print-only {
-          display: block !important;
-        }
-        /* Adjust paper content for printing */
-        .lg\\:col-span-2 {
-          grid-column: span 3 !important;
-          max-width: 100% !important;
-        }
-        /* Remove shadows and borders */
-        * {
-          box-shadow: none !important;
-          border-color: #e5e7eb !important;
-        }
-        /* Ensure proper page breaks */
-        h1, h2, h3 {
-          page-break-after: avoid;
-        }
-        p {
-          page-break-inside: avoid;
-        }
-      }
     </style>
   </head>
   <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">

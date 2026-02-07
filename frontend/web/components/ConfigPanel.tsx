@@ -107,6 +107,27 @@ const ToggleGroup = ({ label, checked, onChange, desc = "" }: any) => (
   </div>
 );
 
+const SelectGroup = ({ label, value, onChange, options = [], desc = "", required = false }: any) => (
+  <div className="space-y-2">
+    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      {label}
+      {required && <span className="text-red-500 ml-1">*</span>}
+    </label>
+    <select
+      value={value}
+      onChange={onChange}
+      required={required}
+      className={`w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border ${required && !value ? 'border-red-300 dark:border-red-700' : 'border-slate-200 dark:border-slate-700'} rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-all text-sm text-slate-900 dark:text-slate-100`}
+    >
+      {options.map((option: any) => (
+        <option key={option.value} value={option.value}>{option.label}</option>
+      ))}
+    </select>
+    {required && !value && <p className="text-xs text-red-500 dark:text-red-400">This field is required</p>}
+    {desc && <p className="text-xs text-slate-400 dark:text-slate-500">{desc}</p>}
+  </div>
+);
+
 export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig, t }) => {
   const [saveStatus, setSaveStatus] = React.useState<'idle' | 'saving' | 'saved'>('idle');
 
@@ -154,11 +175,24 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig, t }
       <CollapsibleSection title={t.config.headers.llm} icon={Cpu} defaultOpen={true}>
          <InputGroup
             label={t.config.labels.silicon_key}
-            value={config.siliconFlowApiKey}
+            value={config.llmApiKey}
             type="password"
-            onChange={(e: any) => setConfig({...config, siliconFlowApiKey: e.target.value})}
+            onChange={(e: any) => setConfig({...config, llmApiKey: e.target.value})}
             desc={t.config.descriptions.silicon_key}
             required={true}
+         />
+         <SelectGroup
+            label={t.config.labels.llm_provider}
+            value={config.llmProvider}
+            onChange={(e: any) => setConfig({...config, llmProvider: e.target.value})}
+            required={true}
+            desc={t.config.descriptions.llm_provider}
+            options={[
+              { value: 'openai_compatible_chat', label: 'openai_compatible_chat' },
+              { value: 'openai_responses', label: 'openai_responses' },
+              { value: 'anthropic', label: 'anthropic' },
+              { value: 'gemini', label: 'gemini' },
+            ]}
          />
          <InputGroup
             label={t.config.labels.llm_url}
@@ -172,6 +206,15 @@ export const ConfigPanel: React.FC<ConfigPanelProps> = ({ config, setConfig, t }
             onChange={(e: any) => setConfig({...config, llmModel: e.target.value})}
             required={true}
          />
+         {config.llmProvider === 'anthropic' && (
+           <InputGroup
+              label={t.config.labels.llm_anthropic_version}
+              value={config.llmAnthropicVersion}
+              onChange={(e: any) => setConfig({...config, llmAnthropicVersion: e.target.value})}
+              required={true}
+              desc={t.config.descriptions.llm_anthropic_version}
+           />
+         )}
 
          <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
              <div className="flex items-center gap-2 mb-4 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-wider">

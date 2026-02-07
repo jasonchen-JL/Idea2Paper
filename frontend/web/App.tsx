@@ -85,9 +85,11 @@ const translations = {
       labels: {
         api_key: "Backend API Key",
         base_url: "Backend Base URL",
-        silicon_key: "SiliconFlow API Key",
+        silicon_key: "LLM API Key",
+        llm_provider: "LLM Provider",
         llm_url: "LLM API URL",
         llm_model: "LLM Model",
+        llm_anthropic_version: "Anthropic Version",
         embed_url: "Embedding API URL",
         embed_model: "Embedding Model",
         mode_mock: "Mock Mode",
@@ -103,7 +105,9 @@ const translations = {
         auto_index: "Auto Build Indexes"
       },
       descriptions: {
-        silicon_key: "Used for both LLM chat and Embedding if not overridden.",
+        silicon_key: "Used for LLM chat and as Embedding fallback if not overridden.",
+        llm_provider: "Choose provider for LLM requests.",
+        llm_anthropic_version: "Used only when provider is anthropic.",
         novelty: "Check against nodes_paper.json for duplicates.",
         verification: "Perform final collision check before completion.",
         idea_packaging: "Enable pattern-guided double recall.",
@@ -191,9 +195,11 @@ const translations = {
       labels: {
         api_key: "后端 API Key",
         base_url: "后端服务地址",
-        silicon_key: "SiliconFlow API Key",
+        silicon_key: "LLM API Key",
+        llm_provider: "LLM Provider",
         llm_url: "LLM API 地址",
         llm_model: "LLM 模型名称",
+        llm_anthropic_version: "Anthropic Version",
         embed_url: "Embedding API 地址",
         embed_model: "Embedding 模型",
         mode_mock: "Mock 模式",
@@ -209,7 +215,9 @@ const translations = {
         auto_index: "自动构建索引"
       },
       descriptions: {
-        silicon_key: "用于 LLM 对话和 Embedding（除非被单独覆盖）。",
+        silicon_key: "用于 LLM 对话，且在未单独配置时可作为 Embedding 回退密钥。",
+        llm_provider: "选择 LLM 请求使用的提供方。",
+        llm_anthropic_version: "仅在 provider=anthropic 时生效。",
         novelty: "针对 nodes_paper.json 检查重复项。",
         verification: "在完成前执行最终冲突检查。",
         idea_packaging: "启用模式引导的双重召回机制。",
@@ -250,6 +258,9 @@ function App() {
         return {
           ...defaultConfig,
           ...parsed,
+          llmApiKey: parsed.llmApiKey ?? parsed.siliconFlowApiKey ?? defaultConfig.llmApiKey,
+          llmProvider: parsed.llmProvider ?? defaultConfig.llmProvider,
+          llmAnthropicVersion: parsed.llmAnthropicVersion ?? defaultConfig.llmAnthropicVersion,
           endpoints: { ...defaultConfig.endpoints, ...(parsed.endpoints || {}) },
           llmTemperatures: { ...defaultConfig.llmTemperatures, ...(parsed.llmTemperatures || {}) },
           ideaPackaging: { ...defaultConfig.ideaPackaging, ...(parsed.ideaPackaging || {}) },
@@ -284,12 +295,14 @@ function App() {
     useMock: false, // Real API mode - connect to backend
     theme: 'light',
 
-    // SiliconFlow
-    siliconFlowApiKey: '',
-
+    // LLM
+    llmApiKey: '',
+    llmProvider: 'openai_compatible_chat',
+    
     // LLM
     llmUrl: 'https://api.siliconflow.cn/v1/chat/completions',
     llmModel: 'Pro/zai-org/GLM-4.7',
+    llmAnthropicVersion: '2025-11-01',
     llmTemperatures: {
       default: 0.7,
       storyGenerator: 0.7,
@@ -480,14 +493,17 @@ function App() {
     // Validate critical configuration before starting
     const missingFields: string[] = [];
 
-    if (!config.siliconFlowApiKey || config.siliconFlowApiKey.trim() === '') {
-      missingFields.push(lang === 'en' ? 'SiliconFlow API Key' : 'SiliconFlow API Key');
+    if (!config.llmApiKey || config.llmApiKey.trim() === '') {
+      missingFields.push(lang === 'en' ? 'LLM API Key' : 'LLM API Key');
     }
     if (!config.llmUrl || config.llmUrl.trim() === '') {
       missingFields.push(lang === 'en' ? 'LLM API URL' : 'LLM API URL');
     }
     if (!config.llmModel || config.llmModel.trim() === '') {
       missingFields.push(lang === 'en' ? 'LLM Model' : 'LLM Model');
+    }
+    if (config.llmProvider === 'anthropic' && (!config.llmAnthropicVersion || config.llmAnthropicVersion.trim() === '')) {
+      missingFields.push(lang === 'en' ? 'Anthropic Version' : 'Anthropic Version');
     }
     if (!config.embeddingUrl || config.embeddingUrl.trim() === '') {
       missingFields.push(lang === 'en' ? 'Embedding API URL' : 'Embedding API URL');
