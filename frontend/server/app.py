@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
 import subprocess
 import time
 import uuid
@@ -282,26 +283,28 @@ class Handler(BaseHTTPRequestHandler):
         env["I2P_ENABLE_LOGGING"] = "1"
         env["I2P_RESULTS_ENABLE"] = "1"
 
-        # Use virtual environment python
-        venv_python = REPO_ROOT / ".venv" / "bin" / "python"
-        python_cmd = str(venv_python) if venv_python.exists() else "python3"
-        cmd = [python_cmd, str(PIPELINE_SCRIPT), idea]
+        # Force UTF-8 encoding for subprocess on Windows
+        if platform.system() == "Windows":
+            env["PYTHONIOENCODING"] = "utf-8"
 
-        # Create log file for subprocess output
-        log_dir = REPO_ROOT / "frontend" / "server" / "logs"
-        log_dir.mkdir(exist_ok=True)
-        log_file = log_dir / f"{ui_run_id}.log"
+        cmd = ["python", str(PIPELINE_SCRIPT), idea]
 
         try:
-            log_f = open(log_file, "w")
-            popen = subprocess.Popen(
-                cmd,
-                cwd=str(REPO_ROOT),
-                env=env,
-                stdout=log_f,
-                stderr=subprocess.STDOUT,
-                start_new_session=True,  # Create new process group for proper termination
-            )
+            # Prepare subprocess arguments (cross-platform)
+            # stdout/stderr inherit from parent process (print to console)
+            popen_kwargs = {
+                "cwd": str(REPO_ROOT),
+                "env": env,
+            }
+
+            # start_new_session is not supported on Windows
+            if platform.system() != "Windows":
+                popen_kwargs["start_new_session"] = True
+            else:
+                # On Windows, use CREATE_NEW_PROCESS_GROUP for similar behavior
+                popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+
+            popen = subprocess.Popen(cmd, **popen_kwargs)
         except Exception as e:
             return _json_response(self, {"ok": False, "error": str(e)}, status=500)
 
@@ -327,20 +330,17 @@ class Handler(BaseHTTPRequestHandler):
         if log_dir and log_dir.exists():
             stage["activity"] = _activity_snapshot(log_dir)
 
-            # Check if building index by reading the last event directly
+            # Enhanced: Check if building index and update progress in real-time
             if stage.get("name") == "Initializing" and events_path and events_path.exists():
                 try:
-                    with events_path.open("r", encoding="utf-8") as f:
-                        lines = f.readlines()
-                        if lines:
-                            last_event = json.loads(lines[-1].strip())
-                            event_type = last_event.get("data", {}).get("event_type")
-                            if event_type == "index_preflight_build_start":
-                                emb_progress = _get_embedding_build_progress(log_dir)
-                                if emb_progress:
-                                    stage["embedding_build_progress"] = emb_progress
-                                    stage["detail"] = f"Building novelty index: {emb_progress['processed_papers']}/{emb_progress['paper_count']} papers ({emb_progress['progress_pct']}%)"
-                                    stage["progress"] = 0.05 + (emb_progress['progress_pct'] / 100) * 0.15  # 5% to 20%
+                    # Check if we're in index building phase
+                    emb_progress = _get_embedding_build_progress(log_dir)
+                    if emb_progress and emb_progress['total_calls'] > 0:
+                        # We're building an index
+                        stage["embedding_build_progress"] = emb_progress
+                        stage["detail"] = f"Building novelty index: {emb_progress['processed_papers']}/{emb_progress['paper_count']} papers ({emb_progress['progress_pct']}%)"
+                        # Map 0-100% of index building to 5%-15% of overall progress
+                        stage["progress"] = 0.05 + (emb_progress['progress_pct'] / 100) * 0.10
                 except Exception:
                     pass
         else:
@@ -518,15 +518,26 @@ class Handler(BaseHTTPRequestHandler):
             if info.popen and info.popen.poll() is None:
                 import signal
                 try:
-                    # Send SIGTERM to the entire process group
-                    os.killpg(os.getpgid(info.popen.pid), signal.SIGTERM)
-                    # Wait a bit for graceful shutdown
-                    try:
-                        info.popen.wait(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        # Force kill the entire process group if it doesn't terminate gracefully
-                        os.killpg(os.getpgid(info.popen.pid), signal.SIGKILL)
-                        info.popen.wait()
+                    if platform.system() == "Windows":
+                        # On Windows, terminate the process tree
+                        # First try graceful termination
+                        info.popen.terminate()
+                        try:
+                            info.popen.wait(timeout=5)
+                        except subprocess.TimeoutExpired:
+                            # Force kill if it doesn't terminate gracefully
+                            info.popen.kill()
+                            info.popen.wait()
+                    else:
+                        # On Unix, send SIGTERM to the entire process group
+                        os.killpg(os.getpgid(info.popen.pid), signal.SIGTERM)
+                        # Wait a bit for graceful shutdown
+                        try:
+                            info.popen.wait(timeout=5)
+                        except subprocess.TimeoutExpired:
+                            # Force kill the entire process group if it doesn't terminate gracefully
+                            os.killpg(os.getpgid(info.popen.pid), signal.SIGKILL)
+                            info.popen.wait()
                 except ProcessLookupError:
                     # Process already terminated
                     pass

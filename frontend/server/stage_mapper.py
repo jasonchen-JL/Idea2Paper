@@ -38,6 +38,8 @@ EVENT_TO_STAGE = [
     ("recall_", "Recall"),
     ("recall_end", "Recall"),
     ("recall_start", "Recall"),
+    ("index_preflight_", "Initializing"),  # Keep in Initializing but track progress
+    ("story_", "Story Generation"),
 ]
 
 DETAILS = {
@@ -131,6 +133,8 @@ def infer_stage(events_path: Path, process_status: str) -> dict:
 
     latest_event_type = None
     latest_event_ts = None
+    latest_event_data = None
+
     # look for latest matching event
     if events:
         for ev in reversed(events):
@@ -139,6 +143,8 @@ def infer_stage(events_path: Path, process_status: str) -> dict:
                 continue
             latest_event_type = ev_type
             latest_event_ts = _extract_event_ts(ev)
+            latest_event_data = ev.get("data", {})
+
             for key, name in EVENT_TO_STAGE:
                 if key.endswith("_"):
                     if ev_type.startswith(key):
@@ -156,11 +162,39 @@ def infer_stage(events_path: Path, process_status: str) -> dict:
     if ts_epoch is not None:
         idle_seconds = max(0.0, time.time() - ts_epoch)
 
+    # Special handling for Initializing stage
     if stage == "Initializing" and process_status in ("starting", "running"):
         detail = "Starting pipeline..."
+        progress = 0.05
+
+        # Check if we're building indexes
+        if latest_event_type and latest_event_type.startswith("index_preflight_"):
+            if latest_event_type == "index_preflight_build_start":
+                payload = latest_event_data.get("payload", {})
+                index_name = payload.get("index", "index")
+                detail = f"Building {index_name} index..."
+                progress = 0.05
+            elif latest_event_type == "index_preflight_build_progress":
+                payload = latest_event_data.get("payload", {})
+                index_name = payload.get("index", "index")
+                pct = payload.get("progress_pct", 0)
+                processed = payload.get("processed_papers", 0)
+                total = payload.get("total_papers", 0)
+                detail = f"Building {index_name} index: {processed}/{total} papers ({pct}%)"
+                # Map 0-100% of index building to 5%-15% of overall progress
+                progress = 0.05 + (pct / 100) * 0.10
+            elif latest_event_type == "index_preflight_build_done":
+                payload = latest_event_data.get("payload", {})
+                index_name = payload.get("index", "index")
+                detail = f"{index_name.capitalize()} index ready"
+                progress = 0.15
+            elif latest_event_type == "index_preflight_start":
+                detail = "Checking indexes..."
+                progress = 0.05
+
         return {
             "name": stage,
-            "progress": 0.05,
+            "progress": progress,
             "detail": detail,
             "substage_event_type": latest_event_type,
             "last_event_ts": latest_event_ts,
