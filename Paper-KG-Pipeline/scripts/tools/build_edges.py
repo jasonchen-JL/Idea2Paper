@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List
 
+import os
+
 import networkx as nx
 import numpy as np
 
@@ -19,7 +21,8 @@ import numpy as np
 SCRIPT_DIR = Path(__file__).resolve().parent
 SCRIPTS_DIR = SCRIPT_DIR.parent
 PROJECT_ROOT = SCRIPTS_DIR.parent
-OUTPUT_DIR = PROJECT_ROOT / "output"
+_kg_output = os.getenv("KG_OUTPUT_DIR")
+OUTPUT_DIR = Path(_kg_output) if _kg_output else PROJECT_ROOT / "output"
 
 # 输入文件
 NODES_IDEA = OUTPUT_DIR / "nodes_idea.json"

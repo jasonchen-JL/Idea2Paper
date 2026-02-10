@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 from stage_mapper import infer_stage
 from log_zipper import make_zip
 from run_registry import RunRegistry
+import kg_build_manager as kgm
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PIPELINE_SCRIPT = REPO_ROOT / "Paper-KG-Pipeline" / "scripts" / "idea2story_pipeline.py"
@@ -161,6 +162,16 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/kg":
             return self._handle_get_kg_data()
 
+        # ── KG build endpoints ────────────────────────────
+        if path == "/api/kg/datasets":
+            return self._handle_kg_list_datasets()
+
+        if path == "/api/kg/build/status":
+            return self._handle_kg_build_status()
+
+        if path == "/api/kg/build/logs":
+            return self._handle_kg_build_logs()
+
         if path == "/api/results":
             return self._handle_list_results()
 
@@ -217,10 +228,14 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == "/api/runs":
             return self._handle_run()
+        if parsed.path == "/api/kg/build":
+            return self._handle_kg_build_start()
+        if parsed.path == "/api/kg/validate":
+            return self._handle_kg_validate()
         return _json_response(self, {"ok": False, "error": "not found"}, status=404)
 
     def do_DELETE(self):
-        """Handle DELETE requests to terminate pipeline"""
+        """Handle DELETE requests to terminate pipeline or cancel KG build"""
         parsed = urlparse(self.path)
         path = parsed.path
         if path.startswith("/api/runs/"):
@@ -228,6 +243,8 @@ class Handler(BaseHTTPRequestHandler):
             if len(parts) >= 3:
                 ui_run_id = parts[2]
                 return self._handle_terminate(ui_run_id)
+        if path == "/api/kg/build":
+            return self._handle_kg_build_cancel()
         return _json_response(self, {"ok": False, "error": "not found"}, status=404)
 
     def do_OPTIONS(self):
@@ -688,6 +705,81 @@ class Handler(BaseHTTPRequestHandler):
             })
         except Exception as e:
             return _json_response(self, {"ok": False, "error": str(e)}, status=500)
+
+    # ── KG build handlers ─────────────────────────────────────────
+
+    def _handle_kg_list_datasets(self):
+        """GET /api/kg/datasets  – list JSONL files in Paper-KG-Pipeline/data/."""
+        data_dir = REPO_ROOT / "Paper-KG-Pipeline" / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        files = sorted(
+            f.name for f in data_dir.iterdir()
+            if f.is_file() and f.suffix == ".jsonl"
+        )
+        return _json_response(self, {"ok": True, "files": files})
+
+    def _handle_kg_validate(self):
+        """POST /api/kg/validate  – validate dataset file."""
+        payload = _read_json(self)
+        if not payload or "dataset_path" not in payload:
+            return _json_response(self, {"ok": False, "error": "missing dataset_path"}, status=400)
+        valid, err, est = kgm.validate_dataset(payload["dataset_path"])
+        return _json_response(self, {"ok": True, "valid": valid, "error": err, "estimate": est})
+
+    def _handle_kg_build_start(self):
+        """POST /api/kg/build  – start a new KG build."""
+        payload = _read_json(self)
+        if not payload:
+            return _json_response(self, {"ok": False, "error": "invalid payload"}, status=400)
+
+        dataset_path = payload.get("dataset_path", "")
+        dataset_name = payload.get("dataset_name", "").strip()
+        cfg = payload.get("config", {}) or {}
+
+        if not dataset_path:
+            return _json_response(self, {"ok": False, "error": "missing dataset_path"}, status=400)
+        if not dataset_name:
+            return _json_response(self, {"ok": False, "error": "missing dataset_name"}, status=400)
+
+        llm_key = cfg.get("llm_api_key") or os.environ.get("SILICONFLOW_API_KEY") or os.environ.get("OPENAI_API_KEY") or ""
+
+        ok, msg, mgr = kgm.start_build(
+            dataset_name=dataset_name,
+            dataset_path=dataset_path,
+            repo_root=REPO_ROOT,
+            llm_api_key=llm_key,
+            llm_model=cfg.get("llm_model", "gpt-4o"),
+            llm_api_url=cfg.get("llm_api_url", ""),
+            embedding_model=cfg.get("embedding_model", "sentence-transformers/all-MiniLM-L6-v2"),
+        )
+        if not ok:
+            return _json_response(self, {"ok": False, "error": msg}, status=400)
+        return _json_response(self, mgr.get_status(), status=201)
+
+    def _handle_kg_build_status(self):
+        """GET /api/kg/build/status  – current build status."""
+        mgr = kgm.get_current_build()
+        if not mgr:
+            return _json_response(self, {"ok": True, "status": "idle", "build_id": None})
+        return _json_response(self, mgr.get_status())
+
+    def _handle_kg_build_logs(self):
+        """GET /api/kg/build/logs?since=N  – build logs."""
+        mgr = kgm.get_current_build()
+        if not mgr:
+            return _json_response(self, {"ok": True, "logs": [], "total": 0})
+        parsed = urlparse(self.path)
+        from urllib.parse import parse_qs
+        qs = parse_qs(parsed.query)
+        since = int(qs.get("since", ["0"])[0])
+        return _json_response(self, mgr.get_logs(since))
+
+    def _handle_kg_build_cancel(self):
+        """DELETE /api/kg/build  – cancel running build."""
+        ok, msg = kgm.cancel_current_build()
+        if not ok:
+            return _json_response(self, {"ok": False, "error": msg}, status=400)
+        return _json_response(self, {"ok": True, "cancelled": True, "message": msg})
 
 
 def main():

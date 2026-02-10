@@ -5,6 +5,7 @@ import { ResultViewer } from './components/ResultViewer';
 import { KnowledgeGraph } from './components/KnowledgeGraph';
 import { IdeaInput } from './components/IdeaInput';
 import { ConfigPanel } from './components/ConfigPanel';
+import { KGBuilderPage } from './components/KGBuilderPage';
 import { 
   AppConfig, 
   PipelineStatus, 
@@ -23,6 +24,7 @@ const translations = {
       dashboard: "Dashboard",
       results: "Paper Viewer",
       kg: "Knowledge Graph",
+      kg_builder: "KG Builder",
       settings: "Configuration"
     },
     common: {
@@ -133,6 +135,7 @@ const translations = {
       dashboard: "仪表盘",
       results: "论文预览",
       kg: "知识图谱",
+      kg_builder: "图谱构建",
       settings: "系统配置"
     },
     common: {
@@ -711,6 +714,12 @@ function App() {
           <div className="animate-in fade-in duration-500">
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-8 tracking-tight">{t.kg.title}</h1>
             <KnowledgeGraph config={config} t={t} />
+          </div>
+        );
+      case 'kg-builder':
+        return (
+          <div className="animate-in fade-in duration-500">
+            <KGBuilderPage lang={lang} t={t} config={config} />
           </div>
         );
       default:

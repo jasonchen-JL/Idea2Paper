@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Settings, Menu, X, Database, Activity, Sun, Moon } from 'lucide-react';
+import { FileText, Settings, Menu, X, Database, Activity, Sun, Moon, Hammer } from 'lucide-react';
 import { Language } from '../types';
 
 interface LayoutProps {
@@ -55,6 +55,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
     { id: 'dashboard', label: t.nav.dashboard, icon: Activity },
     { id: 'results', label: t.nav.results, icon: FileText },
     // { id: 'kg', label: t.nav.kg, icon: Database },  // Hidden for now
+    { id: 'kg-builder', label: t.nav.kg_builder, icon: Hammer },
     { id: 'settings', label: t.nav.settings, icon: Settings },
   ];
 
