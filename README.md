@@ -24,6 +24,8 @@
   - [✨ Key Features](#-key-features)
   - [📦 Outputs](#-outputs)
   - [🚀 Getting Started](#-getting-started)
+  - [🌐 Frontend (Local Web UI)](#-frontend-local-web-ui)
+  - [🔨 Knowledge Graph Builder](#-knowledge-graph-builder)
   - [🤖 Anchored Multi-Agent Review](#-anchored-multi-agent-review)
   - [📚 Files & Docs](#-files--docs)
   - [🤝 Contributing & License](#-contributing--license)
@@ -157,6 +159,43 @@ http://127.0.0.1:8080/
 - Download the current run logs as a zip.
 
 For more details, see `frontend/README.md`.
+
+### 🔨 Knowledge Graph Builder
+
+The Web UI includes a **KG Builder** page that lets you build a custom knowledge graph from your own paper dataset, instead of relying on the prebuilt ICLR graph.
+
+#### Dataset Format
+
+Prepare a JSONL file where each line is a JSON object with the following fields:
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `id` or `paper_id` | Yes | Unique paper identifier |
+| `title` | Yes | Paper title |
+| `abstract` | Yes | Paper abstract |
+| `keywords` | No | List of keywords |
+| `year` | No | Publication year |
+
+Place the file under `Paper-KG-Pipeline/data/`. A sample dataset (`paper_reviews_dataset_iclr_sample_100.jsonl`) is included for testing.
+
+#### How to Use
+
+1. Start the server: `python frontend/server/app.py --host 127.0.0.1 --port 8080`
+2. Open `http://127.0.0.1:8080/` and navigate to the **KG Builder** tab.
+3. Select your dataset from the dropdown.
+4. Configure LLM settings (API Key, Model, API URL).
+5. Click **Start Build**.
+
+The pipeline runs 4 steps sequentially:
+
+| Step | Script | Description |
+|------|--------|-------------|
+| 1 | `extract_patterns_ICLR_en_local.py` | Extract writing patterns from papers via LLM |
+| 2 | `generate_clusters.py` | Cluster patterns using SBERT + HDBSCAN |
+| 3 | `build_entity_v3.py` | Build Idea / Pattern / Domain / Paper nodes |
+| 4 | `build_edges.py` | Build edges and export `.gpickle` graph |
+
+Progress and logs are displayed in real-time on the page. Once completed, the output files are written to `Paper-KG-Pipeline/output/` and can be used directly by the `idea2story_pipeline.py`.
 
 ### Output
 
