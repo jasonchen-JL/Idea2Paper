@@ -70,9 +70,9 @@ const T = {
     api_key_hint: 'Leave blank to use server-side env variable',
     llm_model: 'LLM Model',
     llm_model_ph: 'e.g. gpt-4o, deepseek-chat',
-    llm_api_url: 'LLM API URL',
+    llm_api_url: 'LLM API URL (Base URL)',
     llm_api_url_ph: 'e.g. https://api.openai.com/v1',
-    llm_api_url_hint: 'Leave blank to use default endpoint',
+    llm_api_url_hint: 'Base URL only, without /chat/completions',
     validate: 'Validate Dataset',
     validating: 'Validating...',
     start: 'Start Build',
@@ -108,9 +108,9 @@ const T = {
     api_key_hint: '留空则使用服务器环境变量',
     llm_model: 'LLM 模型',
     llm_model_ph: '例如 gpt-4o, deepseek-chat',
-    llm_api_url: 'LLM API URL',
+    llm_api_url: 'LLM API URL（Base URL）',
     llm_api_url_ph: '例如 https://api.openai.com/v1',
-    llm_api_url_hint: '留空则使用默认端点',
+    llm_api_url_hint: '仅填写 Base URL，不含 /chat/completions',
     validate: '验证数据集',
     validating: '验证中...',
     start: '开始构建',
@@ -155,6 +155,22 @@ async function apiDelete(url: string) {
   return res.json();
 }
 
+/* ── localStorage persistence ─────────────────────────────── */
+
+const KG_CONFIG_KEY = 'kg_builder_config';
+
+function loadKgConfig(): { apiKey: string; llmModel: string; llmApiUrl: string; datasetName: string } {
+  try {
+    const raw = localStorage.getItem(KG_CONFIG_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch { /* ignore */ }
+  return { apiKey: '', llmModel: 'gpt-4o', llmApiUrl: '', datasetName: '' };
+}
+
+function saveKgConfig(cfg: { apiKey: string; llmModel: string; llmApiUrl: string; datasetName: string }) {
+  try { localStorage.setItem(KG_CONFIG_KEY, JSON.stringify(cfg)); } catch { /* ignore */ }
+}
+
 /* ── component ────────────────────────────────────────────────── */
 
 interface Props {
@@ -167,12 +183,18 @@ export const KGBuilderPage: React.FC<Props> = ({ lang, config: appConfig }) => {
   const t = T[lang] || T.en;
   const stepLabels = STEP_LABELS[lang] || STEP_LABELS.en;
 
-  /* form state */
-  const [datasetName, setDatasetName] = useState('');
+  /* form state (initialized from localStorage) */
+  const saved = loadKgConfig();
+  const [datasetName, setDatasetName] = useState(saved.datasetName);
   const [datasetFiles, setDatasetFiles] = useState<string[]>([]);
-  const [apiKey, setApiKey] = useState('');
-  const [llmModel, setLlmModel] = useState('gpt-4o');
-  const [llmApiUrl, setLlmApiUrl] = useState('');
+  const [apiKey, setApiKey] = useState(saved.apiKey);
+  const [llmModel, setLlmModel] = useState(saved.llmModel);
+  const [llmApiUrl, setLlmApiUrl] = useState(saved.llmApiUrl);
+
+  /* persist config to localStorage on change */
+  useEffect(() => {
+    saveKgConfig({ apiKey, llmModel, llmApiUrl, datasetName });
+  }, [apiKey, llmModel, llmApiUrl, datasetName]);
 
   /* computed dataset path (read-only) */
   const datasetPath = datasetName
