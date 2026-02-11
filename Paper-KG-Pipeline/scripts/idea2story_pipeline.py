@@ -333,6 +333,17 @@ def main():
             logger.log_event("run_start", {"user_idea": user_idea})
             if _DOTENV_STATUS:
                 logger.log_event("dotenv_loaded", _DOTENV_STATUS)
+        # Startup preflight (fail-fast): check LLM/Embedding connectivity + embedding dim consistency (if local index exists)
+        from idea2paper.infra.startup_preflight import run_startup_preflight
+        pre = run_startup_preflight()
+        if not pre.ok:
+            print("\n❌ 启动前自检失败，已终止运行。")
+            print(f"   - LLM endpoint: {pre.llm_endpoint}")
+            print(f"   - Embedding endpoint: {pre.embedding_endpoint}")
+            if pre.embedding_dim is not None:
+                print(f"   - Online embedding_dim: {pre.embedding_dim}")
+            print(f"   - Error: {pre.error}\n")
+            raise RuntimeError(pre.error)
         # Preflight & auto-prepare required indexes (quality-first)
         ensure_required_indexes(logger)
         # 加载节点数据
@@ -469,6 +480,28 @@ def main():
 
         recall_results = recall_system.recall(retrieval_query_best, verbose=True)
         recall_audit = getattr(recall_system, "last_audit", None)
+
+        # 如果召回为空：说明当前 idea 无法匹配到可用的领域/Pattern 数据，直接提示用户并停止程序
+        if not recall_results:
+            print("\n" + "=" * 80)
+            print("❌ 召回为空：未能从知识图谱中召回到任何可用 Pattern / 领域数据")
+            print("=" * 80)
+            print("可能原因：")
+            print("- 输入的 idea 过于抽象/过于口语化/缺少领域关键词")
+            print("- idea 与当前内置数据集（ICLR 图谱）覆盖范围差异较大")
+            print("- 语言不匹配（建议尽量用英文关键词描述检索意图）")
+            print("\n建议你：")
+            print("- 换一个更具体的 idea（包含方法/任务/数据/约束等关键词）")
+            print("- 或用英文重写 idea（加入核心术语，如 retrieval / diffusion / transformer / graph 等）")
+            print()
+
+            if logger:
+                logger.log_event("recall_empty", {
+                    "raw_user_idea": _truncate_text(raw_user_idea, 800),
+                    "retrieval_query_best": _truncate_text(retrieval_query_best, 800),
+                })
+
+            raise SystemExit(2)
 
         # 【关键修复】加载完整的 patterns_structured.json 以合并数据
         patterns_structured_file = OUTPUT_DIR / "patterns_structured.json"

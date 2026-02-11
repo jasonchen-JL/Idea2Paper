@@ -40,15 +40,19 @@ from pipeline.utils import call_llm, parse_json_from_llm
 
 PROJECT_ROOT = SCRIPTS_DIR.parent
 
-# 输入路径
-DATA_DIR = PROJECT_ROOT / "data" / "ICLR_25"
+# 输入路径 - 支持 KG_OUTPUT_DIR 环境变量（构建管道输出目录）
+_kg_output = os.getenv("KG_OUTPUT_DIR")
+if _kg_output:
+    DATA_DIR = Path(_kg_output)
+else:
+    DATA_DIR = PROJECT_ROOT / "data" / "ICLR_25"
 ASSIGNMENTS_FILE = DATA_DIR / "assignments.jsonl"
 CLUSTER_LIBRARY_FILE = DATA_DIR / "cluster_library_sorted.jsonl"
 PATTERN_DETAILS_FILE = DATA_DIR / "iclr_patterns_full.jsonl"  # 使用完整的英文版本
 REVIEWS_FILE = DATA_DIR / "paper_reviews_dataset_iclr_reviews_filtered.jsonl"  # Review 数据
 
 # 输出路径
-OUTPUT_DIR = PROJECT_ROOT / "output"
+OUTPUT_DIR = Path(_kg_output) if _kg_output else PROJECT_ROOT / "output"
 NODES_IDEA = OUTPUT_DIR / "nodes_idea.json"
 NODES_PATTERN = OUTPUT_DIR / "nodes_pattern.json"
 NODES_DOMAIN = OUTPUT_DIR / "nodes_domain.json"
@@ -197,12 +201,11 @@ class KnowledgeGraphBuilderV3:
         return details
 
     def _load_reviews(self) -> Dict[str, List[Dict]]:
-        """加载Review数据 (paper_reviews_dataset_iclr_reviews_filtered.jsonl)"""
-        reviews_data = {}
+        """加载Review数据 (可选，文件不存在时静默跳过)"""
         if not REVIEWS_FILE.exists():
-            print(f"⚠️  文件不存在: {REVIEWS_FILE}")
             return {}
 
+        reviews_data = {}
         with open(REVIEWS_FILE, 'r', encoding='utf-8') as f:
             for line in f:
                 if line.strip():
